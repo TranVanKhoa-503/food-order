@@ -332,6 +332,8 @@ Cửa hàng có thể vận hành toàn bộ dữ liệu MVP từ admin panel.
 
 ## Sprint 6 — Kết nối frontend hiện có
 
+**Trạng thái:** Hoàn thành.
+
 ### Mục tiêu
 
 Nối giao diện Blade/cart hiện tại với Auth, checkout và order APIs mà không thay đổi phong cách UI không cần thiết.

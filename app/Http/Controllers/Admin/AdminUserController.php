@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ToggleUserStatusRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
@@ -15,7 +16,7 @@ class AdminUserController extends Controller
     /**
      * Display a listing of all users for admin.
      */
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(Request $request): View|AnonymousResourceCollection
     {
         $search = trim((string) $request->query('search', ''));
         $role = $request->query('role');
@@ -42,7 +43,11 @@ class AdminUserController extends Controller
 
         $users = $query->latest()->paginate($perPage);
 
-        return UserResource::collection($users);
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return UserResource::collection($users);
+        }
+
+        return view('admin.users.index', compact('users', 'search', 'role', 'isActive'));
     }
 
     /**

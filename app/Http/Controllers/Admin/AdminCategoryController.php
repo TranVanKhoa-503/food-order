@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\StoreCategoryRequest;
 use App\Http\Requests\Admin\UpdateCategoryRequest;
 use App\Http\Resources\CategoryResource;
 use App\Models\Category;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -18,7 +19,7 @@ class AdminCategoryController extends Controller
     /**
      * Display a listing of categories for admin.
      */
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(Request $request): View|AnonymousResourceCollection
     {
         $search = trim((string) $request->query('search', ''));
         $perPage = min((int) $request->query('per_page', 15), 50);
@@ -34,7 +35,11 @@ class AdminCategoryController extends Controller
 
         $categories = $query->latest()->paginate($perPage);
 
-        return CategoryResource::collection($categories);
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return CategoryResource::collection($categories);
+        }
+
+        return view('admin.categories.index', compact('categories', 'search'));
     }
 
     /**

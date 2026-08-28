@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\UpdateOrderStatusRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Services\OrderStatusService;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -16,7 +17,7 @@ class AdminOrderController extends Controller
     /**
      * Display a listing of all orders for admin.
      */
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(Request $request): View|AnonymousResourceCollection
     {
         $search = trim((string) $request->query('search', ''));
         $status = $request->query('status');
@@ -48,15 +49,25 @@ class AdminOrderController extends Controller
 
         $orders = $query->latest()->paginate($perPage);
 
-        return OrderResource::collection($orders);
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return OrderResource::collection($orders);
+        }
+
+        return view('admin.orders.index', compact('orders', 'status', 'search'));
     }
 
     /**
      * Display the specified order details.
      */
-    public function show(Order $order): OrderResource
+    public function show(Request $request, Order $order): View|OrderResource
     {
-        return new OrderResource($order->load(['items', 'user']));
+        $order->load(['items', 'user']);
+
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return new OrderResource($order);
+        }
+
+        return view('orders.show', compact('order'));
     }
 
     /**

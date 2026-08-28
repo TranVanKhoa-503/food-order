@@ -7,7 +7,9 @@ use App\Http\Requests\Admin\StoreFoodRequest;
 use App\Http\Requests\Admin\ToggleFoodAvailabilityRequest;
 use App\Http\Requests\Admin\UpdateFoodRequest;
 use App\Http\Resources\FoodResource;
+use App\Models\Category;
 use App\Models\Food;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -17,7 +19,7 @@ class AdminFoodController extends Controller
     /**
      * Display a listing of foods for admin (includes unavailable foods).
      */
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(Request $request): View|AnonymousResourceCollection
     {
         $search = trim((string) $request->query('search', ''));
         $categoryId = $request->query('category_id');
@@ -43,7 +45,13 @@ class AdminFoodController extends Controller
 
         $foods = $query->latest()->paginate($perPage);
 
-        return FoodResource::collection($foods);
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return FoodResource::collection($foods);
+        }
+
+        $categories = Category::all();
+
+        return view('admin.foods.index', compact('foods', 'categories', 'categoryId', 'isAvailable', 'search'));
     }
 
     /**

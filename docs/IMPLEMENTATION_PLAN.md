@@ -105,6 +105,8 @@ Project có foundation có thể tin cậy để bắt đầu Authentication. Ch
 
 ## Sprint 1 — Authentication và User
 
+**Trạng thái:** Hoàn thành.
+
 ### Mục tiêu
 
 Có đăng ký, đăng nhập session, đăng xuất, profile và authorization cơ bản cho hai role.

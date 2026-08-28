@@ -561,6 +561,31 @@
                         <div class="cart-badge" id="cartBadge">0</div>
                     </button>
 
+                    @guest
+                        <a href="{{ route('login') }}" style="text-decoration: none; color: var(--dark); font-weight: 700; font-size: 14px; padding: 9px 16px; border-radius: 50px; border: 1px solid var(--border-color); transition: var(--transition);">
+                            <i class="fa-solid fa-user" style="color: #64748B; margin-right: 4px;"></i> Đăng nhập
+                        </a>
+                        <a href="{{ route('register') }}" style="text-decoration: none; background: var(--primary-light); color: var(--primary); font-weight: 700; font-size: 14px; padding: 9px 16px; border-radius: 50px; transition: var(--transition);">
+                            Đăng ký
+                        </a>
+                    @else
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <a href="{{ route('profile') }}" style="text-decoration: none; display: flex; align-items: center; gap: 8px; background: white; border: 1px solid var(--border-color); padding: 7px 14px; border-radius: 50px; font-size: 14px; font-weight: 700; color: var(--dark);">
+                                <i class="fa-solid fa-circle-user" style="color: var(--primary); font-size: 18px;"></i>
+                                <span>{{ Auth::user()->name }}</span>
+                                @if(Auth::user()->isAdmin())
+                                    <span style="background: #EDE9FE; color: #6D28D9; font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 800;">ADMIN</span>
+                                @endif
+                            </a>
+                            <form action="{{ route('logout') }}" method="POST" style="margin: 0; display: inline;">
+                                @csrf
+                                <button type="submit" title="Đăng xuất" style="background: #F1F5F9; border: 1px solid var(--border-color); color: #64748B; cursor: pointer; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: var(--transition);">
+                                    <i class="fa-solid fa-right-from-bracket"></i>
+                                </button>
+                            </form>
+                        </div>
+                    @endguest
+
                     <a href="tel:19008888" class="hotline-btn">
                         <i class="fa-solid fa-phone"></i>
                         <span>1900 8888</span>

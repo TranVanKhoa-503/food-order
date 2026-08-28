@@ -1,58 +1,182 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Food Order
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Food Order là website đặt món cho **một cửa hàng**. Source hiện tại đã có trang thực đơn công khai, tìm kiếm/lọc theo danh mục và giỏ hàng lưu trong trình duyệt. Phần xác thực, checkout thật, quản lý đơn hàng và trang quản trị chưa được triển khai.
 
-## About Laravel
+Phạm vi mục tiêu của phiên bản đầu:
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Khách có thể xem món, đăng ký/đăng nhập, đặt món và xem đơn của mình.
+- Quản trị viên quản lý danh mục, món ăn, người dùng và xử lý trạng thái đơn.
+- Chỉ hỗ trợ một cửa hàng, hai vai trò `user` và `admin`.
+- Thanh toán khi nhận hàng (COD); chưa tích hợp cổng thanh toán.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+> Tài liệu trong thư mục `docs/` là source of truth. Sprint 0 đã áp dụng schema foundation; các route nghiệp vụ từ Sprint 1 trở đi vẫn chưa được implement.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Trạng thái hiện tại
 
-## Learning Laravel
+- Route đang hoạt động: `GET /`.
+- Dữ liệu trang chủ lấy từ Eloquent models `Category` và `Food`.
+- Giỏ hàng dùng `localStorage`; nút đặt món hiện chỉ hiển thị thông báo giả lập.
+- Database local được chuẩn hóa sang MySQL; automated tests tiếp tục dùng SQLite in-memory.
+- Schema đã chuẩn hóa thành `users`, `categories`, `foods`, `orders`, `order_items`.
+- Test foundation dùng `RefreshDatabase` với SQLite in-memory và đang xanh.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Công nghệ đang sử dụng
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+| Thành phần | Công nghệ thực tế trong source |
+| --- | --- |
+| Backend | PHP 8.3+, Laravel 13 |
+| Giao diện | Blade, HTML, CSS và JavaScript thuần |
+| CSS build | Tailwind CSS 4 qua Vite; trang chủ hiện chủ yếu dùng CSS inline |
+| Frontend build | Vite 8, Laravel Vite Plugin |
+| ORM | Laravel Eloquent |
+| Database local/production | MySQL 8 qua Eloquent |
+| Database automated test | SQLite in-memory |
+| Authentication dự kiến | Laravel session authentication và CSRF |
+| Test | PHPUnit 12 thông qua Laravel test runner |
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+Source không dùng microservices, Docker, Redis hoặc frontend framework JavaScript.
 
-## Agentic Development
+## Cấu trúc project
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```text
+app/
+  Http/Controllers/      HTTP controllers
+  Models/                Eloquent models
+bootstrap/app.php        Khai báo route, middleware và exception handling
+config/                  Cấu hình Laravel
+database/
+  factories/             Model factories
+  migrations/            Database migrations
+  seeders/               Dữ liệu mẫu
+docs/                    Tài liệu kỹ thuật mục tiêu
+public/                  Web document root
+resources/
+  css/                   CSS entry của Vite
+  js/                    JavaScript entry của Vite
+  views/                 Blade templates
+routes/web.php           Web routes hiện tại
+tests/                   PHPUnit unit/feature tests
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+## Yêu cầu môi trường
 
-## Contributing
+- PHP 8.3 trở lên với PDO MySQL và PDO SQLite cho automated tests.
+- Composer.
+- Node.js và npm.
+- MySQL 8.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Trên máy đang phát triển project, PHP/Composer/Node được cài qua Laragon nhưng có thể chưa nằm trong `PATH`. Có thể mở terminal của Laragon hoặc thêm các executable tương ứng vào `PATH` trước khi chạy lệnh dưới đây.
 
-## Code of Conduct
+## Cài đặt local
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Các lệnh sau dùng PowerShell tại thư mục gốc project.
 
-## Security Vulnerabilities
+### 1. Cài PHP dependencies
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```powershell
+composer install
+```
 
-## License
+### 2. Tạo file môi trường
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```powershell
+Copy-Item .env.example .env
+php artisan key:generate
+```
+
+Không commit file `.env`.
+
+### 3. Chuẩn bị MySQL
+
+`.env.example` mặc định dùng MySQL. Tạo database `food_order` bằng MySQL client hoặc công cụ quản lý database của Laragon, sau đó cập nhật credential trong `.env`.
+
+```powershell
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS food_order CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+```
+
+Sau đó chạy migration và dữ liệu mẫu:
+
+```powershell
+php artisan migrate --seed
+```
+
+Seeders có thể chạy lại mà không tạo trùng admin/category/food. Nếu `DEMO_ADMIN_PASSWORD` để trống, admin demo nhận mật khẩu ngẫu nhiên không được hiển thị.
+
+### 4. Cài frontend dependencies
+
+```powershell
+npm ci
+```
+
+Repo có `package-lock.json` để frontend dependency có thể được cài lặp lại.
+
+## Chạy project
+
+### Backend và trang Blade
+
+```powershell
+php artisan serve
+```
+
+Mở `http://127.0.0.1:8000`.
+
+### Vite development server
+
+Chạy ở terminal thứ hai khi chỉnh sửa `resources/css/app.css` hoặc `resources/js/app.js`:
+
+```powershell
+npm run dev
+```
+
+Trang chủ hiện tại chưa gọi `@vite` và vẫn chứa phần lớn CSS/JavaScript trực tiếp trong Blade. Vì vậy backend có thể hiển thị trang chủ mà không chạy Vite; việc nối trang chủ vào asset pipeline nằm trong sprint tích hợp frontend.
+
+### Build frontend
+
+```powershell
+npm run build
+```
+
+## Biến môi trường cần thiết
+
+| Biến | Local đề xuất | Ý nghĩa |
+| --- | --- | --- |
+| `APP_NAME` | `Food Order` | Tên ứng dụng |
+| `APP_ENV` | `local` | Môi trường chạy |
+| `APP_KEY` | sinh bằng Artisan | Khóa mã hóa Laravel |
+| `APP_DEBUG` | `true` | Chỉ bật ở local |
+| `APP_URL` | `http://127.0.0.1:8000` | URL gốc |
+| `APP_LOCALE` | `vi` dự kiến | Ngôn ngữ mặc định |
+| `DB_CONNECTION` | `mysql` | Driver database local/production |
+| `DB_HOST` | `127.0.0.1` | MySQL host |
+| `DB_PORT` | `3306` | MySQL port |
+| `DB_DATABASE` | `food_order` | Tên database |
+| `DB_USERNAME` | tùy môi trường | MySQL user |
+| `DB_PASSWORD` | tùy môi trường | MySQL password, không commit |
+| `SESSION_DRIVER` | `database` | Session hiện lưu trong bảng `sessions` |
+| `CACHE_STORE` | `database` | Cache hiện lưu trong database |
+| `QUEUE_CONNECTION` | `sync` đề xuất | Project chưa có background job/worker |
+| `MAIL_MAILER` | `log` | Email chưa được gửi ra ngoài |
+| `DEMO_ADMIN_EMAIL` | `admin@foodorder.test` | Email admin chỉ dùng cho development/demo seeder |
+| `DEMO_ADMIN_PASSWORD` | để trống hoặc tự đặt | Không dùng làm credential production |
+
+Automated tests dùng SQLite `:memory:` theo `phpunit.xml`. Migration phải được kiểm tra trên MySQL local để tránh phụ thuộc hành vi riêng của SQLite; xem [tài liệu deployment](docs/DEPLOYMENT.md).
+
+## Kiểm tra
+
+```powershell
+php artisan test
+```
+
+Kết quả cuối Sprint 0: 9 tests, 32 assertions, tất cả đều pass.
+
+## Tài liệu kỹ thuật
+
+- [Kiến trúc](docs/ARCHITECTURE.md)
+- [Database](docs/DATABASE.md)
+- [Luồng trạng thái đơn hàng](docs/ORDER_FLOW.md)
+- [Thiết kế route/API](docs/ROUTES.md)
+- [Kế hoạch triển khai](docs/IMPLEMENTATION_PLAN.md)
+- [Chiến lược testing](docs/TESTING.md)
+- [Deployment](docs/DEPLOYMENT.md)
+
+`PROJECT_SPEC.md` được giữ như bản mô tả ý tưởng ban đầu. Các phần merchant, shipper, voucher, review và roadmap cũ không còn là phạm vi của phiên bản một cửa hàng hiện tại.

@@ -24,10 +24,10 @@ class FoodController extends Controller
             $foodsQuery->where('category_id', $categoryId);
         }
 
-        if (!empty($search)) {
+        if (! empty($search)) {
             $foodsQuery->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 

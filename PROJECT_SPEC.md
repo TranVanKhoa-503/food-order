@@ -1,3 +1,19 @@
+# LƯU Ý VỀ PHẠM VI
+
+Tài liệu này là bản đặc tả ý tưởng ban đầu và được giữ lại để tham khảo lịch sử. Các phần marketplace nhiều quán, merchant, shipper, voucher, review và roadmap ở cuối file **không còn là phạm vi triển khai hiện tại**.
+
+Phiên bản đang được xây dựng là website đặt đồ ăn cho **một cửa hàng**, với hai vai trò `user/admin`. Kiến trúc, schema, route contract và kế hoạch có hiệu lực nằm trong:
+
+- `docs/ARCHITECTURE.md`
+- `docs/DATABASE.md`
+- `docs/ORDER_FLOW.md`
+- `docs/ROUTES.md`
+- `docs/IMPLEMENTATION_PLAN.md`
+
+Không dùng checklist “Giai đoạn 1 đã hoàn thành” trong tài liệu cũ để đánh giá source hiện tại.
+
+---
+
 # 📋 TÀI LIỆU ĐẶC TẢ YÊU CẦU HỆ THỐNG (PROJECT SPECIFICATION)
 # HỆ THỐNG ĐẶT MÓN ĂN TRỰC TUYẾN - FOOD ORDER SYSTEM
 

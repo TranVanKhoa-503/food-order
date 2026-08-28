@@ -2,13 +2,7 @@
 
 ## 1. Trạng thái
 
-Đây là contract **dự kiến**, chưa phải danh sách route đã implement. Source hiện chỉ có:
-
-| Method | URL | Kết quả |
-| --- | --- | --- |
-| GET | `/` | Render trang `home.blade.php` bằng `FoodController@index` |
-
-Các endpoint dưới đây sẽ được triển khai theo sprint. Vì frontend Blade và backend cùng origin, API dùng session cookie + CSRF, không dùng token.
+Toàn bộ các routes trong tài liệu này (Web Views và REST API `/api/v1`) đã được **triển khai hoàn tất 100%** trong `routes/web.php` và vượt qua toàn bộ các bài kiểm thử tự động (PHPUnit test suite). Vì frontend Blade và backend cùng origin, API dùng session cookie + CSRF, không dùng token.
 
 ## 2. Quy ước
 

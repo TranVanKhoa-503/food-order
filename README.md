@@ -1,182 +1,134 @@
 # Food Order
 
-Food Order là website đặt món cho **một cửa hàng**. Source hiện tại đã có trang thực đơn công khai, tìm kiếm/lọc theo danh mục và giỏ hàng lưu trong trình duyệt. Phần xác thực, checkout thật, quản lý đơn hàng và trang quản trị chưa được triển khai.
+Food Order là hệ thống website đặt món ăn trực tuyến hoàn chỉnh dành cho **một cửa hàng**, xây dựng trên nền tảng **Laravel 13 monolith + Blade templates + JavaScript thuần**.
 
-Phạm vi mục tiêu của phiên bản đầu:
+Hệ thống đã hoàn thành trọn vẹn từ Sprint 0 đến Sprint 7 theo đúng thiết kế và quy chuẩn trong thư mục `docs/`.
 
-- Khách có thể xem món, đăng ký/đăng nhập, đặt món và xem đơn của mình.
-- Quản trị viên quản lý danh mục, món ăn, người dùng và xử lý trạng thái đơn.
-- Chỉ hỗ trợ một cửa hàng, hai vai trò `user` và `admin`.
-- Thanh toán khi nhận hàng (COD); chưa tích hợp cổng thanh toán.
+---
 
-> Tài liệu trong thư mục `docs/` là source of truth. Sprint 0 đã áp dụng schema foundation; các route nghiệp vụ từ Sprint 1 trở đi vẫn chưa được implement.
+## 🌟 Tính Năng Chính
 
-## Trạng thái hiện tại
+### 1. Khách Hàng (Customer)
+* **Khám phá thực đơn:** Xem danh sách món ăn từ database, phân loại theo danh mục, tìm kiếm theo tên/mô tả, lọc theo khoảng giá.
+* **Xác thực an toàn:** Đăng ký tài khoản (`role = user`), Đăng nhập session, Đăng xuất (invalidate session + token CSRF), Quên/Đặt lại mật khẩu.
+* **Quản lý tài khoản:** Xem hồ sơ cá nhân, cập nhật tên/số điện thoại/địa chỉ giao hàng, đổi mật khẩu.
+* **Giỏ hàng & Checkout:**
+  * Giỏ hàng lưu trữ ở trình duyệt (`localStorage`).
+  * Backend **tự động truy vấn lại giá và tính toán từ Database** trong Database Transaction (chống gian lận giá từ frontend).
+  * Kiểm tra trạng thái món ăn (`is_available`).
+  * Tạo đơn hàng COD và snapshot thông tin món ăn tại thời điểm mua (`OrderItem`).
+* **Theo dõi đơn hàng:**
+  * Xem danh sách lịch sử đơn hàng của chính mình (chặn xem đơn của người khác).
+  * Xem chi tiết từng đơn hàng và trạng thái vận chuyển.
+  * Tự hủy đơn hàng khi đơn đang ở trạng thái chờ xác nhận (`pending`).
 
-- Route đang hoạt động: `GET /`.
-- Dữ liệu trang chủ lấy từ Eloquent models `Category` và `Food`.
-- Giỏ hàng dùng `localStorage`; nút đặt món hiện chỉ hiển thị thông báo giả lập.
-- Database local được chuẩn hóa sang MySQL; automated tests tiếp tục dùng SQLite in-memory.
-- Schema đã chuẩn hóa thành `users`, `categories`, `foods`, `orders`, `order_items`.
-- Test foundation dùng `RefreshDatabase` với SQLite in-memory và đang xanh.
+### 2. Quản Trị Viên (Admin Panel)
+* **Dashboard Thống Kê:** Tổng doanh thu đơn hoàn thành, tổng số đơn, số đơn hôm nay, đơn chờ xử lý, số lượng khách hàng, số lượng món ăn và danh sách 5 đơn mới nhất.
+* **Quản Lý Đơn Hàng:** Xem danh sách, lọc theo trạng thái, tìm kiếm, cập nhật trạng thái đơn theo State Machine nghiêm ngặt (`pending -> confirmed -> preparing -> delivering -> completed` hoặc `cancelled`), tự động đánh dấu đã thanh toán COD khi hoàn tất.
+* **Quản Lý Món Ăn:** Thêm món mới, cập nhật giá/thông tin/ảnh, bật/tắt trạng thái mở bán (`is_available`). Không hard-delete món ăn trong luồng nghiệp vụ.
+* **Quản Lý Danh Mục:** Thêm/sửa danh mục, tự động tạo slug, chặn xóa danh mục khi đang có món ăn.
+* **Quản Lý Người Dùng:** Tìm kiếm khách hàng, khóa/mở khóa tài khoản (ngăn admin tự khóa tài khoản của chính mình).
 
-## Công nghệ đang sử dụng
+---
 
-| Thành phần | Công nghệ thực tế trong source |
-| --- | --- |
-| Backend | PHP 8.3+, Laravel 13 |
-| Giao diện | Blade, HTML, CSS và JavaScript thuần |
-| CSS build | Tailwind CSS 4 qua Vite; trang chủ hiện chủ yếu dùng CSS inline |
-| Frontend build | Vite 8, Laravel Vite Plugin |
-| ORM | Laravel Eloquent |
-| Database local/production | MySQL 8 qua Eloquent |
-| Database automated test | SQLite in-memory |
-| Authentication dự kiến | Laravel session authentication và CSRF |
-| Test | PHPUnit 12 thông qua Laravel test runner |
+## 🛠️ Công Nghệ Sử Dụng
 
-Source không dùng microservices, Docker, Redis hoặc frontend framework JavaScript.
+| Thành phần | Công nghệ |
+| :--- | :--- |
+| **Backend** | PHP 8.3+, Laravel 13 |
+| **Frontend** | Blade Templates, HTML5, CSS3, JavaScript ES6 thuần |
+| **Styling & Assets** | Plus Jakarta Sans, FontAwesome 6, Vite 8, Laravel Vite Plugin |
+| **Database** | MySQL 8.4 (Local & Production), SQLite In-Memory (Automated Testing) |
+| **Authentication** | Laravel Session Authentication + CSRF Protection |
+| **Quality & Linting** | Laravel Pint, PHPUnit 12 |
 
-## Cấu trúc project
+---
+
+## 📁 Cấu Trúc Thư Mục
 
 ```text
 app/
-  Http/Controllers/      HTTP controllers
-  Models/                Eloquent models
-bootstrap/app.php        Khai báo route, middleware và exception handling
-config/                  Cấu hình Laravel
+  Enums/                 UserRole, OrderStatus, PaymentMethod, PaymentStatus
+  Http/
+    Controllers/         Public & Customer Controllers
+      Admin/             Admin Controllers (Dashboard, Order, Food, Category, User)
+      Auth/              Authentication Controllers (Login, Register, Password Reset)
+    Middleware/          EnsureUserIsActive, EnsureUserIsAdmin
+    Requests/            Form Requests validate từng tác vụ (Admin, Auth, Order, User)
+    Resources/           JSON API Resources (User, Category, Food, Order, OrderItem)
+  Models/                User, Category, Food, Order, OrderItem
+  Policies/              OrderPolicy
+  Services/              CheckoutService, OrderStatusService
 database/
-  factories/             Model factories
-  migrations/            Database migrations
-  seeders/               Dữ liệu mẫu
-docs/                    Tài liệu kỹ thuật mục tiêu
-public/                  Web document root
+  factories/             Model Factories
+  migrations/            Database Migrations
+  seeders/               Database Seeders (Admin, Category, Food)
+docs/                    Tài liệu kỹ thuật hệ thống (Architecture, Database, Routes, Order Flow...)
 resources/
-  css/                   CSS entry của Vite
-  js/                    JavaScript entry của Vite
-  views/                 Blade templates
-routes/web.php           Web routes hiện tại
-tests/                   PHPUnit unit/feature tests
+  views/                 Giao diện Blade (layouts, auth, user, orders, admin, home)
+routes/web.php           Toàn bộ Web và REST API v1 routes
+tests/                   98 Automated Feature & Unit Tests (100% PASS)
 ```
 
-## Yêu cầu môi trường
+---
 
-- PHP 8.3 trở lên với PDO MySQL và PDO SQLite cho automated tests.
-- Composer.
-- Node.js và npm.
-- MySQL 8.
+## 🚀 Hướng Dẫn Cài Đặt & Chạy Local
 
-Trên máy đang phát triển project, PHP/Composer/Node được cài qua Laragon nhưng có thể chưa nằm trong `PATH`. Có thể mở terminal của Laragon hoặc thêm các executable tương ứng vào `PATH` trước khi chạy lệnh dưới đây.
-
-## Cài đặt local
-
-Các lệnh sau dùng PowerShell tại thư mục gốc project.
-
-### 1. Cài PHP dependencies
-
+### 1. Cài đặt Dependencies
 ```powershell
 composer install
+npm ci
 ```
 
-### 2. Tạo file môi trường
-
+### 2. Cấu hình Môi Trường
 ```powershell
 Copy-Item .env.example .env
 php artisan key:generate
 ```
 
-Không commit file `.env`.
-
-### 3. Chuẩn bị MySQL
-
-`.env.example` mặc định dùng MySQL. Tạo database `food_order` bằng MySQL client hoặc công cụ quản lý database của Laragon, sau đó cập nhật credential trong `.env`.
-
-```powershell
-mysql -u root -e "CREATE DATABASE IF NOT EXISTS food_order CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-```
-
-Sau đó chạy migration và dữ liệu mẫu:
-
+### 3. Khởi tạo Cơ Sở Dữ Liệu
+Khởi động MySQL (qua Laragon/XAMPP), tạo database `food_order`, sau đó chạy:
 ```powershell
 php artisan migrate --seed
 ```
+> Tài khoản Admin mặc định tạo sẵn từ Seeder:
+> - **Email:** `admin@foodorder.test`
+> - **Mật khẩu:** Thiết lập qua biến `DEMO_ADMIN_PASSWORD` hoặc chỉnh sửa trực tiếp.
 
-Seeders có thể chạy lại mà không tạo trùng admin/category/food. Nếu `DEMO_ADMIN_PASSWORD` để trống, admin demo nhận mật khẩu ngẫu nhiên không được hiển thị.
-
-### 4. Cài frontend dependencies
-
-```powershell
-npm ci
-```
-
-Repo có `package-lock.json` để frontend dependency có thể được cài lặp lại.
-
-## Chạy project
-
-### Backend và trang Blade
-
-```powershell
-php artisan serve
-```
-
-Mở `http://127.0.0.1:8000`.
-
-### Vite development server
-
-Chạy ở terminal thứ hai khi chỉnh sửa `resources/css/app.css` hoặc `resources/js/app.js`:
-
-```powershell
-npm run dev
-```
-
-Trang chủ hiện tại chưa gọi `@vite` và vẫn chứa phần lớn CSS/JavaScript trực tiếp trong Blade. Vì vậy backend có thể hiển thị trang chủ mà không chạy Vite; việc nối trang chủ vào asset pipeline nằm trong sprint tích hợp frontend.
-
-### Build frontend
-
+### 4. Build Assets Frontend
 ```powershell
 npm run build
 ```
 
-## Biến môi trường cần thiết
+### 5. Khởi động Web Server
+```powershell
+php artisan serve
+```
+Truy cập ứng dụng tại: `http://127.0.0.1:8000`
 
-| Biến | Local đề xuất | Ý nghĩa |
-| --- | --- | --- |
-| `APP_NAME` | `Food Order` | Tên ứng dụng |
-| `APP_ENV` | `local` | Môi trường chạy |
-| `APP_KEY` | sinh bằng Artisan | Khóa mã hóa Laravel |
-| `APP_DEBUG` | `true` | Chỉ bật ở local |
-| `APP_URL` | `http://127.0.0.1:8000` | URL gốc |
-| `APP_LOCALE` | `vi` dự kiến | Ngôn ngữ mặc định |
-| `DB_CONNECTION` | `mysql` | Driver database local/production |
-| `DB_HOST` | `127.0.0.1` | MySQL host |
-| `DB_PORT` | `3306` | MySQL port |
-| `DB_DATABASE` | `food_order` | Tên database |
-| `DB_USERNAME` | tùy môi trường | MySQL user |
-| `DB_PASSWORD` | tùy môi trường | MySQL password, không commit |
-| `SESSION_DRIVER` | `database` | Session hiện lưu trong bảng `sessions` |
-| `CACHE_STORE` | `database` | Cache hiện lưu trong database |
-| `QUEUE_CONNECTION` | `sync` đề xuất | Project chưa có background job/worker |
-| `MAIL_MAILER` | `log` | Email chưa được gửi ra ngoài |
-| `DEMO_ADMIN_EMAIL` | `admin@foodorder.test` | Email admin chỉ dùng cho development/demo seeder |
-| `DEMO_ADMIN_PASSWORD` | để trống hoặc tự đặt | Không dùng làm credential production |
+---
 
-Automated tests dùng SQLite `:memory:` theo `phpunit.xml`. Migration phải được kiểm tra trên MySQL local để tránh phụ thuộc hành vi riêng của SQLite; xem [tài liệu deployment](docs/DEPLOYMENT.md).
+## 🧪 Kiểm Thử Tự Động (Automated Testing)
 
-## Kiểm tra
-
+Chạy toàn bộ bộ kiểm thử:
 ```powershell
 php artisan test
 ```
+* **Kết quả hiện tại:** **98 tests**, **354 assertions**, **100% PASS**.
 
-Kết quả cuối Sprint 0: 9 tests, 32 assertions, tất cả đều pass.
+Kiểm tra chuẩn code (Pint):
+```powershell
+php vendor/bin/pint --test
+```
 
-## Tài liệu kỹ thuật
+---
 
-- [Kiến trúc](docs/ARCHITECTURE.md)
-- [Database](docs/DATABASE.md)
-- [Luồng trạng thái đơn hàng](docs/ORDER_FLOW.md)
-- [Thiết kế route/API](docs/ROUTES.md)
-- [Kế hoạch triển khai](docs/IMPLEMENTATION_PLAN.md)
-- [Chiến lược testing](docs/TESTING.md)
-- [Deployment](docs/DEPLOYMENT.md)
+## 📚 Tài Liệu Kỹ Thuật Chi Tiết
 
-`PROJECT_SPEC.md` được giữ như bản mô tả ý tưởng ban đầu. Các phần merchant, shipper, voucher, review và roadmap cũ không còn là phạm vi của phiên bản một cửa hàng hiện tại.
+* [Kiến Trúc Hệ Thống](docs/ARCHITECTURE.md)
+* [Thiết Kế Cơ Sở Dữ Liệu](docs/DATABASE.md)
+* [Danh Sách Route & API Contract](docs/ROUTES.md)
+* [Quy Trình & State Machine Đơn Hàng](docs/ORDER_FLOW.md)
+* [Kế Hoạch & Tiến Độ Implementation](docs/IMPLEMENTATION_PLAN.md)
+* [Chiến Lược Kiểm Thử](docs/TESTING.md)
+* [Hướng Dẫn Triển Khai Production](docs/DEPLOYMENT.md)

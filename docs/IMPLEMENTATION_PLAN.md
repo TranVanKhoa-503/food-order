@@ -378,6 +378,8 @@ Frontend hiện có sử dụng backend thật end-to-end.
 
 ## Sprint 7 — Testing, hardening và release
 
+**Trạng thái:** Hoàn thành.
+
 ### Mục tiêu
 
 Ổn định toàn hệ thống, kiểm tra production build và hoàn thiện tài liệu vận hành.

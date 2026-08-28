@@ -289,6 +289,8 @@ Luồng order backend hoàn chỉnh từ pending đến completed/cancelled.
 
 ## Sprint 5 — Admin
 
+**Trạng thái:** Hoàn thành.
+
 ### Mục tiêu
 
 Có API và giao diện quản trị tối thiểu để vận hành một cửa hàng.

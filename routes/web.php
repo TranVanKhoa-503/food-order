@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\FoodController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -63,6 +64,8 @@ Route::prefix('api/v1')->group(function () {
         Route::get('/user/profile', [UserController::class, 'show']);
         Route::put('/user/profile', [UserController::class, 'update']);
         Route::put('/user/password', [UserController::class, 'updatePassword']);
+
+        Route::post('/orders', [OrderController::class, 'store']);
     });
 
     // API Admin Routes

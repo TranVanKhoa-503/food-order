@@ -198,6 +198,8 @@ Catalog là module hoàn chỉnh và sẵn sàng làm nguồn dữ liệu đáng
 
 ## Sprint 3 — Cart và Checkout
 
+**Trạng thái:** Hoàn thành.
+
 ### Mục tiêu
 
 Thay alert đặt hàng giả bằng backend checkout tạo order thật, vẫn giữ cart trong localStorage.

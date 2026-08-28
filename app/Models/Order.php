@@ -23,6 +23,15 @@ class Order extends Model
         'customer_phone',
         'delivery_address',
         'note',
+        'subtotal',
+        'shipping_fee',
+        'total_price',
+        'payment_method',
+        'payment_status',
+        'status',
+        'cancel_reason',
+        'cancelled_at',
+        'completed_at',
     ];
 
     /**

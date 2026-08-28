@@ -150,6 +150,8 @@ Có identity và role foundation cho toàn bộ thao tác ghi dữ liệu.
 
 ## Sprint 2 — Category và Food
 
+**Trạng thái:** Hoàn thành.
+
 ### Mục tiêu
 
 Hoàn thiện catalog public và CRUD catalog cho admin mà không làm hỏng trang chủ hiện có.

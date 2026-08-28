@@ -1,14 +1,19 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminCategoryController;
+use App\Http\Controllers\Admin\AdminFoodController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\FoodController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
+// Web Public Routes
 Route::get('/', [FoodController::class, 'index'])->name('home');
+Route::get('/foods/{food}', [FoodController::class, 'show'])->name('foods.show');
 
 // Web Auth Routes (Guest)
 Route::middleware('guest')->group(function () {
@@ -36,6 +41,12 @@ Route::middleware(['auth', 'active'])->group(function () {
 
 // API v1 Routes (Session + Cookie + CSRF per ARCHITECTURE.md)
 Route::prefix('api/v1')->group(function () {
+    // Public Catalog API
+    Route::get('/categories', [CategoryController::class, 'index']);
+    Route::get('/categories/{category:slug}', [CategoryController::class, 'show']);
+    Route::get('/foods', [FoodController::class, 'index']);
+    Route::get('/foods/{food}', [FoodController::class, 'show']);
+
     // API Guest Routes
     Route::middleware('guest')->group(function () {
         Route::post('/auth/register', [RegisterController::class, 'register']);
@@ -44,7 +55,7 @@ Route::prefix('api/v1')->group(function () {
         Route::post('/auth/reset-password', [ResetPasswordController::class, 'reset']);
     });
 
-    // API Authenticated Routes
+    // API Authenticated User Routes
     Route::middleware(['auth', 'active'])->group(function () {
         Route::post('/auth/logout', [LoginController::class, 'logout']);
         Route::get('/auth/me', [LoginController::class, 'me']);
@@ -52,5 +63,22 @@ Route::prefix('api/v1')->group(function () {
         Route::get('/user/profile', [UserController::class, 'show']);
         Route::put('/user/profile', [UserController::class, 'update']);
         Route::put('/user/password', [UserController::class, 'updatePassword']);
+    });
+
+    // API Admin Routes
+    Route::middleware(['auth', 'active', 'admin'])->prefix('admin')->group(function () {
+        // Categories
+        Route::get('/categories', [AdminCategoryController::class, 'index']);
+        Route::post('/categories', [AdminCategoryController::class, 'store']);
+        Route::get('/categories/{category}', [AdminCategoryController::class, 'show']);
+        Route::put('/categories/{category}', [AdminCategoryController::class, 'update']);
+        Route::delete('/categories/{category}', [AdminCategoryController::class, 'destroy']);
+
+        // Foods
+        Route::get('/foods', [AdminFoodController::class, 'index']);
+        Route::post('/foods', [AdminFoodController::class, 'store']);
+        Route::get('/foods/{food}', [AdminFoodController::class, 'show']);
+        Route::put('/foods/{food}', [AdminFoodController::class, 'update']);
+        Route::patch('/foods/{food}/availability', [AdminFoodController::class, 'toggleAvailability']);
     });
 });

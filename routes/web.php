@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminCategoryController;
 use App\Http\Controllers\Admin\AdminFoodController;
+use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -65,7 +66,11 @@ Route::prefix('api/v1')->group(function () {
         Route::put('/user/profile', [UserController::class, 'update']);
         Route::put('/user/password', [UserController::class, 'updatePassword']);
 
+        // Orders
+        Route::get('/orders', [OrderController::class, 'index']);
         Route::post('/orders', [OrderController::class, 'store']);
+        Route::get('/orders/{order}', [OrderController::class, 'show']);
+        Route::patch('/orders/{order}/cancel', [OrderController::class, 'cancel']);
     });
 
     // API Admin Routes
@@ -83,5 +88,10 @@ Route::prefix('api/v1')->group(function () {
         Route::get('/foods/{food}', [AdminFoodController::class, 'show']);
         Route::put('/foods/{food}', [AdminFoodController::class, 'update']);
         Route::patch('/foods/{food}/availability', [AdminFoodController::class, 'toggleAvailability']);
+
+        // Orders
+        Route::get('/orders', [AdminOrderController::class, 'index']);
+        Route::get('/orders/{order}', [AdminOrderController::class, 'show']);
+        Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus']);
     });
 });

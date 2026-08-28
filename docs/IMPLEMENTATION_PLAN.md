@@ -245,6 +245,8 @@ Backend đã có vertical slice đặt hàng thật, nhưng UI hiện tại chư
 
 ## Sprint 4 — Order lifecycle
 
+**Trạng thái:** Hoàn thành.
+
 ### Mục tiêu
 
 User theo dõi/hủy order; admin xử lý order theo state machine bắt buộc.

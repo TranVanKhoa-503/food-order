@@ -30,10 +30,9 @@ stateDiagram-v2
     confirmed --> cancelled: Admin hủy có lý do
 
     preparing --> delivering: Admin bàn giao giao hàng
-    preparing --> cancelled: Admin hủy có lý do
 
     delivering --> completed: Admin xác nhận giao thành công
-    delivering --> cancelled: Admin xác nhận giao thất bại
+    delivering --> cancelled: Giao hàng thất bại / Admin hủy có lý do
 
     completed --> [*]
     cancelled --> [*]
@@ -48,7 +47,7 @@ stateDiagram-v2
 | `preparing` | Cửa hàng đang chuẩn bị món | Admin |
 | `delivering` | Order đã rời cửa hàng và đang giao | Admin |
 | `completed` | Giao thành công; COD được coi là đã thu | Admin |
-| `cancelled` | Order dừng và không được xử lý tiếp | User hoặc Admin theo rule bên dưới |
+| `cancelled` | Order dừng và không được xử lý tiếp (bao gồm giao hàng thất bại) | User hoặc Admin theo rule bên dưới |
 
 ## 4. Ma trận transition
 
@@ -60,9 +59,8 @@ stateDiagram-v2
 | `confirmed` | `preparing` | Không | Có | Đi đúng bước kế tiếp |
 | `confirmed` | `cancelled` | Không | Có | Bắt buộc có lý do |
 | `preparing` | `delivering` | Không | Có | Đi đúng bước kế tiếp |
-| `preparing` | `cancelled` | Không | Có | Bắt buộc có lý do |
 | `delivering` | `completed` | Không | Có | Xác nhận giao thành công |
-| `delivering` | `cancelled` | Không | Có | Chỉ khi giao thất bại, bắt buộc có lý do |
+| `delivering` | `cancelled` | Không | Có | Giao hàng thất bại (không liên lạc được, khách từ chối, sai địa chỉ), bắt buộc có lý do |
 | `completed` | Bất kỳ | Không | Không | Terminal |
 | `cancelled` | Bất kỳ | Không | Không | Terminal |
 
@@ -98,9 +96,9 @@ Admin đại diện cửa hàng và có thể:
 
 - Xem mọi order.
 - Chuyển order sang **đúng trạng thái kế tiếp**.
-- Hủy order ở `pending`, `confirmed`, `preparing` hoặc `delivering`.
+- Hủy order ở `pending` hoặc `confirmed`.
 
-Admin phải gửi `cancel_reason` khi hủy từ `confirmed` trở đi. Hủy ở `delivering` chỉ dùng cho tình huống giao thất bại.
+Admin phải gửi `cancel_reason` khi hủy từ `confirmed`.
 
 Admin không được sửa trực tiếp `status` qua generic update endpoint; phải gọi endpoint transition riêng.
 
@@ -111,9 +109,10 @@ Admin không được sửa trực tiếp `status` qua generic update endpoint; 
 | Create → `pending` | Tạo order + items trong một transaction |
 | Bất kỳ trạng thái hợp lệ → `cancelled` | Ghi `cancelled_at` và `cancel_reason` |
 | `delivering → completed` | Ghi `completed_at`; với COD đặt `payment_status=paid` |
+| Bất kỳ transition hợp lệ | Ghi `order_status_histories` và tạo database notification cho chủ đơn |
 | Transition khác | Xóa `cancel_reason/cancelled_at` không được phép; giữ null từ đầu |
 
-Project chưa có notification, inventory quantity hoặc refund, nên state transition hiện không phát sinh các side effect đó.
+Project chưa có inventory quantity hoặc refund; voucher usage được hoàn lại khi đơn bị hủy.
 
 ## 8. Backend enforcement
 
@@ -123,8 +122,8 @@ Transition map mục tiêu:
 [
     'pending' => ['confirmed', 'cancelled'],
     'confirmed' => ['preparing', 'cancelled'],
-    'preparing' => ['delivering', 'cancelled'],
-    'delivering' => ['completed', 'cancelled'],
+    'preparing' => ['delivering'],
+    'delivering' => ['completed'],
     'completed' => [],
     'cancelled' => [],
 ]

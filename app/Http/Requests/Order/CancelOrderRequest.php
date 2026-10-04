@@ -8,9 +8,7 @@ class CancelOrderRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $order = $this->route('order');
-
-        return $this->user() !== null && ($this->user()->id === ($order->user_id ?? null) || $this->user()->isAdmin());
+        return true;
     }
 
     /**

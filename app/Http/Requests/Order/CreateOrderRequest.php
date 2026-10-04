@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Order;
 
+use App\Rules\PhoneNumber;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CreateOrderRequest extends FormRequest
@@ -12,16 +13,18 @@ class CreateOrderRequest extends FormRequest
     }
 
     /**
-     * @return array<string, array<int, string>>
+     * @return array<string, array<int, mixed>>
      */
     public function rules(): array
     {
         return [
             'customer_name' => ['required', 'string', 'max:255'],
-            'customer_phone' => ['required', 'string', 'max:20'],
+            'customer_phone' => ['required', 'string', new PhoneNumber],
             'delivery_address' => ['required', 'string', 'max:1000'],
+            'delivery_zone_id' => ['nullable', 'integer', 'exists:delivery_zones,id'],
             'note' => ['nullable', 'string', 'max:1000'],
-            'items' => ['required', 'array', 'min:1'],
+            'voucher_code' => ['nullable', 'string', 'max:50'],
+            'items' => ['required', 'array', 'min:1', 'max:50'],
             'items.*.food_id' => ['required', 'integer'],
             'items.*.quantity' => ['required', 'integer', 'min:1', 'max:99'],
             'items.*.note' => ['nullable', 'string', 'max:500'],

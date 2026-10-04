@@ -41,6 +41,14 @@ class User extends Authenticatable
         return $this->hasMany(Order::class);
     }
 
+    /**
+     * @return HasMany<OrderStatusHistory, $this>
+     */
+    public function orderStatusHistories(): HasMany
+    {
+        return $this->hasMany(OrderStatusHistory::class, 'actor_id');
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === UserRole::Admin;

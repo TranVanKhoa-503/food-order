@@ -208,16 +208,16 @@ Authorization phải được kiểm tra ở backend bằng middleware/policy, k
 4. **Session auth:** frontend/backend cùng origin; không cần token package.
 5. **Cart client-side:** dữ liệu cart không cần tồn tại lâu dài; backend luôn tính lại nên không cần `carts` table.
 6. **COD trong MVP:** chưa có payment gateway hoặc webhook trong source.
-7. **Không voucher/review ở foundation:** không có UI/route và không cần cho luồng đặt hàng tối thiểu.
+7. **Voucher có trong MVP:** voucher được kiểm tra và tính lại trong transaction checkout; review vẫn ngoài scope.
 8. **Không real-time infrastructure:** order page có thể reload hoặc polling nhẹ sau này; chưa cần Redis/WebSocket/queue.
 9. **Không generic repository:** tránh thêm abstraction không tạo giá trị cho codebase nhỏ.
 10. **Snapshot order item:** giữ tên và giá lúc mua ngay cả khi admin sửa/xóa món sau này.
 11. **Deactivate food:** ứng dụng không cung cấp hard-delete food; admin dùng `is_available=false`. Foreign key order item vẫn `nullOnDelete` để bảo vệ lịch sử nếu có thao tác bảo trì.
-12. **Ảnh URL:** giữ cơ chế URL hiện tại; chưa xây upload/storage flow.
+12. **Ảnh món:** hỗ trợ URL seed và upload ảnh vào public storage từ admin.
 
-## 11. Kết quả Sprint 0
+## 11. Trạng thái hiện tại
 
-Source đã có schema MySQL, enums, model relationships, seeders idempotent, middleware `active/admin` và testing foundation. Sprint 1 Authentication chưa được triển khai.
+Source đã có schema MySQL, enums, model relationships, seeders idempotent, authentication, admin middleware, checkout COD, voucher và testing đầy đủ cho MVP.
 
 ## 12. Quyết định còn mở
 

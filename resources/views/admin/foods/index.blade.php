@@ -14,8 +14,13 @@
                     <option value="{{ $cat->id }}" {{ ($categoryId ?? '') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
                 @endforeach
             </select>
+            <select name="is_available" style="padding:8px 14px;border:1px solid var(--border-color);border-radius:var(--radius-md);font-size:14px;">
+                <option value="">Tất cả trạng thái</option>
+                <option value="1" {{ (string)($isAvailable ?? '') === '1' ? 'selected' : '' }}>Đang bán</option>
+                <option value="0" {{ (string)($isAvailable ?? '') === '0' ? 'selected' : '' }}>Tạm ngưng</option>
+            </select>
             <button type="submit" class="btn btn-primary"><i class="fa-solid fa-filter"></i> Lọc</button>
-            @if(!empty($search) || !empty($categoryId))
+            @if(!empty($search) || !empty($categoryId) || $isAvailable !== null && $isAvailable !== '')
                 <a href="{{ route('admin.foods.index') }}" class="btn" style="background: #F1F5F9; color: #64748B;">Xóa lọc</a>
             @endif
         </form>
@@ -88,6 +93,7 @@
         
         <form id="foodForm" onsubmit="handleFoodSubmit(event)">
             <input type="hidden" id="foodId">
+            <input type="hidden" id="foodAvailable" value="true">
             <div style="margin-bottom: 14px;">
                 <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">Danh mục:</label>
                 <select id="foodCategory" required style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
@@ -109,7 +115,8 @@
 
             <div style="margin-bottom: 14px;">
                 <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">Link hình ảnh:</label>
-                <input type="text" id="foodImage" placeholder="https://..." style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                <input type="text" id="foodImage" placeholder="https://... (hoặc chọn ảnh bên dưới)" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                <input type="file" id="foodImageUpload" accept="image/jpeg,image/png,image/webp" style="width: 100%; margin-top: 8px;">
             </div>
 
             <div style="margin-bottom: 20px;">
@@ -133,6 +140,8 @@
         document.getElementById('foodName').value = '';
         document.getElementById('foodPrice').value = '';
         document.getElementById('foodImage').value = '';
+        document.getElementById('foodImageUpload').value = '';
+        document.getElementById('foodAvailable').value = 'true';
         document.getElementById('foodDesc').value = '';
         document.getElementById('foodModalTitle').innerText = 'Thêm Món Ăn Mới';
         document.getElementById('foodModal').style.display = 'flex';
@@ -144,6 +153,8 @@
         document.getElementById('foodName').value = food.name;
         document.getElementById('foodPrice').value = food.price;
         document.getElementById('foodImage').value = food.image || '';
+        document.getElementById('foodImageUpload').value = '';
+        document.getElementById('foodAvailable').value = food.is_available ? 'true' : 'false';
         document.getElementById('foodDesc').value = food.description || '';
         document.getElementById('foodModalTitle').innerText = 'Cập Nhật Món Ăn';
         document.getElementById('foodModal').style.display = 'flex';
@@ -156,23 +167,23 @@
     async function handleFoodSubmit(e) {
         e.preventDefault();
         const id = document.getElementById('foodId').value;
-        const payload = {
-            category_id: parseInt(document.getElementById('foodCategory').value),
-            name: document.getElementById('foodName').value,
-            price: parseFloat(document.getElementById('foodPrice').value),
-            image: document.getElementById('foodImage').value || null,
-            description: document.getElementById('foodDesc').value || null,
-            is_available: true
-        };
+        const payload = new FormData();
+        payload.append('category_id', document.getElementById('foodCategory').value);
+        payload.append('name', document.getElementById('foodName').value);
+        payload.append('price', document.getElementById('foodPrice').value);
+        payload.append('description', document.getElementById('foodDesc').value || '');
+        payload.append('is_available', document.getElementById('foodAvailable').value);
+        const imageUpload = document.getElementById('foodImageUpload').files[0];
+        if (imageUpload) payload.append('image_upload', imageUpload);
+        else if (document.getElementById('foodImage').value) payload.append('image', document.getElementById('foodImage').value);
 
         const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         const url = id ? `/api/v1/admin/foods/${id}` : '/api/v1/admin/foods';
-        const method = id ? 'PUT' : 'POST';
+        if (id) payload.append('_method', 'PUT');
 
         const res = await fetch(url, {
-            method: method,
+            method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': token,
                 'Accept': 'application/json'
             },

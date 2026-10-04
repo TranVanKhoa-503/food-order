@@ -10,6 +10,7 @@ Hệ thống đã hoàn thành trọn vẹn từ Sprint 0 đến Sprint 7 theo �
 
 ### 1. Khách Hàng (Customer)
 * **Khám phá thực đơn:** Xem danh sách món ăn từ database, phân loại theo danh mục, tìm kiếm theo tên/mô tả, lọc theo khoảng giá.
+* **Trợ lý chọn món:** Chọn nhóm món, ngân sách và yêu cầu ăn uống để nhận đề xuất các món đang còn bán; khách tự quyết định có đặt hay không.
 * **Xác thực an toàn:** Đăng ký tài khoản (`role = user`), Đăng nhập session, Đăng xuất (invalidate session + token CSRF), Quên/Đặt lại mật khẩu.
 * **Quản lý tài khoản:** Xem hồ sơ cá nhân, cập nhật tên/số điện thoại/địa chỉ giao hàng, đổi mật khẩu.
 * **Giỏ hàng & Checkout:**
@@ -17,14 +18,19 @@ Hệ thống đã hoàn thành trọn vẹn từ Sprint 0 đến Sprint 7 theo �
   * Backend **tự động truy vấn lại giá và tính toán từ Database** trong Database Transaction (chống gian lận giá từ frontend).
   * Kiểm tra trạng thái món ăn (`is_available`).
   * Tạo đơn hàng COD và snapshot thông tin món ăn tại thời điểm mua (`OrderItem`).
+  * Áp dụng voucher và backend tự tính lại số tiền giảm.
 * **Theo dõi đơn hàng:**
   * Xem danh sách lịch sử đơn hàng của chính mình (chặn xem đơn của người khác).
-  * Xem chi tiết từng đơn hàng và trạng thái vận chuyển.
+  * Xem chi tiết từng đơn hàng, timeline trạng thái và trạng thái vận chuyển.
+  * Nhận thông báo trong ứng dụng khi admin cập nhật trạng thái đơn.
   * Tự hủy đơn hàng khi đơn đang ở trạng thái chờ xác nhận (`pending`).
 
 ### 2. Quản Trị Viên (Admin Panel)
-* **Dashboard Thống Kê:** Tổng doanh thu đơn hoàn thành, tổng số đơn, số đơn hôm nay, đơn chờ xử lý, số lượng khách hàng, số lượng món ăn và danh sách 5 đơn mới nhất.
-* **Quản Lý Đơn Hàng:** Xem danh sách, lọc theo trạng thái, tìm kiếm, cập nhật trạng thái đơn theo State Machine nghiêm ngặt (`pending -> confirmed -> preparing -> delivering -> completed` hoặc `cancelled`), tự động đánh dấu đã thanh toán COD khi hoàn tất.
+* **Dashboard Thống Kê:** Lọc theo khoảng ngày, xem doanh thu đơn hoàn thành, doanh thu theo ngày, món bán chạy, tổng số đơn, đơn chờ xử lý, số lượng khách hàng, số lượng món ăn và danh sách 5 đơn mới nhất.
+* **Quản Lý Đơn Hàng:** Xem danh sách, lọc theo trạng thái/thời gian, tìm kiếm, cập nhật trạng thái đơn theo State Machine nghiêm ngặt (`pending -> confirmed -> preparing -> delivering -> completed` hoặc `cancelled`), tự động đánh dấu đã thanh toán COD khi hoàn tất và xuất báo cáo CSV.
+* **Cấu Hình Cửa Hàng:** Bật/tắt nhận đơn, giờ hoạt động, đơn tối thiểu, phí giao hàng và thời gian giao dự kiến.
+* **Khu vực giao hàng:** Cấu hình khu vực đang phục vụ và phí riêng; khách chọn khu vực, backend tự tính phí và lưu snapshot vào đơn.
+* **Quản Lý Voucher:** Tạo mã giảm giá theo số tiền/phần trăm, giới hạn lượt dùng và thời hạn.
 * **Quản Lý Món Ăn:** Thêm món mới, cập nhật giá/thông tin/ảnh, bật/tắt trạng thái mở bán (`is_available`). Không hard-delete món ăn trong luồng nghiệp vụ.
 * **Quản Lý Danh Mục:** Thêm/sửa danh mục, tự động tạo slug, chặn xóa danh mục khi đang có món ăn.
 * **Quản Lý Người Dùng:** Tìm kiếm khách hàng, khóa/mở khóa tài khoản (ngăn admin tự khóa tài khoản của chính mình).
@@ -95,10 +101,13 @@ php artisan migrate --seed
 > - **Email:** `admin@foodorder.test`
 > - **Mật khẩu:** Thiết lập qua biến `DEMO_ADMIN_PASSWORD` hoặc chỉnh sửa trực tiếp.
 
-### 4. Build Assets Frontend
+### 4. Build Assets Frontend & Cấu Hình Storage Link
 ```powershell
 npm run build
+php artisan storage:link
 ```
+> **Lưu ý quan trọng về Storage Link:**
+> Lệnh `php artisan storage:link` là **bắt buộc** cả trên môi trường local và production để liên kết thư mục `public/storage` trỏ tới `storage/app/public`. Nếu thiếu bước này, ảnh món ăn tải lên lưu trên public disk sẽ trả về lỗi HTTP 404.
 
 ### 5. Khởi động Web Server
 ```powershell
@@ -114,7 +123,7 @@ Chạy toàn bộ bộ kiểm thử:
 ```powershell
 php artisan test
 ```
-* **Kết quả hiện tại:** **98 tests**, **354 assertions**, **100% PASS**.
+* **Kết quả hiện tại:** **106 tests**, **384 assertions**, **100% PASS**.
 
 Kiểm tra chuẩn code (Pint):
 ```powershell

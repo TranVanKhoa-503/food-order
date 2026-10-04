@@ -22,6 +22,7 @@ class UpdateFoodRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:2000'],
             'price' => ['required', 'numeric', 'min:0', 'max:999999999'],
             'image' => ['nullable', 'string', 'max:2048'],
+            'image_upload' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'is_available' => ['required', 'boolean'],
         ];
     }

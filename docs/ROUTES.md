@@ -324,6 +324,11 @@ Delete/logout thành công có thể trả HTTP 204 không có body.
 - Response: HTTP 200, FoodResource nếu food còn bán.
 - Lỗi: 404 nếu không tồn tại hoặc đã unavailable.
 
+### GET /api/v1/delivery-zones
+
+- Quyền: public.
+- Chỉ trả các khu vực đang hoạt động, kèm phí giao hàng.
+
 ### GET /api/v1/admin/foods
 
 - Quyền: admin.
@@ -393,6 +398,7 @@ Nếu sau này có yêu cầu đồng bộ cart nhiều thiết bị mới thi�
   "customer_name": "Nguyen Van A",
   "customer_phone": "0900000000",
   "delivery_address": "Quận 1, TP.HCM",
+  "delivery_zone_id": 1,
   "note": "Gọi trước khi giao",
   "items": [
     {
@@ -430,6 +436,23 @@ Nếu sau này có yêu cầu đồng bộ cart nhiều thiết bị mới thi�
 - Response: HTTP 200, OrderResource có items.
 - Lỗi: 401, 403 account inactive, 404 không tồn tại/không thuộc user.
 
+### Thông báo trạng thái đơn hàng
+
+#### GET /api/v1/notifications
+
+- Quyền: user/admin active.
+- Trả tối đa 10 thông báo trạng thái đơn mới nhất và `unread_count`.
+
+#### PATCH /api/v1/notifications/read-all
+
+- Quyền: user/admin active.
+- Đánh dấu toàn bộ thông báo của tài khoản là đã đọc.
+
+#### PATCH /api/v1/notifications/{notificationId}/read
+
+- Quyền: user/admin active.
+- Chỉ đánh dấu được notification thuộc tài khoản hiện tại.
+
 ### PATCH /api/v1/orders/{order}/cancel
 
 - Quyền: chủ sở hữu order.
@@ -446,7 +469,7 @@ Nếu sau này có yêu cầu đồng bộ cart nhiều thiết bị mới thi�
 - Quyền: admin.
 - Middleware: `web`, `auth`, `active`, `admin`.
 - Query: `from`, `to` optional; khoảng ngày hợp lệ.
-- Response: HTTP 200 gồm tổng user, food, order theo status và doanh thu từ order completed.
+- Response: HTTP 200 gồm tổng user, food, order theo status, doanh thu từ order completed, doanh thu theo ngày và top món bán chạy.
 - Lỗi: 401, 403, 422 date range.
 
 ### GET /api/v1/admin/orders
@@ -456,6 +479,12 @@ Nếu sau này có yêu cầu đồng bộ cart nhiều thiết bị mới thi�
 - Query: `search` theo order_code/name/phone, `status`, `from`, `to`, `page`, `per_page`.
 - Response: HTTP 200, danh sách order phân trang.
 - Lỗi: 401, 403, 422.
+
+### GET /api/v1/admin/orders/export
+
+- Quyền: admin.
+- Query: `search`, `status`, `from`, `to` giống danh sách đơn.
+- Response: file CSV UTF-8, mỗi dòng là một đơn hàng và các món trong đơn.
 
 ### GET /api/v1/admin/orders/{order}
 
@@ -478,7 +507,7 @@ Nếu sau này có yêu cầu đồng bộ cart nhiều thiết bị mới thi�
 }
 ```
 
-- `reason` bắt buộc khi hủy từ confirmed/preparing/delivering.
+- `reason` bắt buộc khi hủy từ confirmed; preparing và delivering không được hủy.
 - Backend enforce [ORDER_FLOW.md](ORDER_FLOW.md), khóa order trong transaction và chỉ cho đi một bước.
 - Response: HTTP 200, OrderResource sau transition.
 - Lỗi: 401, 403, 404, 419, 422 status/reason; 409 transition sai hoặc order đã đổi bởi request khác.
@@ -507,6 +536,19 @@ Nếu sau này có yêu cầu đồng bộ cart nhiều thiết bị mới thi�
 - Response: HTTP 200, UserResource.
 - Lỗi: 401, 403, 404, 419, 422; 409 nếu admin cố tự khóa chính mình.
 - Endpoint này không thay đổi role. Việc tạo admin thực hiện bằng seeder hoặc quy trình quản trị riêng, tránh privilege escalation.
+
+### Voucher và cấu hình cửa hàng
+
+- `GET /api/v1/admin/vouchers`: danh sách voucher phân trang.
+- `POST /api/v1/admin/vouchers`: tạo voucher fixed/percent.
+- `GET|PUT|DELETE /api/v1/admin/vouchers/{voucher}`: xem, sửa hoặc xóa voucher chưa từng được dùng.
+- `GET /api/v1/admin/settings`: xem cấu hình mở cửa, giờ hoạt động, đơn tối thiểu, phí giao hàng.
+- `PUT /api/v1/admin/settings`: cập nhật cấu hình cửa hàng.
+- `POST /api/v1/orders` nhận thêm `voucher_code`; backend kiểm tra thời hạn, lượt dùng và tính lại `discount_amount`.
+- `GET /api/v1/admin/delivery-zones`: danh sách toàn bộ khu vực.
+- `POST /api/v1/admin/delivery-zones`: tạo khu vực và phí giao.
+- `PUT|DELETE /api/v1/admin/delivery-zones/{deliveryZone}`: sửa, tạm ngưng hoặc xóa khu vực.
+- Khi đã cấu hình khu vực hoạt động, checkout bắt buộc gửi `delivery_zone_id`; backend tự lấy phí và lưu `delivery_zone_name` vào order.
 
 ## 10. Route model binding và policy
 

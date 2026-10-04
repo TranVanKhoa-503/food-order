@@ -7,7 +7,7 @@ Project đang dùng PHPUnit 12 qua Laravel test runner.
 - `phpunit.xml` dùng SQLite `:memory:`, session array, cache array và queue sync.
 - Test foundation dùng `RefreshDatabase`.
 - Đã có test schema, model relationships/casts, bảo toàn order item khi xóa food, middleware admin và trang chủ DB rỗng.
-- Kết quả cuối Sprint 0: 9 tests, 32 assertions, tất cả pass.
+- Kết quả hiện tại: 106 tests, 384 assertions, tất cả pass.
 - Chưa có browser testing framework.
 
 ## 2. Nguyên tắc
@@ -225,7 +225,7 @@ Response errors:
 - Không render unavailable food.
 - Search và category filter đúng.
 - Query category không tồn tại không gây 500.
-- View không hiển thị rating giả khi review chưa được implement.
+- View không hiển thị điểm rating giả khi review chưa được implement.
 
 ### Browser/manual integration
 

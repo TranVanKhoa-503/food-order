@@ -49,6 +49,23 @@ class AdminOrderManagementTest extends TestCase
             ->assertJsonPath('data.0.order_code', 'FO-OTHER-456');
     }
 
+    public function test_admin_can_export_filtered_orders_as_csv(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $order = Order::factory()->create([
+            'order_code' => 'FO-EXPORT-123',
+            'status' => OrderStatus::Pending,
+        ]);
+        OrderItem::factory()->for($order)->create(['food_name' => 'Món xuất báo cáo']);
+
+        $response = $this->actingAs($admin)->get('/admin/orders/export?status=pending');
+
+        $response->assertOk()
+            ->assertHeader('content-disposition');
+        $this->assertStringContainsString('FO-EXPORT-123', $response->streamedContent());
+        $this->assertStringContainsString('Món xuất báo cáo', $response->streamedContent());
+    }
+
     public function test_admin_can_view_order_details(): void
     {
         $admin = User::factory()->admin()->create();
@@ -99,11 +116,31 @@ class AdminOrderManagementTest extends TestCase
         $this->assertNotNull($order->completed_at);
     }
 
-    public function test_admin_can_cancel_order_with_reason(): void
+    public function test_admin_cannot_cancel_order_after_preparing(): void
     {
         $admin = User::factory()->admin()->create();
         $order = Order::factory()->create([
             'status' => OrderStatus::Preparing,
+        ]);
+
+        $response = $this->actingAs($admin)->patchJson('/api/v1/admin/orders/'.$order->id.'/status', [
+            'status' => 'cancelled',
+            'reason' => 'Hết nguyên liệu bất khả kháng',
+        ]);
+
+        $response->assertStatus(409);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'status' => OrderStatus::Preparing->value,
+        ]);
+    }
+
+    public function test_admin_can_cancel_confirmed_order_with_reason(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $order = Order::factory()->create([
+            'status' => OrderStatus::Confirmed,
         ]);
 
         $response = $this->actingAs($admin)->patchJson('/api/v1/admin/orders/'.$order->id.'/status', [

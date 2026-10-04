@@ -6,6 +6,7 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Models\Category;
+use App\Models\DeliveryZone;
 use App\Models\Food;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -127,6 +128,33 @@ class CheckoutTest extends TestCase
 
         $this->assertDatabaseCount('orders', 1);
         $this->assertDatabaseCount('order_items', 2);
+    }
+
+    public function test_checkout_uses_selected_delivery_zone_fee_and_keeps_zone_snapshot(): void
+    {
+        $user = User::factory()->create();
+        $category = Category::factory()->create();
+        $food = Food::factory()->create(['category_id' => $category->id, 'price' => 60000]);
+        $zone = DeliveryZone::factory()->create(['name' => 'Quận 1', 'fee' => 15000, 'is_active' => true]);
+
+        $response = $this->actingAs($user)->postJson('/api/v1/orders', [
+            'customer_name' => 'Khách Quận 1',
+            'customer_phone' => '0900000000',
+            'delivery_address' => 'Địa chỉ Quận 1',
+            'delivery_zone_id' => $zone->id,
+            'items' => [['food_id' => $food->id, 'quantity' => 1]],
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('data.shipping_fee', 15000)
+            ->assertJsonPath('data.total_price', 75000)
+            ->assertJsonPath('data.delivery_zone_name', 'Quận 1');
+
+        $this->assertDatabaseHas('orders', [
+            'delivery_zone_id' => $zone->id,
+            'delivery_zone_name' => 'Quận 1',
+            'shipping_fee' => 15000,
+        ]);
     }
 
     public function test_backend_calculates_price_strictly_from_database(): void
@@ -258,5 +286,51 @@ class CheckoutTest extends TestCase
 
         $this->assertDatabaseCount('orders', 1);
         $this->assertDatabaseCount('order_items', 1);
+    }
+
+    public function test_customer_cannot_checkout_with_invalid_phone_number(): void
+    {
+        $user = User::factory()->create();
+        $category = Category::factory()->create();
+        $food = Food::factory()->create([
+            'category_id' => $category->id,
+            'price' => 50000,
+            'is_available' => true,
+        ]);
+
+        $response = $this->actingAs($user)->postJson('/api/v1/orders', [
+            'customer_name' => 'Khách Sai SĐT',
+            'customer_phone' => '12345678', // Invalid phone
+            'delivery_address' => 'Địa chỉ test',
+            'items' => [
+                ['food_id' => $food->id, 'quantity' => 1],
+            ],
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['customer_phone']);
+    }
+
+    public function test_customer_can_checkout_with_plus84_phone_number(): void
+    {
+        $user = User::factory()->create();
+        $category = Category::factory()->create();
+        $food = Food::factory()->create([
+            'category_id' => $category->id,
+            'price' => 50000,
+            'is_available' => true,
+        ]);
+
+        $response = $this->actingAs($user)->postJson('/api/v1/orders', [
+            'customer_name' => 'Khách Quốc Tế',
+            'customer_phone' => '+84912345678',
+            'delivery_address' => 'Địa chỉ test',
+            'items' => [
+                ['food_id' => $food->id, 'quantity' => 1],
+            ],
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('data.customer_phone', '+84912345678');
     }
 }

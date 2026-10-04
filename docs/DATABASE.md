@@ -2,7 +2,7 @@
 
 ## 1. Mục tiêu
 
-Schema này phục vụ website đặt đồ ăn cho một cửa hàng, hai vai trò `user/admin`, checkout COD và quản lý trạng thái đơn cơ bản. Thiết kế ưu tiên:
+Schema này phục vụ website đặt đồ ăn cho một cửa hàng, hai vai trò `user/admin`, checkout COD, voucher và lịch sử trạng thái đơn. Thiết kế ưu tiên:
 
 - Đủ dữ liệu cho một order hoàn chỉnh.
 - Giữ được lịch sử tên/giá món tại thời điểm đặt.
@@ -21,6 +21,7 @@ erDiagram
     CATEGORIES ||--o{ FOODS : contains
     ORDERS ||--|{ ORDER_ITEMS : has
     FOODS o|--o{ ORDER_ITEMS : snapshots
+    DELIVERY_ZONES o|--o{ ORDERS : serves
 
     USERS {
         bigint id PK
@@ -63,9 +64,11 @@ erDiagram
         bigint id PK
         string order_code UK
         bigint user_id FK
+        bigint delivery_zone_id FK
         string customer_name
         string customer_phone
         text delivery_address
+        string delivery_zone_name
         text note
         decimal subtotal
         decimal shipping_fee
@@ -92,6 +95,28 @@ erDiagram
         timestamp created_at
         timestamp updated_at
     }
+
+    DELIVERY_ZONES {
+        bigint id PK
+        string name UK
+        decimal fee
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    NOTIFICATIONS {
+        uuid id PK
+        string type
+        string notifiable_type
+        bigint notifiable_id
+        text data
+        timestamp read_at
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    USERS ||--o{ NOTIFICATIONS : receives
 ```
 
 `FOODS o|--o{ ORDER_ITEMS` thể hiện `food_id` được phép null sau khi món bị xóa; snapshot trong order item vẫn còn.
@@ -178,9 +203,11 @@ Validation:
 | `id` | BIGINT UNSIGNED | NOT NULL | PK | ID nội bộ |
 | `order_code` | VARCHAR(32) | NOT NULL | UNIQUE | Mã cho user/admin tra cứu |
 | `user_id` | BIGINT UNSIGNED | NOT NULL | FK, INDEX | Người đặt |
+| `delivery_zone_id` | BIGINT UNSIGNED | NULL | FK | Khu vực giao được chọn; null khi dùng phí mặc định |
 | `customer_name` | VARCHAR(255) | NOT NULL |  | Snapshot tên người nhận |
 | `customer_phone` | VARCHAR(20) | NOT NULL |  | Snapshot số điện thoại |
 | `delivery_address` | TEXT | NOT NULL |  | Snapshot địa chỉ giao |
+| `delivery_zone_name` | VARCHAR(255) | NULL |  | Snapshot tên khu vực tại thời điểm đặt |
 | `note` | TEXT | NULL |  | Ghi chú chung |
 | `subtotal` | DECIMAL(12,0) | NOT NULL |  | Tổng line items do backend tính |
 | `shipping_fee` | DECIMAL(12,0) | `0` |  | MVP cố định bằng 0 |
@@ -272,9 +299,12 @@ Chúng không phải module nghiệp vụ. Project chưa dùng background jobs; 
 | `carts`, `cart_items` | Không tạo; cart lưu localStorage, backend validate lại khi checkout |
 | `addresses` | Chưa tạo; một địa chỉ mặc định ở user và snapshot ở order đủ cho MVP |
 | `payments` | Chưa tạo; MVP chỉ COD |
-| `vouchers` | Ngoài scope hiện tại |
+| `vouchers` | Đã tạo; dùng cho mã giảm giá khi checkout |
 | `reviews` | Ngoài scope hiện tại |
-| `order_status_histories` | Chưa cần cho state machine tối thiểu; có thể thêm khi cần audit timeline |
+| `order_status_histories` | Đã tạo; lưu actor, trạng thái cũ/mới, lý do và thời gian |
+| `notifications` | Đã tạo; lưu thông báo trạng thái đơn hàng theo từng tài khoản |
+| `delivery_zones` | Đã tạo; lưu khu vực đang giao và phí theo khu vực |
+| `store_settings` | Đã tạo; lưu trạng thái mở cửa, giờ hoạt động, phí giao và đơn tối thiểu |
 | merchant/shipper tables | Không phù hợp website một cửa hàng |
 
 ## 8. Migration và seed strategy đã áp dụng

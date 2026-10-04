@@ -1,57 +1,42 @@
-# LƯU Ý VỀ PHẠM VI
-
-Tài liệu này là bản đặc tả ý tưởng ban đầu và được giữ lại để tham khảo lịch sử. Các phần marketplace nhiều quán, merchant, shipper, voucher, review và roadmap ở cuối file **không còn là phạm vi triển khai hiện tại**.
-
-Phiên bản đang được xây dựng là website đặt đồ ăn cho **một cửa hàng**, với hai vai trò `user/admin`. Kiến trúc, schema, route contract và kế hoạch có hiệu lực nằm trong:
-
-- `docs/ARCHITECTURE.md`
-- `docs/DATABASE.md`
-- `docs/ORDER_FLOW.md`
-- `docs/ROUTES.md`
-- `docs/IMPLEMENTATION_PLAN.md`
-
-Không dùng checklist “Giai đoạn 1 đã hoàn thành” trong tài liệu cũ để đánh giá source hiện tại.
-
----
-
 # 📋 TÀI LIỆU ĐẶC TẢ YÊU CẦU HỆ THỐNG (PROJECT SPECIFICATION)
 # HỆ THỐNG ĐẶT MÓN ĂN TRỰC TUYẾN - FOOD ORDER SYSTEM
+### (Phiên bản Website Cửa Hàng Độc Lập - Single-Store Food Ordering System)
 
 ---
 
 ## 1. TỔNG QUAN HỆ THỐNG (SYSTEM OVERVIEW)
 
 ### 1.1. Mục tiêu dự án
-**Food Order** là nền tảng web ứng dụng thương mại điện tử chuyên biệt cho ngành dịch vụ ẩm thực (F&B), được xây dựng trên nền tảng **Laravel Framework** và cơ sở dữ liệu **MySQL**. Hệ thống kết nối liền mạch giữa 4 bên tham gia: Khách hàng, Quán ăn, Tài xế và Đội ngũ Quản trị viên, mang đến trải nghiệm đặt món nhanh chóng, minh bạch và tiện lợi.
+**Food Order** là nền tảng web ứng dụng thương mại điện tử chuyên biệt phục vụ hoạt động đặt món và giao thức ăn trực tuyến cho một cửa hàng / thương hiệu ẩm thực độc lập (Single-Store Model). 
 
-- **Frontend:** HTML5, CSS3/Bootstrap, JavaScript (Vanilla / Alpine.js / Blade Template).
-- **Backend:** Laravel (PHP 8.2+), Eloquent ORM, RESTful Controller.
-- **Database:** MySQL 8.0+.
-- **Authentication & Security:** Laravel Auth, Session-based authentication, CSRF protection, RBAC (Role-Based Access Control).
+Hệ thống được thiết kế tối ưu, khép kín quy trình từ khâu duyệt thực đơn, trợ lý chọn món, quản lý giỏ hàng, xác thực thông tin giao hàng, tính phí ship theo khu vực, áp mã khuyến mãi, cho đến khâu tiếp nhận, chế biến, vận chuyển và bàn giao đơn hàng.
+
+* **Kiến trúc & Công nghệ:**
+  * **Backend:** Laravel Framework (PHP 8.2+ / 8.3), RESTful API Controller, Eloquent ORM, Session-based Authentication & CSRF Protection.
+  * **Frontend:** Laravel Blade Templates, HTML5, CSS3 / Custom CSS, Vanilla JavaScript, Font Awesome Icons.
+  * **Database:** MySQL 8.0+ (Local / Production), SQLite In-Memory (Automated Testing).
+  * **Asset Bundler:** Vite.
+  * **Kiểm thử tự động:** PHPUnit (Feature Tests & Unit Tests, 100% test coverage cho các luồng nghiệp vụ).
 
 ---
 
-### 1.2. Phân quyền 4 vai trò người dùng (Roles & Permissions)
+### 1.2. Phân quyền 2 vai trò người dùng (Roles & Permissions)
+
+Hệ thống tập trung vào mô hình vận hành của một cửa hàng ẩm thực với **02 vai trò người dùng** rõ ràng:
 
 ```mermaid
 graph TD
-    System[Hệ Thống Food Order] --> Customer[1. Khách Hàng - Customer]
-    System --> Merchant[2. Quán Ăn - Merchant]
-    System --> Shipper[3. Tài Xế - Shipper]
-    System --> Admin[4. Quản Trị Viên - Admin]
+    System[Hệ Thống Food Order] --> Customer[1. Khách Hàng - Role: user]
+    System --> Admin[2. Quản Trị Viên - Role: admin]
 
-    Customer -->|Duyệt món, Đặt hàng, Thanh toán, Đánh giá| AppCustomer[Portal Khách Hàng]
-    Merchant -->|Quản lý thực đơn, Tiếp nhận & Chế biến món| AppMerchant[Merchant Dashboard]
-    Shipper -->|Nhận đơn, Lấy món, Giao hàng, Thu tiền COD| AppShipper[Shipper Portal]
-    Admin -->|Kiểm duyệt quán/tài xế, Quản lý voucher, Thống kê| AppAdmin[Admin Master Panel]
+    Customer -->|Duyệt món, Lọc giá, Gợi ý món, Đặt hàng, Xem tiến độ, Hủy đơn| AppCustomer[Portal Khách Hàng]
+    Admin -->|Quản lý thực đơn, Tiếp nhận & Xử lý đơn, Quản lý Voucher/User/Cài đặt| AppAdmin[Admin Master Panel]
 ```
 
-| STT | Vai trò (Role) | Ký hiệu mã (`role`) | Mô tả trách nhiệm chính |
-| :--- | :--- | :---: | :--- |
-| **1** | **Khách hàng** *(Customer)* | `customer` | Xem menu, tìm kiếm món ăn, thêm vào giỏ hàng, áp mã giảm giá, đặt hàng, theo dõi trạng thái giao hàng theo thời gian thực và đánh giá/review sau khi nhận món. |
-| **2** | **Quán ăn** *(Merchant)* | `merchant` | Quản lý danh mục và thực đơn món ăn, giá bán, tình trạng còn/hết hàng; tiếp nhận đơn hàng, xác nhận chuẩn bị món và bàn giao cho tài xế. |
-| **3** | **Tài xế** *(Shipper)* | `shipper` | Xem danh sách đơn sẵn sàng giao gần vị trí, nhận đơn hàng, di chuyển đến quán lấy món, cập nhật trạng thái đang giao và xác nhận giao thành công / thu tiền COD. |
-| **4** | **Quản trị viên** *(Admin)* | `admin` | Toàn quyền kiểm soát hệ thống: duyệt tài khoản quán ăn/tài xế, quản lý người dùng, tạo chương trình voucher toàn sàn, giám sát doanh thu và xử lý tranh chấp/khiếu nại. |
+| STT | Vai trò (Role) | Ký hiệu mã (`role`) | Mô tả trách nhiệm & Quyền hạn |
+| :---: | :--- | :---: | :--- |
+| **1** | **Khách hàng** *(Customer)* | `user` | Đăng ký, đăng nhập tài khoản; duyệt thực đơn, lọc giá, tìm kiếm món ăn; sử dụng Trợ lý gợi ý món ăn; thêm món vào giỏ hàng; áp dụng voucher khuyến mãi; chọn khu vực giao hàng; đặt hàng COD; theo dõi tiến độ đơn hàng theo thời gian thực; tự hủy đơn khi còn ở trạng thái chờ xác nhận; quản lý thông tin cá nhân và nhận thông báo trạng thái đơn hàng. |
+| **2** | **Quản trị viên** *(Store Admin)* | `admin` | Toàn quyền kiểm soát và vận hành cửa hàng: xem dashboard thống kê doanh thu / đơn hàng / top món bán chạy; quản lý danh mục và thực đơn món ăn (thêm, sửa, tải ảnh, bật/tắt còn hàng); duyệt và cập nhật trạng thái đơn hàng theo máy trạng thái nghiêm ngặt; xuất dữ liệu đơn hàng ra file CSV; quản lý người dùng (khóa/mở khóa); quản lý chương trình khuyến mãi (Voucher); cấu hình khu vực giao hàng (phí ship) và thiết lập vận hành cửa hàng (giờ mở/đóng cửa, đơn tối thiểu). |
 
 ---
 
@@ -61,27 +46,29 @@ graph TD
 
 ```mermaid
 erDiagram
-    USERS ||--o{ ORDERS : "places (as customer)"
-    USERS ||--o{ ORDERS : "delivers (as shipper)"
-    USERS ||--o{ FOODS : "owns/creates (as merchant)"
-    USERS ||--o{ REVIEWS : "writes"
-    CATEGORIES ||--o{ FOODS : "categorizes"
-    FOODS ||--o{ ORDER_DETAILS : "contained in"
-    ORDERS ||--|{ ORDER_DETAILS : "has items"
-    VOUCHERS ||--o{ ORDERS : "applied to"
-    FOODS ||--o{ REVIEWS : "receives"
+    USERS ||--o{ ORDERS : "places"
+    USERS ||--o{ ORDER_STATUS_HISTORIES : "acts_on"
+    USERS ||--o{ NOTIFICATIONS : "receives"
+    CATEGORIES ||--o{ FOODS : "contains"
+    ORDERS ||--|{ ORDER_ITEMS : "has"
+    FOODS o|--o{ ORDER_ITEMS : "snapshots"
+    DELIVERY_ZONES o|--o{ ORDERS : "serves"
+    VOUCHERS o|--o{ ORDERS : "applies_to"
+    ORDERS ||--o{ ORDER_STATUS_HISTORIES : "tracks"
 
     USERS {
         bigint id PK
         string name
         string email UK
+        timestamp email_verified_at
         string password
         string phone
-        string address
-        string role "admin|merchant|shipper|customer"
-        string avatar
+        text address
+        string role "user|admin"
         boolean is_active
+        string remember_token
         timestamp created_at
+        timestamp updated_at
     }
 
     CATEGORIES {
@@ -91,344 +78,321 @@ erDiagram
         text description
         string icon
         timestamp created_at
+        timestamp updated_at
     }
 
     FOODS {
         bigint id PK
         bigint category_id FK
-        bigint merchant_id FK
         string name
         text description
         decimal price
         string image
         boolean is_available
         timestamp created_at
+        timestamp updated_at
     }
 
     VOUCHERS {
         bigint id PK
         string code UK
         string description
-        enum discount_type "percent|fixed"
+        string discount_type "percent|fixed"
         decimal discount_value
         decimal min_order_value
         decimal max_discount_amount
-        integer quantity
-        date start_date
-        date end_date
+        integer usage_limit
+        integer used_count
+        timestamp starts_at
+        timestamp ends_at
         boolean is_active
         timestamp created_at
+        timestamp updated_at
+    }
+
+    DELIVERY_ZONES {
+        bigint id PK
+        string name UK
+        decimal fee
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    STORE_SETTINGS {
+        bigint id PK
+        string store_name
+        string hotline
+        text address
+        boolean is_open
+        string opens_at
+        string closes_at
+        decimal min_order_value
+        decimal shipping_fee
+        timestamp created_at
+        timestamp updated_at
     }
 
     ORDERS {
         bigint id PK
-        bigint user_id FK
-        bigint shipper_id FK
-        bigint voucher_id FK
         string order_code UK
+        bigint user_id FK
+        bigint delivery_zone_id FK
+        bigint voucher_id FK
         string customer_name
         string customer_phone
-        string delivery_address
+        text delivery_address
+        string delivery_zone_name
         text note
         decimal subtotal
         decimal discount_amount
         decimal shipping_fee
         decimal total_price
-        enum payment_method "cod|banking|momo|vnpay"
-        enum payment_status "unpaid|paid"
-        enum status "pending|confirmed|preparing|delivering|completed|cancelled"
+        string payment_method "cod"
+        string payment_status "unpaid|paid"
+        string status "pending|confirmed|preparing|delivering|completed|cancelled"
+        text cancel_reason
+        timestamp cancelled_at
+        timestamp completed_at
         timestamp created_at
+        timestamp updated_at
     }
 
-    ORDER_DETAILS {
+    ORDER_ITEMS {
         bigint id PK
         bigint order_id FK
         bigint food_id FK
-        integer quantity
-        decimal price
-        decimal total_price
+        string food_name
+        decimal unit_price
+        smallint quantity
+        decimal line_total
         text note
         timestamp created_at
+        timestamp updated_at
     }
 
-    REVIEWS {
+    ORDER_STATUS_HISTORIES {
         bigint id PK
-        bigint user_id FK
-        bigint food_id FK
         bigint order_id FK
-        tinyint rating "1 to 5"
-        text comment
-        string image
+        bigint actor_id FK
+        string from_status
+        string to_status
+        text reason
         timestamp created_at
+        timestamp updated_at
+    }
+
+    NOTIFICATIONS {
+        uuid id PK
+        string type
+        string notifiable_type
+        bigint notifiable_id
+        text data
+        timestamp read_at
+        timestamp created_at
+        timestamp updated_at
     }
 ```
 
 ---
 
-### 2.2. Chi tiết các bảng & Khóa ngoại (Foreign Keys)
+### 2.2. Chi tiết các bảng nghiệp vụ chính
 
-#### 1. Bảng `users` (Người dùng hệ thống)
-| Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `id` | `BIGINT UNSIGNED` | `AUTO_INCREMENT, PRIMARY KEY` | Khóa chính |
-| `name` | `VARCHAR(255)` | `NOT NULL` | Họ và tên |
-| `email` | `VARCHAR(255)` | `NOT NULL, UNIQUE` | Địa chỉ email đăng nhập |
-| `password` | `VARCHAR(255)` | `NOT NULL` | Mật khẩu mã hóa (Bcrypt) |
-| `phone` | `VARCHAR(20)` | `NULLABLE` | Số điện thoại liên lạc |
-| `address` | `TEXT` | `NULLABLE` | Địa chỉ mặc định |
-| `role` | `ENUM` | `DEFAULT 'customer'` | Vai trò: `'admin'`, `'merchant'`, `'shipper'`, `'customer'` |
-| `avatar` | `VARCHAR(255)` | `NULLABLE` | Đường dẫn ảnh đại diện |
-| `is_active` | `BOOLEAN` | `DEFAULT TRUE` | Trạng thái kích hoạt tài khoản |
-| `timestamps`| `TIMESTAMP` | `NULLABLE` | `created_at`, `updated_at` |
-
----
+#### 1. Bảng `users` (Tài khoản người dùng)
+* Lưu trữ thông tin người dùng với hai vai trò: Khách hàng (`user`) và Quản trị viên (`admin`).
+* Cột `role`: VARCHAR(20), mặc định `'user'`.
+* Cột `is_active`: BOOLEAN, mặc định `true`. Quản trị viên có thể khóa tài khoản khi có vi phạm.
 
 #### 2. Bảng `categories` (Danh mục món ăn)
-| Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `id` | `BIGINT UNSIGNED` | `AUTO_INCREMENT, PRIMARY KEY` | Khóa chính |
-| `name` | `VARCHAR(255)` | `NOT NULL` | Tên danh mục (Món chính, Ăn vặt, Đồ uống...) |
-| `slug` | `VARCHAR(255)` | `NULLABLE, UNIQUE` | Đường dẫn thân thiện SEO (`mon-chinh`) |
-| `description`| `TEXT` | `NULLABLE` | Mô tả danh mục |
-| `icon` | `VARCHAR(100)` | `NULLABLE` | Biểu tượng FontAwesome (`fa-utensils`) |
-| `timestamps`| `TIMESTAMP` | `NULLABLE` | `created_at`, `updated_at` |
+* Phân nhóm thực đơn (Món chính, Ăn vặt, Đồ uống, Món tráng miệng...).
+* Cột `slug`: VARCHAR(255) UNIQUE, hỗ trợ tìm kiếm và định danh URL thân thiện.
+* Cột `icon`: Tên biểu tượng Font Awesome hiển thị trên giao diện (ví dụ: `fa-utensils`, `fa-burger`).
+* Ràng buộc bảo vệ: Không cho phép xóa danh mục đang còn chứa món ăn liên kết.
 
----
+#### 3. Bảng `foods` (Thực đơn món ăn)
+* Quản lý thông tin chi tiết từng món ăn của cửa hàng.
+* `price`: Giá bán (VNĐ).
+* `image`: URL ảnh hoặc đường dẫn ảnh lưu trữ nội bộ tại `storage/app/public/foods`.
+* `is_available`: Cờ trạng thái còn hàng (`true`) hoặc tạm hết món (`false`). Món hết hàng sẽ tự động ẩn khỏi catalog của khách hàng và chặn không cho đặt hàng.
 
-#### 3. Bảng `foods` (Món ăn)
-| Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `id` | `BIGINT UNSIGNED` | `AUTO_INCREMENT, PRIMARY KEY` | Khóa chính |
-| `category_id`| `BIGINT UNSIGNED` | `FOREIGN KEY (categories.id) ON DELETE CASCADE` | Thuộc danh mục nào |
-| `merchant_id`| `BIGINT UNSIGNED` | `FOREIGN KEY (users.id) ON DELETE SET NULL` | Thuộc quán ăn / người đăng nào |
-| `name` | `VARCHAR(255)` | `NOT NULL` | Tên món ăn |
-| `description`| `TEXT` | `NULLABLE` | Mô tả chi tiết món ăn, nguyên liệu |
-| `price` | `DECIMAL(10,2)` | `NOT NULL` | Giá bán lẻ niêm yết (VNĐ) |
-| `image` | `VARCHAR(255)` | `NULLABLE` | Ảnh minh họa món ăn |
-| `is_available`| `BOOLEAN` | `DEFAULT TRUE` | Trạng thái còn hàng (`true`) hoặc tạm hết (`false`) |
-| `timestamps`| `TIMESTAMP` | `NULLABLE` | `created_at`, `updated_at` |
+#### 4. Bảng `vouchers` (Mã giảm giá)
+* Hỗ trợ các hình thức khuyến mãi: giảm theo phần trăm (`percent`) hoặc số tiền cố định (`fixed`).
+* Điều kiện áp dụng: Giá trị đơn hàng tối thiểu (`min_order_value`), mức giảm tối đa (`max_discount_amount`), giới hạn số lượt sử dụng toàn sàn (`usage_limit`), và thời hạn hiệu lực (`starts_at`, `ends_at`).
 
----
+#### 5. Bảng `delivery_zones` (Khu vực giao hàng & Phí ship)
+* Định nghĩa các khu vực phục vụ (Quận 1, Quận 3, Bình Thạnh...) cùng mức phí vận chuyển tương ứng.
+* Tự động cộng phí ship vào tổng thanh toán đơn hàng khi khách hàng lựa chọn khu vực giao.
 
-#### 4. Bảng `vouchers` (Mã khuyến mãi / Giảm giá)
-| Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `id` | `BIGINT UNSIGNED` | `AUTO_INCREMENT, PRIMARY KEY` | Khóa chính |
-| `code` | `VARCHAR(50)` | `NOT NULL, UNIQUE` | Mã voucher (vd: `FREESHIP`, `GIAM30K`) |
-| `description`| `TEXT` | `NULLABLE` | Nội dung mô tả ưu đãi |
-| `discount_type`| `ENUM` | `NOT NULL` | Loại giảm: `'percent'` (%) hoặc `'fixed'` (tiền cố định) |
-| `discount_value`| `DECIMAL(10,2)`| `NOT NULL` | Giá trị giảm (vd: `20` cho 20% hoặc `30000` cho 30k) |
-| `min_order_value`| `DECIMAL(10,2)`| `DEFAULT 0` | Giá trị đơn tối thiểu để áp dụng |
-| `max_discount_amount`| `DECIMAL(10,2)`| `NULLABLE` | Giảm tối đa bao nhiêu tiền (nếu giảm %) |
-| `quantity` | `INT` | `DEFAULT 0` | Số lượt dùng còn lại |
-| `start_date`| `DATE` | `NOT NULL` | Ngày bắt đầu hiệu lực |
-| `end_date` | `DATE` | `NOT NULL` | Ngày hết hạn |
-| `is_active` | `BOOLEAN` | `DEFAULT TRUE` | Kích hoạt chương trình |
-| `timestamps`| `TIMESTAMP` | `NULLABLE` | `created_at`, `updated_at` |
+#### 6. Bảng `store_settings` (Cấu hình vận hành cửa hàng)
+* Cấu hình trạng thái mở cửa (`is_open`), giờ phục vụ (`opens_at`, `closes_at`), giá trị đơn tối thiểu (`min_order_value`) và phí ship mặc định.
+* Tự động từ chối tạo đơn nếu cửa hàng đang đóng cửa hoặc đặt món ngoài khung giờ tiếp nhận đơn.
 
----
+#### 7. Bảng `orders` (Đơn hàng)
+* Quản lý toàn bộ thông tin đơn hàng và thông tin khách hàng tại thời điểm đặt (Snapshot Data).
+* `order_code`: Mã đơn duy nhất dạng `FO-YYYYMMDD-XXXXXX`.
+* `payment_method`: Phương thức thanh toán (Hiện tại là `cod` - Thanh toán khi nhận hàng).
+* `payment_status`: Trạng thái thanh toán (`unpaid` hoặc `paid`). Tự động chuyển thành `paid` khi đơn hàng chuyển sang `completed`.
+* `status`: Trạng thái xử lý theo máy trạng thái.
 
-#### 5. Bảng `orders` (Đơn hàng)
-| Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `id` | `BIGINT UNSIGNED` | `AUTO_INCREMENT, PRIMARY KEY` | Khóa chính |
-| `order_code`| `VARCHAR(50)` | `NOT NULL, UNIQUE` | Mã đơn hàng (vd: `ORD-20260820-8899`) |
-| `user_id` | `BIGINT UNSIGNED` | `FOREIGN KEY (users.id) ON DELETE SET NULL` | ID Khách hàng đặt mua |
-| `shipper_id`| `BIGINT UNSIGNED` | `FOREIGN KEY (users.id) ON DELETE SET NULL` | ID Tài xế phụ trách giao |
-| `voucher_id`| `BIGINT UNSIGNED` | `FOREIGN KEY (vouchers.id) ON DELETE SET NULL` | ID Mã khuyến mãi áp dụng |
-| `customer_name`| `VARCHAR(255)` | `NOT NULL` | Tên người nhận hàng |
-| `customer_phone`| `VARCHAR(20)` | `NOT NULL` | Số điện thoại nhận hàng |
-| `delivery_address`| `TEXT` | `NOT NULL` | Địa chỉ giao hàng chi tiết |
-| `note` | `TEXT` | `NULLABLE` | Ghi chú đơn hàng (ít cay, không hành...) |
-| `subtotal` | `DECIMAL(10,2)` | `NOT NULL` | Tổng tiền hàng trước giảm giá |
-| `discount_amount`| `DECIMAL(10,2)`| `DEFAULT 0` | Số tiền được giảm giá |
-| `shipping_fee`| `DECIMAL(10,2)` | `DEFAULT 0` | Phí vận chuyển |
-| `total_price`| `DECIMAL(10,2)` | `NOT NULL` | Tổng tiền thanh toán cuối cùng |
-| `payment_method`| `ENUM` | `DEFAULT 'cod'` | Phương thức: `'cod'`, `'banking'`, `'momo'`, `'vnpay'` |
-| `payment_status`| `ENUM` | `DEFAULT 'unpaid'` | Trạng thái thanh toán: `'unpaid'`, `'paid'` |
-| `status` | `ENUM` | `DEFAULT 'pending'` | Trạng thái đơn hàng (xem mục 3.2) |
-| `timestamps`| `TIMESTAMP` | `NULLABLE` | `created_at`, `updated_at` |
+#### 8. Bảng `order_items` (Chi tiết món ăn trong đơn hàng)
+* Snapshot toàn bộ tên món (`food_name`) và đơn giá tại thời điểm đặt (`unit_price`). Nhờ đó, lịch sử đơn hàng luôn chính xác tuyệt đối ngay cả khi chủ cửa hàng thay đổi giá hoặc cập nhật thông tin món ăn sau này.
 
----
+#### 9. Bảng `order_status_histories` (Nhật ký trạng thái đơn hàng)
+* Ghi lại chi tiết từng bước chuyển trạng thái của đơn hàng: ai là người thực hiện (`actor_id`), trạng thái cũ (`from_status`), trạng thái mới (`to_status`), lý do chuyển trạng thái và thời gian.
 
-#### 6. Bảng `order_details` (Chi tiết món ăn trong đơn hàng)
-| Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `id` | `BIGINT UNSIGNED` | `AUTO_INCREMENT, PRIMARY KEY` | Khóa chính |
-| `order_id` | `BIGINT UNSIGNED` | `FOREIGN KEY (orders.id) ON DELETE CASCADE` | Thuộc đơn hàng nào |
-| `food_id` | `BIGINT UNSIGNED` | `FOREIGN KEY (foods.id) ON DELETE CASCADE` | Món ăn nào |
-| `quantity` | `INT` | `NOT NULL` | Số lượng đặt mua |
-| `price` | `DECIMAL(10,2)` | `NOT NULL` | Đơn giá tại thời điểm mua |
-| `total_price`| `DECIMAL(10,2)` | `NOT NULL` | Thành tiền (`quantity * price`) |
-| `note` | `TEXT` | `NULLABLE` | Ghi chú riêng cho từng món |
-| `timestamps`| `TIMESTAMP` | `NULLABLE` | `created_at`, `updated_at` |
-
----
-
-#### 7. Bảng `reviews` (Đánh giá món ăn & dịch vụ)
-| Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `id` | `BIGINT UNSIGNED` | `AUTO_INCREMENT, PRIMARY KEY` | Khóa chính |
-| `user_id` | `BIGINT UNSIGNED` | `FOREIGN KEY (users.id) ON DELETE CASCADE` | Người gửi đánh giá |
-| `food_id` | `BIGINT UNSIGNED` | `FOREIGN KEY (foods.id) ON DELETE CASCADE` | Món ăn được đánh giá |
-| `order_id` | `BIGINT UNSIGNED` | `FOREIGN KEY (orders.id) ON DELETE CASCADE` | Kèm theo đơn hàng nào |
-| `rating` | `TINYINT UNSIGNED`| `NOT NULL` | Điểm số từ 1 đến 5 sao |
-| `comment` | `TEXT` | `NULLABLE` | Nhận xét chi tiết |
-| `image` | `VARCHAR(255)` | `NULLABLE` | Ảnh feedback thực tế |
-| `timestamps`| `TIMESTAMP` | `NULLABLE` | `created_at`, `updated_at` |
+#### 10. Bảng `notifications` (Thông báo người dùng)
+* Sử dụng chuẩn Database Notification của Laravel để gửi thông báo tức thời tới khách hàng mỗi khi trạng thái đơn hàng thay đổi.
 
 ---
 
 ## 3. LUỒNG NGHIỆP VỤ ĐƠN HÀNG (ORDER WORKFLOW)
 
-### 3.1. Sơ đồ trạng thái đơn hàng (Order State Diagram)
+### 3.1. Máy trạng thái đơn hàng (Order State Machine)
+
+Tiến trình đơn hàng tuân thủ một chu trình đơn hướng nghiêm ngặt, không thể nhảy cóc, không thể đảo ngược và không thể mở lại các đơn đã kết thúc:
 
 ```mermaid
 stateDiagram-v2
-    [*] --> pending : 1. Khách đặt đơn (Customer creates order)
+    [*] --> pending: 1. Khách hàng tạo đơn (Checkout thành công)
+
+    pending --> confirmed: 2. Cửa hàng xác nhận đơn
+    pending --> cancelled: Khách hàng tự hủy đơn / Cửa hàng hủy
+
+    confirmed --> preparing: 3. Bếp bắt đầu chế biến món
+    confirmed --> cancelled: Cửa hàng hủy (Bắt buộc kèm lý do)
+
+    preparing --> delivering: 4. Bàn giao shipper đi giao hàng
     
-    pending --> confirmed : Quán xác nhận (Merchant accepts)
-    pending --> cancelled : Hủy đơn (Khách hủy hoặc Quán hết món)
-    
-    confirmed --> preparing : Quán chế biến món (Cooking/Packing)
-    
-    preparing --> delivering : Bàn giao cho Tài xế (Shipper picked up)
-    
-    delivering --> completed : Giao hàng thành công & Thu tiền
-    delivering --> cancelled : Giao thất bại (Không liên lạc được khách)
-    
+    delivering --> completed: 5. Giao thành công & Thu tiền COD
+    delivering --> cancelled: Giao thất bại (Không liên lạc được khách)
+
     completed --> [*]
     cancelled --> [*]
 ```
 
 ---
 
-### 3.2. 5 Giai đoạn xử lý đơn hàng chi tiết
+### 3.2. Bảng quy định trạng thái và quyền hạn chuyển đổi
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor C as Khách Hàng (Customer)
-    participant S as Hệ Thống (System)
-    actor M as Quán Ăn (Merchant)
-    actor D as Tài Xế (Shipper)
-
-    Note over C,S: Giai đoạn 1: Chọn món & Đặt hàng
-    C->>S: Thêm món vào giỏ, nhập địa chỉ, áp voucher & bấm Đặt hàng
-    S-->>C: Tạo đơn hàng với status = 'pending', gửi thông báo tới Quán
-
-    Note over S,M: Giai đoạn 2: Tiếp nhận & Xác nhận đơn
-    M->>S: Quán kiểm tra nguyên liệu & bấm Chấp nhận đơn (status = 'confirmed')
-    M->>S: Bắt đầu nấu món (status = 'preparing')
-
-    Note over S,D: Giai đoạn 3: Điều phối & Bàn giao Shipper
-    S->>D: Phát tín hiệu tìm kiếm tài xế gần quán nhất
-    D->>S: Tài xế chấp nhận đơn, di chuyển tới quán
-    M->>D: Quán giao đồ ăn đã đóng gói cho tài xế
-    D->>S: Tài xế xác nhận đã nhận món (status = 'delivering')
-
-    Note over D,C: Giai đoạn 4: Vận chuyển & Giao hàng
-    D->>C: Di chuyển đến địa chỉ khách hàng & liên hệ nhận món
-    C->>D: Nhận đồ ăn và thanh toán tiền mặt (nếu là đơn COD)
-
-    Note over C,S: Giai đoạn 5: Hoàn tất & Đánh giá
-    D->>S: Cập nhật giao hàng thành công (status = 'completed')
-    S-->>C: Gửi thông báo hoàn tất đơn, tích điểm & mời đánh giá 1-5 sao
-```
-
----
-
-### 3.3. Bảng quy định trạng thái `status` trong Database
-
-| Mã trạng thái (`status`) | Tên hiển thị (Tiếng Việt) | Người chịu trách nhiệm cập nhật | Ý nghĩa nghiệp vụ |
+| Trạng thái (`status`) | Tên hiển thị | Quyền chuyển vào | Ý nghĩa nghiệp vụ |
 | :--- | :--- | :---: | :--- |
-| `pending` | **Chờ xác nhận** | Khách hàng (Hệ thống) | Đơn hàng mới được tạo từ trang giỏ hàng/thanh toán, đang chờ quán ăn phản hồi. |
-| `confirmed` | **Đã xác nhận** | Quán ăn (Merchant) | Quán ăn kiểm tra đủ món và đồng ý thực hiện đơn hàng. |
-| `preparing` | **Đang chuẩn bị món** | Quán ăn (Merchant) | Bếp đang tiến hành nấu nướng, đóng gói bao bì sẵn sàng bàn giao. |
-| `delivering` | **Đang giao hàng** | Tài xế (Shipper) | Tài xế đã lấy món từ quán và đang trên đường di chuyển đến khách hàng. |
-| `completed` | **Giao thành công** | Tài xế (Shipper) | Khách đã nhận đồ ăn, thu tiền xong (nếu COD). Đơn kết thúc thành công. |
-| `cancelled` | **Đã hủy đơn** | Khách / Quán / Admin | Đơn bị hủy do khách đổi ý (khi còn `pending`), quán hết món, hoặc giao không thành công. |
+| `pending` | **Chờ xác nhận** | Khách hàng | Đơn hàng mới tạo qua checkout, lưu giữ nguyên giá trị trong DB transaction và chờ cửa hàng duyệt. |
+| `confirmed` | **Đã xác nhận** | Quản trị viên | Cửa hàng kiểm tra đơn, đồng ý thực hiện và chuẩn bị nguyên liệu. |
+| `preparing` | **Đang chuẩn bị món** | Quản trị viên | Bếp đang tiến hành nấu nướng và đóng gói đơn hàng. |
+| `delivering` | **Đang giao hàng** | Quản trị viên | Đơn hàng đã rời cửa hàng và đang được shipper vận chuyển đến khách. |
+| `completed` | **Giao thành công** | Quản trị viên | Khách đã nhận đồ ăn và thanh toán tiền mặt. Cập nhật `payment_status = 'paid'`. *(Terminal State)* |
+| `cancelled` | **Đã hủy đơn** | Khách / Admin | Đơn bị hủy do khách đổi ý (khi còn `pending`) hoặc do cửa hàng hủy kèm lý do cụ thể. *(Terminal State)* |
 
 ---
 
 ## 4. DANH SÁCH CHỨC NĂNG THEO VAI TRÒ (FEATURE LIST)
 
 ### 4.1. Khách Hàng (Customer Portal)
-1. **Xác thực & Tài khoản (Authentication & Profile):**
-   - Đăng ký tài khoản khách hàng, Đăng nhập, Đăng xuất, Quên mật khẩu.
-   - Quản lý thông tin cá nhân, cập nhật số điện thoại và danh sách địa chỉ giao hàng.
-2. **Khám phá thực đơn (Food Browsing & Search):**
-   - Trang chủ hiển thị danh mục món ăn dạng Tab/Pills.
-   - Lọc món ăn theo danh mục, khoảng giá, trạng thái còn hàng.
-   - Thanh tìm kiếm món ăn theo từ khóa thông minh (Full-text search).
-   - Xem chi tiết món ăn (ảnh phóng to, thành phần, lượt đánh giá trung bình).
-3. **Giỏ hàng (Shopping Cart):**
-   - Thêm món vào giỏ hàng từ trang chủ hoặc trang chi tiết món.
-   - Drawer giỏ hàng kéo trượt hiển thị tức thì số lượng món, đơn giá, tổng tiền.
-   - Tăng, giảm số lượng hoặc xóa món khỏi giỏ hàng.
-4. **Đặt hàng & Thanh toán (Checkout):**
-   - Form nhập địa chỉ nhận hàng, họ tên, số điện thoại và ghi chú giao hàng.
-   - Nhập mã voucher giảm giá (kiểm tra điều kiện đơn tối thiểu, số lượt còn lại).
-   - Chọn phương thức thanh toán: Tiền mặt khi nhận hàng (COD), Chuyển khoản ngân hàng (QR Code).
-5. **Theo dõi đơn hàng & Đánh giá (Order Tracking & Reviews):**
-   - Xem lịch sử các đơn hàng đã đặt.
-   - Theo dõi trạng thái tiến độ đơn hàng thời gian thực qua thanh Progress Bar (`pending` $\rightarrow$ `completed`).
-   - Gửi đánh giá số sao (1-5 sao), để lại nhận xét và hình ảnh feedback sau khi nhận đồ ăn.
+
+1. **Xác thực & Hồ sơ cá nhân (Authentication & Profile):**
+   * Đăng ký tài khoản mới, Đăng nhập hệ thống, Đăng xuất an toàn (tự động đổi Session ID và CSRF token).
+   * Quên mật khẩu và đặt lại mật khẩu an toàn qua Email token.
+   * Xem và cập nhật thông tin cá nhân: Họ tên, Số điện thoại, Địa chỉ giao hàng mặc định.
+   * Đổi mật khẩu tài khoản cá nhân.
+
+2. **Khám phá thực đơn & Tìm kiếm (Catalog & Search):**
+   * Xem toàn bộ thực đơn kèm ảnh món ăn chất lượng cao, giá niêm yết và danh mục món.
+   * Thanh danh mục dạng Pills trực quan, hiển thị số lượng món ăn trong từng nhóm.
+   * Bộ lọc nâng cao: Lọc theo danh mục, lọc theo khoảng giá (`min_price` đến `max_price`), tìm kiếm món theo từ khóa.
+   * Trang chi tiết món ăn hiển thị ảnh phóng to, thành phần mô tả chi tiết, trạng thái phục vụ và nút thêm vào giỏ.
+
+3. **Trợ lý thông minh gợi ý món ăn (Food Recommendation Assistant):**
+   * Hỗ trợ khách hàng giải quyết câu hỏi "Hôm nay ăn gì?".
+   * Gợi ý món thông minh dựa trên: Danh mục yêu thích, Giới hạn ngân sách tối đa và Khẩu vị riêng (*Món ăn chay, Món không cay, Món bất kỳ*).
+
+4. **Giỏ hàng tương tác (Shopping Cart):**
+   * Drawer giỏ hàng kéo trượt mượt mà ở cạnh phải màn hình.
+   * Thêm món nhanh từ trang chủ hoặc trang chi tiết món ăn.
+   * Điều chỉnh số lượng tăng/giảm (từ 1 đến tối đa 99 phần/món), xóa từng món hoặc làm trống giỏ hàng.
+   * Tính toán tạm tính và tổng tiền thanh toán tức thời trên giao diện.
+
+5. **Đặt hàng & Thanh toán (Checkout):**
+   * Form điền thông tin người nhận: Họ tên, Số điện thoại, Địa chỉ chi tiết và Ghi chú món.
+   * Áp dụng mã giảm giá **Voucher**: Tự động tính toán mức chiết khấu theo % hoặc tiền cố định, kiểm tra điều kiện đơn tối thiểu và số lượt dùng còn lại.
+   * Lựa chọn **Khu vực giao hàng**: Tự động áp dụng mức phí ship chính xác của từng quận/huyện.
+   * Kiểm tra điều kiện mở cửa và giá trị đơn hàng tối thiểu của cửa hàng trước khi ghi nhận đơn.
+   * Phương thức thanh toán: Tiền mặt khi nhận hàng (COD).
+   * Quy trình tạo đơn được bảo vệ bởi **Database Transaction** và **Lock For Update**: Kiểm tra lại toàn bộ giá bán và tình trạng còn hàng từ cơ sở dữ liệu để ngăn chặn hoàn toàn việc giả mạo giá tiền từ phía client.
+
+6. **Theo dõi đơn hàng & Thông báo (Order Tracking & Notifications):**
+   * Xem danh sách lịch sử các đơn hàng đã đặt kèm trạng thái và ngày tạo.
+   * Xem chi tiết từng đơn hàng với thanh tiến trình trạng thái thời gian thực.
+   * Cho phép khách hàng tự hủy đơn hàng nếu đơn vẫn đang ở trạng thái `pending`.
+   * Menu chuông thông báo trên thanh điều hướng: Nhận thông báo tự động mỗi khi cửa hàng cập nhật trạng thái đơn (xác nhận, đang nấu, đang giao, hoàn tất).
 
 ---
 
-### 4.2. Quán Ăn (Merchant Dashboard)
-1. **Quản lý Thực đơn & Danh mục:**
-   - Thêm mới món ăn: Tên món, danh mục, giá bán, hình ảnh, mô tả chi tiết.
-   - Chỉnh sửa thông tin món ăn, bật/tắt công tắc nhanh tình trạng "Còn hàng / Tạm hết món".
-   - Quản lý các nhóm danh mục món ăn của quán.
-2. **Tiếp nhận & Xử lý Đơn hàng:**
-   - Chuông thông báo âm thanh và pop-up khi có đơn hàng mới phát sinh.
-   - Bấm nút **"Chấp nhận đơn"** hoặc **"Từ chối đơn"** (kèm lý do hết nguyên liệu).
-   - Chuyển trạng thái sang **"Đang chế biến"** và **"Sẵn sàng giao"**.
-3. **Báo cáo Doanh thu Quán:**
-   - Thống kê số lượng đơn hàng theo ngày/tuần/tháng.
-   - Biểu đồ doanh thu thực nhận sau khi trừ chiết khấu sàn.
+### 4.2. Quản Trị Viên (Admin Master Panel)
 
----
-
-### 4.3. Tài Xế (Shipper Portal)
-1. **Tiếp nhận đơn vận chuyển:**
-   - Xem danh sách các đơn hàng gần khu vực đang cần tài xế (`preparing` $\rightarrow$ sẵn sàng giao).
-   - Xem thông tin địa chỉ quán lấy hàng và địa chỉ khách nhận hàng.
-   - Bấm **"Nhận đơn"**.
-2. **Cập nhật quá trình giao:**
-   - Cập nhật trạng thái: **"Đã lấy hàng từ quán"** $\rightarrow$ chuyển đơn sang `delivering`.
-   - Nút gọi điện trực tiếp nhanh cho Khách hàng / Quán ăn.
-   - Xác nhận **"Giao hàng thành công"** $\rightarrow$ hoàn tất đơn `completed`, ghi nhận thu tiền COD.
-3. **Quản lý thu nhập tài xế:**
-   - Xem lịch sử các cuốc giao hàng trong ngày.
-   - Thống kê tiền cước giao hàng đã nhận và tiền COD đang tạm giữ.
-
----
-
-### 4.4. Quản Trị Viên (Admin Master Panel)
 1. **Bảng điều khiển tổng quan (Dashboard Overview):**
-   - Thống kê số liệu toàn sàn: Tổng doanh thu, Tổng số đơn hàng, Đơn hoàn thành, Đơn bị hủy.
-   - Biểu đồ tăng trưởng người dùng mới, lượng đơn theo khung giờ vàng trong ngày.
-2. **Quản lý Người dùng & Phân quyền (User Management):**
-   - Quản lý danh sách tài khoản: Customer, Merchant, Shipper, Admin.
-   - Khóa/Mở khóa tài khoản khi có vi phạm.
-   - Phê duyệt hồ sơ đăng ký mở quán ăn mới hoặc tài xế mới.
-3. **Quản lý Chương trình Khuyến mãi (Voucher Engine):**
-   - Tạo mã giảm giá toàn sàn: Giảm %, giảm tiền cố định, mã miễn phí vận chuyển.
-   - Cấu hình số lượt tối đa, hạn sử dụng, giá trị đơn tối thiểu.
-4. **Giám sát Đơn hàng & Quản lý Đánh giá:**
-   - Tra cứu chi tiết bất kỳ đơn hàng nào theo mã `order_code`.
-   - Xử lý khiếu nại hoàn tiền khi xảy ra tranh chấp giữa Khách - Quán - Tài xế.
-   - Kiểm duyệt các bài đánh giá (review), ẩn các bình luận tiêu cực hoặc vi phạm tiêu chuẩn cộng đồng.
+   * Thống kê số liệu kinh doanh: Tổng doanh thu (chỉ tính từ các đơn giao thành công `completed`), Tổng số lượng đơn hàng, Số đơn chờ xử lý.
+   * Biểu đồ doanh thu và xu hướng đơn hàng theo thời gian.
+   * Danh sách Top món ăn bán chạy nhất của cửa hàng.
+
+2. **Quản lý Thực đơn & Danh mục (Food & Category Management):**
+   * **Món ăn:** Thêm món mới, tải ảnh món ăn trực tiếp lên server lưu trữ (`storage`), chỉnh sửa tên/mô tả/giá bán, bật/tắt nhanh công tắc trạng thái "Còn hàng / Tạm hết món".
+   * **Danh mục:** Thêm mới danh mục, tùy biến biểu tượng Font Awesome, chỉnh sửa thông tin. Có cơ chế kiểm tra ràng buộc toàn vẹn: Chặn xóa danh mục nếu đang có món ăn trực thuộc.
+
+3. **Quản lý & Xử lý Đơn hàng (Order Management):**
+   * Xem danh sách toàn bộ đơn hàng trong hệ thống với phân trang tối ưu.
+   * Bộ lọc đa năng: Lọc theo trạng thái đơn, lọc theo khoảng ngày tạo, tìm kiếm theo mã đơn / họ tên / số điện thoại khách hàng.
+   * Cập nhật trạng thái đơn hàng theo đúng máy trạng thái qua dịch vụ xử lý tập trung [OrderStatusService.php](file:///c:/Users/nguye/OneDrive/Desktop/Project/food-order/app/Services/OrderStatusService.php).
+   * Hủy đơn hàng từ phía cửa hàng kèm bắt buộc nhập lý do hủy.
+   * **Xuất báo cáo:** Xuất danh sách đơn hàng đã lọc ra tệp tin **CSV (định dạng UTF-8 kèm BOM)** chuẩn cho Excel.
+
+4. **Quản lý Khách hàng (User Management):**
+   * Xem danh sách người dùng đã đăng ký tài khoản, tìm kiếm theo tên hoặc email.
+   * Khóa hoặc Mở khóa tài khoản người dùng vi phạm.
+   * Cơ chế tự bảo vệ: Chặn tuyệt đối hành động admin tự khóa tài khoản của chính mình.
+
+5. **Quản lý Khuyến mãi (Voucher Engine):**
+   * Tạo mới và chỉnh sửa các mã giảm giá cho cửa hàng.
+   * Tùy biến loại giảm giá (% hoặc tiền mặt), giá trị giảm, mức giảm tối đa, đơn hàng tối thiểu và giới hạn số lượt dùng.
+   * Bật/tắt trạng thái kích hoạt hoặc xóa voucher (nếu voucher chưa từng phát sinh đơn hàng liên kết).
+
+6. **Quản lý Khu vực giao hàng (Delivery Zones):**
+   * Thiết lập danh sách các khu vực giao hàng (các quận, huyện hoặc khu vực lân cận).
+   * Định mức phí vận chuyển riêng biệt cho từng khu vực, bật/tắt hoạt động của từng tuyến.
+
+7. **Cấu hình Cửa hàng (Store Settings):**
+   * Bật/tắt công tắc tiếp nhận đơn của cửa hàng (`is_open`).
+   * Cấu hình khung giờ nhận đơn trong ngày (`opens_at` - `closes_at`).
+   * Cài đặt mức giá trị đơn hàng tối thiểu để được đặt món và phí ship mặc định.
+   * Cập nhật thông tin hotline và địa chỉ quán.
 
 ---
 
-## 5. KẾ HOẠCH TRIỂN KHAI THEO GIAI ĐOẠN (ROADMAP)
+## 5. KẾ HOẠCH TRIỂN KHAI VÀ ROADMAP
 
-- [x] **Giai đoạn 1 (Nền tảng):** Thiết kế Database Schema, Models, Migrations, Seeders, Controller & Giao diện trang chủ hiển thị món ăn.
-- [ ] **Giai đoạn 2 (Giỏ hàng & Đặt hàng):** Triển khai `CartController`, cập nhật bảng `orders` đầy đủ trường, xây dựng trang `Checkout` và lưu đơn hàng vào DB.
-- [ ] **Giai đoạn 3 (Xác thực & Khách hàng):** Tích hợp Auth (Đăng ký, Đăng nhập), trang xem lịch sử đơn hàng và thanh theo dõi tiến độ đơn.
-- [ ] **Giai đoạn 4 (Merchant & Shipper Portal):** Xây dựng giao diện nhận đơn cho Quán ăn và màn hình giao đơn cho Tài xế.
-- [ ] **Giai đoạn 5 (Admin Panel & Vouchers):** Hoàn thiện Dashboard thống kê, quản lý người dùng, tạo mã voucher và hệ thống đánh giá sao (Reviews).
+### 5.1. Các giai đoạn đã hoàn thiện 100% (Sprint 0 - Sprint 7)
+
+- [x] **Sprint 0 — Foundation:** Thiết kế Database Schema, Models, Relationships, Migrations, Seeders dữ liệu mẫu, cấu hình môi trường test SQLite In-Memory và MySQL Local.
+- [x] **Sprint 1 — Authentication & User:** Đăng ký, đăng nhập session, đăng xuất, quên mật khẩu, cập nhật hồ sơ, đổi mật khẩu, phân quyền Role và Middleware bảo vệ.
+- [x] **Sprint 2 — Category & Food Catalog:** Public API và giao diện hiển thị danh mục, món ăn, bộ lọc giá, tìm kiếm, ngăn chặn hiển thị món hết hàng cho khách.
+- [x] **Sprint 3 — Cart & Checkout:** Xây dựng quy trình đặt hàng thật với [CheckoutService.php](file:///c:/Users/nguye/OneDrive/Desktop/Project/food-order/app/Services/CheckoutService.php), áp dụng DB Transaction, kiểm tra giá và tồn kho từ DB, hỗ trợ Voucher và phí ship theo khu vực.
+- [x] **Sprint 4 — Order Lifecycle:** Xây dựng máy trạng thái [OrderStatusService.php](file:///c:/Users/nguye/OneDrive/Desktop/Project/food-order/app/Services/OrderStatusService.php), cho phép khách theo dõi tiến trình và hủy đơn `pending`, cửa hàng xử lý trạng thái tuần tự.
+- [x] **Sprint 5 — Admin Master Panel:** Xây dựng Dashboard thống kê doanh thu/món bán chạy, CRUD danh mục/món ăn, tải ảnh lên server, quản lý tài khoản người dùng, quản lý voucher và xuất dữ liệu đơn ra file CSV.
+- [x] **Sprint 6 — Frontend Integration:** Hoàn thiện giao diện Blade Template đồng bộ, tích hợp giỏ hàng kéo trượt, modal Trợ lý gợi ý món ăn, tích hợp thông báo in-app và hoàn thiện thanh toán.
+- [x] **Sprint 7 — Testing & Hardening:** Hoàn thiện bộ kiểm thử tự động 116 tests xanh toàn bộ, kiểm tra bảo mật CSRF/XSS/N+1 Query, kiểm tra build frontend Vite production.
+
+---
+
+### 5.2. Định hướng mở rộng trong tương lai (Future Roadmap)
+
+Các tính năng nâng cao sau đây có thể được bổ sung khi có nhu cầu nâng cấp hệ thống:
+
+1. **Cổng thanh toán trực tuyến (Online Payment Gateways):**
+   * Tích hợp thanh toán quét mã QR động qua VietQR / SePay tự động xác nhận qua Webhook.
+   * Tích hợp cổng thanh toán VNPay, MoMo, ZaloPay.
+2. **Hệ thống Đánh giá & Phản hồi (Reviews & Ratings):**
+   * Cho phép khách hàng gửi đánh giá từ 1 đến 5 sao, kèm bình luận và hình ảnh sau khi nhận món thành công.
+   * Admin kiểm duyệt và phản hồi các đánh giá của khách hàng.
+3. **Thông báo thời gian thực (Realtime WebSocket):**
+   * Tích hợp Laravel Reverb / Pusher để phát âm thanh chuông báo đơn mới cho Admin ngay lập tức và cập nhật trạng thái đơn trên màn hình của khách hàng mà không cần tải lại trang.
+4. **Sổ địa chỉ người dùng (Multiple Delivery Addresses):**
+   * Cho phép khách hàng lưu trước nhiều địa chỉ giao hàng (*Nhà riêng, Công ty, Nhà bạn bè*) vào sổ địa chỉ cá nhân.

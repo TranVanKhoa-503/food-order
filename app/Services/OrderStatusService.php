@@ -5,6 +5,9 @@ namespace App\Services;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
+use App\Models\User;
+use App\Models\Voucher;
+use App\Notifications\OrderStatusUpdatedNotification;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
@@ -17,7 +20,7 @@ class OrderStatusService
     protected const TRANSITION_MAP = [
         'pending' => ['confirmed', 'cancelled'],
         'confirmed' => ['preparing', 'cancelled'],
-        'preparing' => ['delivering', 'cancelled'],
+        'preparing' => ['delivering'],
         'delivering' => ['completed', 'cancelled'],
         'completed' => [],
         'cancelled' => [],
@@ -26,9 +29,9 @@ class OrderStatusService
     /**
      * Transition order to a new status atomically with lock and side effects.
      */
-    public function transition(Order $order, OrderStatus $targetStatus, ?string $reason = null): Order
+    public function transition(Order $order, OrderStatus $targetStatus, ?string $reason = null, ?User $actor = null): Order
     {
-        return DB::transaction(function () use ($order, $targetStatus, $reason) {
+        return DB::transaction(function () use ($order, $targetStatus, $reason, $actor) {
             /** @var Order $lockedOrder */
             $lockedOrder = Order::query()->where('id', $order->id)->lockForUpdate()->firstOrFail();
 
@@ -64,6 +67,12 @@ class OrderStatusService
             if ($targetStatus === OrderStatus::Cancelled) {
                 $updateData['cancelled_at'] = now();
                 $updateData['cancel_reason'] = $reason ?: 'Hủy đơn hàng';
+                if ($lockedOrder->voucher_id) {
+                    Voucher::query()
+                        ->whereKey($lockedOrder->voucher_id)
+                        ->where('used_count', '>', 0)
+                        ->decrement('used_count');
+                }
             } elseif ($targetStatus === OrderStatus::Completed) {
                 $updateData['completed_at'] = now();
                 // Với đơn COD, khi hoàn tất thì xác nhận đã thu tiền
@@ -72,16 +81,31 @@ class OrderStatusService
 
             $lockedOrder->update($updateData);
 
-            return $lockedOrder->fresh(['items', 'user']);
+            $lockedOrder->statusHistories()->create([
+                'actor_id' => $actor?->id,
+                'from_status' => $currentValue,
+                'to_status' => $targetValue,
+                'reason' => $reason,
+            ]);
+
+            $lockedOrder->loadMissing('user');
+            $lockedOrder->user?->notify(new OrderStatusUpdatedNotification(
+                $lockedOrder,
+                $currentValue,
+                $targetValue,
+                $reason,
+            ));
+
+            return $lockedOrder->fresh(['items', 'user', 'statusHistories.actor', 'voucher']);
         });
     }
 
     /**
      * User cancels their own pending order.
      */
-    public function cancelByUser(Order $order, ?string $reason = null): Order
+    public function cancelByUser(Order $order, ?string $reason = null, ?User $actor = null): Order
     {
-        return DB::transaction(function () use ($order, $reason) {
+        return DB::transaction(function () use ($order, $reason, $actor) {
             /** @var Order $lockedOrder */
             $lockedOrder = Order::query()->where('id', $order->id)->lockForUpdate()->firstOrFail();
 
@@ -97,7 +121,29 @@ class OrderStatusService
                 'cancel_reason' => $reason ?: 'Khách hàng hủy đơn',
             ]);
 
-            return $lockedOrder->fresh(['items', 'user']);
+            if ($lockedOrder->voucher_id) {
+                Voucher::query()
+                    ->whereKey($lockedOrder->voucher_id)
+                    ->where('used_count', '>', 0)
+                    ->decrement('used_count');
+            }
+
+            $lockedOrder->statusHistories()->create([
+                'actor_id' => $actor?->id,
+                'from_status' => $currentValue,
+                'to_status' => OrderStatus::Cancelled->value,
+                'reason' => $reason ?: 'Khách hàng hủy đơn',
+            ]);
+
+            $lockedOrder->loadMissing('user');
+            $lockedOrder->user?->notify(new OrderStatusUpdatedNotification(
+                $lockedOrder,
+                $currentValue,
+                OrderStatus::Cancelled->value,
+                $reason ?: 'Khách hàng hủy đơn',
+            ));
+
+            return $lockedOrder->fresh(['items', 'user', 'statusHistories.actor', 'voucher']);
         });
     }
 }

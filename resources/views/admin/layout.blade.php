@@ -226,6 +226,12 @@
             <a href="{{ route('admin.users.index') }}" class="menu-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                 <i class="fa-solid fa-users"></i> Khách hàng
             </a>
+            <a href="{{ route('admin.vouchers.index') }}" class="menu-item {{ request()->routeIs('admin.vouchers.*') ? 'active' : '' }}">
+                <i class="fa-solid fa-ticket"></i> Voucher
+            </a>
+            <a href="{{ route('admin.settings.edit') }}" class="menu-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+                <i class="fa-solid fa-store"></i> Cấu hình cửa hàng
+            </a>
         </div>
 
         <div class="sidebar-footer">

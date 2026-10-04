@@ -13,6 +13,8 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class AdminFoodController extends Controller
 {
@@ -60,6 +62,10 @@ class AdminFoodController extends Controller
     public function store(StoreFoodRequest $request): JsonResponse
     {
         $data = $request->validated();
+        if ($request->hasFile('image_upload')) {
+            $data['image'] = Storage::disk('public')->url($request->file('image_upload')->store('foods', 'public'));
+        }
+        unset($data['image_upload']);
         $data['is_available'] = (bool) ($data['is_available'] ?? true);
 
         $food = Food::create($data);
@@ -82,9 +88,51 @@ class AdminFoodController extends Controller
      */
     public function update(UpdateFoodRequest $request, Food $food): FoodResource
     {
-        $food->update($request->validated());
+        $data = $request->validated();
+        $oldImage = $food->image;
+        $newUploadedPath = null;
+
+        if ($request->hasFile('image_upload')) {
+            $newUploadedPath = $request->file('image_upload')->store('foods', 'public');
+            $data['image'] = Storage::disk('public')->url($newUploadedPath);
+        }
+        unset($data['image_upload']);
+
+        $food->update($data);
+
+        // Delete old image only after successful DB update
+        if ($newUploadedPath !== null && ! empty($oldImage)) {
+            $this->deleteOldStoredImage($oldImage);
+        }
 
         return new FoodResource($food->load('category'));
+    }
+
+    /**
+     * Delete previous stored food image file from public disk, avoiding defaults or external URLs.
+     */
+    protected function deleteOldStoredImage(?string $imagePath): void
+    {
+        if (empty($imagePath)) {
+            return;
+        }
+
+        // Avoid deleting default or placeholder images
+        if (str_contains($imagePath, 'default') || str_contains($imagePath, 'placeholder')) {
+            return;
+        }
+
+        $parsedPath = parse_url($imagePath, PHP_URL_PATH) ?? $imagePath;
+        $disk = Storage::disk('public');
+
+        if (str_contains($parsedPath, '/storage/')) {
+            $relative = Str::after($parsedPath, '/storage/');
+            if ($relative !== '' && $disk->exists($relative)) {
+                $disk->delete($relative);
+            }
+        } elseif (str_starts_with($imagePath, 'foods/') && $disk->exists($imagePath)) {
+            $disk->delete($imagePath);
+        }
     }
 
     /**

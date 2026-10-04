@@ -16,6 +16,17 @@
         </a>
     </div>
 
+    <form method="GET" action="{{ route('orders.index') }}" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:20px;">
+        <label style="font-size:13px;font-weight:700;color:#64748B;">Lọc trạng thái</label>
+        <select name="status" style="padding:8px 12px;border:1px solid var(--border-color);border-radius:var(--radius-md);">
+            <option value="">Tất cả</option>
+            @foreach(['pending' => 'Chờ xác nhận', 'confirmed' => 'Đã xác nhận', 'preparing' => 'Đang chế biến', 'delivering' => 'Đang giao', 'completed' => 'Hoàn thành', 'cancelled' => 'Đã hủy'] as $value => $label)
+                <option value="{{ $value }}" {{ ($status ?? '') === $value ? 'selected' : '' }}>{{ $label }}</option>
+            @endforeach
+        </select>
+        <button class="btn" style="background:#F1F5F9;color:#475569;" type="submit"><i class="fa-solid fa-filter"></i> Lọc</button>
+    </form>
+
     @if(session('status'))
         <div style="background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 14px 18px; border-radius: var(--radius-md); margin-bottom: 24px; font-size: 14px; font-weight: 600;">
             <i class="fa-solid fa-circle-check" style="margin-right: 8px;"></i> {{ session('status') }}
@@ -29,7 +40,7 @@
                     <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
                         <div>
                             <div style="font-size: 13px; color: #64748B;">MÃ ĐƠN HÀNG</div>
-                            <div style="font-size: 18px; font-weight: 800; color: var(--primary); letter-spacing: 0.5px;">{{ $order->order_code }}</div>
+                            <a href="{{ route('orders.show', $order) }}" style="font-size: 18px; font-weight: 800; color: var(--primary); letter-spacing: 0.5px; text-decoration:none;">{{ $order->order_code }}</a>
                             <div style="font-size: 12px; color: #94A3B8; margin-top: 2px;">{{ $order->created_at->format('d/m/Y H:i') }}</div>
                         </div>
 
@@ -71,6 +82,7 @@
                     <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 12px; flex-wrap: wrap; gap: 12px;">
                         <div style="font-size: 13px; color: #64748B;">
                             Giao tới: <strong style="color: var(--dark);">{{ $order->customer_name }}</strong> ({{ $order->customer_phone }}) - {{ $order->delivery_address }}
+                            @if($order->delivery_zone_name)<span style="display:block;color:#2563EB;margin-top:3px;">Khu vực: {{ $order->delivery_zone_name }}</span>@endif
                         </div>
 
                         <div style="display: flex; align-items: center; gap: 16px;">

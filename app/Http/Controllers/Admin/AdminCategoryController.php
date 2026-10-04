@@ -50,7 +50,7 @@ class AdminCategoryController extends Controller
         $data = $request->validated();
 
         if (empty($data['slug'])) {
-            $data['slug'] = Str::slug($data['name']);
+            $data['slug'] = $this->uniqueSlug($data['name']);
         }
 
         $category = Category::create($data);
@@ -78,7 +78,7 @@ class AdminCategoryController extends Controller
         $data = $request->validated();
 
         if (empty($data['slug'])) {
-            $data['slug'] = Str::slug($data['name']);
+            $data['slug'] = $this->uniqueSlug($data['name'], $category->id);
         }
 
         $category->update($data);
@@ -100,5 +100,21 @@ class AdminCategoryController extends Controller
         $category->delete();
 
         return response()->noContent();
+    }
+
+    private function uniqueSlug(string $name, ?int $ignoreId = null): string
+    {
+        $base = Str::slug($name) ?: 'category';
+        $slug = $base;
+        $suffix = 2;
+
+        while (Category::query()
+            ->where('slug', $slug)
+            ->when($ignoreId, fn ($query) => $query->where('id', '<>', $ignoreId))
+            ->exists()) {
+            $slug = $base.'-'.$suffix++;
+        }
+
+        return $slug;
     }
 }

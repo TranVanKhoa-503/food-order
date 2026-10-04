@@ -106,7 +106,7 @@ class OrderLifecycleTest extends TestCase
         ]);
     }
 
-    public function test_user_cannot_cancel_another_users_order(): void
+    public function test_user_cannot_cancel_another_users_order_and_receives_404(): void
     {
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();
@@ -114,8 +114,18 @@ class OrderLifecycleTest extends TestCase
             'status' => OrderStatus::Pending,
         ]);
 
+        // Attempting to cancel another user's order returns 404 to prevent ID enumeration
         $response = $this->actingAs($user1)->patchJson('/api/v1/orders/'.$order2->id.'/cancel');
 
-        $response->assertForbidden();
+        $response->assertNotFound();
+    }
+
+    public function test_user_cancelling_nonexistent_order_receives_404(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->patchJson('/api/v1/orders/999999/cancel');
+
+        $response->assertNotFound();
     }
 }

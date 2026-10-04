@@ -57,7 +57,7 @@ class OrderController extends Controller
     {
         abort_unless($order->user_id === $request->user()->id || $request->user()->isAdmin(), 404, 'Không tìm thấy đơn hàng.');
 
-        $order->load(['items', 'user']);
+        $order->load(['items', 'user', 'statusHistories.actor', 'voucher']);
 
         if ($request->expectsJson() || $request->is('api/*')) {
             return new OrderResource($order);
@@ -73,7 +73,7 @@ class OrderController extends Controller
     {
         abort_unless($order->user_id === $request->user()->id || $request->user()->isAdmin(), 404, 'Không tìm thấy đơn hàng.');
 
-        $cancelledOrder = $orderStatusService->cancelByUser($order, $request->validated('reason'));
+        $cancelledOrder = $orderStatusService->cancelByUser($order, $request->validated('reason'), $request->user());
 
         return new OrderResource($cancelledOrder);
     }

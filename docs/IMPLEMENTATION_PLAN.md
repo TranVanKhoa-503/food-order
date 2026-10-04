@@ -297,13 +297,15 @@ Có API và giao diện quản trị tối thiểu để vận hành một cửa
 
 ### Tasks
 
-1. Admin dashboard: counts và doanh thu completed orders.
+1. Admin dashboard: counts, doanh thu theo ngày và top món bán chạy của completed orders.
 2. Danh sách/tìm user.
 3. Khóa/mở user; không cho admin tự khóa.
 4. Giao diện CRUD category/food.
 5. Giao diện hàng đợi order và nút transition hợp lệ.
 6. Phân trang/filter để tránh tải toàn bộ bảng.
 7. Admin authorization tests và aggregate tests.
+8. Xuất CSV đơn hàng theo bộ lọc.
+9. Database notifications cho cập nhật trạng thái đơn.
 
 ### Dependency
 
@@ -424,7 +426,6 @@ MVP sẵn sàng demo/triển khai cho một cửa hàng.
 
 - Multi-store/merchant.
 - Shipper account/dispatch/GPS.
-- Voucher.
 - Review/rating.
 - Online payment.
 - Realtime WebSocket.

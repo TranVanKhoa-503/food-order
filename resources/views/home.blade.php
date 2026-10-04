@@ -414,14 +414,17 @@
             <p class="hero-desc">
                 Hơn 50+ món ăn truyền thống và hiện đại được chế biến từ nguyên liệu tươi sạch mỗi ngày. Đặt món dễ dàng, giao tận tay thơm phức nóng hổi!
             </p>
+            <button type="button" onclick="toggleFoodAssistant(true)" style="display:inline-flex;align-items:center;gap:8px;padding:11px 16px;margin-bottom:22px;border:0;border-radius:var(--radius-md);background:linear-gradient(135deg,#FF5722,#FF9800);color:white;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 5px 14px rgba(255,87,34,.3);">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Chưa biết ăn gì? Để trợ lý gợi ý
+            </button>
             <div class="hero-badges">
                 <div class="hero-badge-item">
                     <i class="fa-solid fa-truck-fast"></i>
                     <span>Freeship mọi đơn hàng</span>
                 </div>
                 <div class="hero-badge-item">
-                    <i class="fa-solid fa-star"></i>
-                    <span>4.9/5 Đánh giá hài lòng</span>
+                    <i class="fa-solid fa-utensils"></i>
+                    <span>Thực đơn cập nhật mỗi ngày</span>
                 </div>
                 <div class="hero-badge-item">
                     <i class="fa-solid fa-shield-heart"></i>
@@ -449,6 +452,15 @@
             </a>
         @endforeach
     </div>
+
+    <form method="GET" action="{{ route('home') }}" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:20px 0;">
+        @if(request('search'))<input type="hidden" name="search" value="{{ request('search') }}">@endif
+        @if($categoryId)<input type="hidden" name="category" value="{{ $categoryId }}">@endif
+        <span style="font-size:13px;font-weight:700;color:#64748B;">Khoảng giá:</span>
+        <input type="number" name="min_price" min="0" value="{{ request('min_price') }}" placeholder="Từ (₫)" style="width:120px;padding:8px 10px;border:1px solid var(--border-color);border-radius:var(--radius-md);">
+        <input type="number" name="max_price" min="0" value="{{ request('max_price') }}" placeholder="Đến (₫)" style="width:120px;padding:8px 10px;border:1px solid var(--border-color);border-radius:var(--radius-md);">
+        <button type="submit" class="btn btn-primary" style="padding:8px 14px;"><i class="fa-solid fa-filter"></i> Lọc giá</button>
+    </form>
 
     <!-- Section Header / Search Notification -->
     <div class="section-header">
@@ -487,12 +499,12 @@
                         @endif
 
                         <div class="food-rating-badge">
-                            <i class="fa-solid fa-star"></i> 4.9
+                            <i class="fa-solid fa-fire"></i> Món nổi bật
                         </div>
                     </div>
 
                     <div class="food-content">
-                        <h3 class="food-name">{{ $food->name }}</h3>
+                        <h3 class="food-name"><a href="{{ route('foods.show', $food) }}" style="color:inherit;text-decoration:none;">{{ $food->name }}</a></h3>
                         <p class="food-desc">{{ $food->description }}</p>
 
                         <div class="food-footer">
@@ -501,7 +513,7 @@
                             </div>
 
                             <button class="add-to-cart-btn" 
-                                    onclick="addToCart({{ $food->id }}, '{{ addslashes($food->name) }}', {{ $food->price }}, '{{ addslashes($food->image) }}')">
+                                    onclick="addToCart({{ $food->id }}, @js($food->name), {{ $food->price }}, @js($food->image))">
                                 <i class="fa-solid fa-plus"></i> Thêm món
                             </button>
                         </div>

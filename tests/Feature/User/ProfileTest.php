@@ -101,4 +101,18 @@ class ProfileTest extends TestCase
         $this->assertSame(UserRole::User, $user->role);
         $this->assertTrue($user->is_active);
     }
+
+    public function test_user_cannot_update_profile_with_invalid_phone_format(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)
+            ->putJson('/api/v1/user/profile', [
+                'name' => 'Tên Hợp Lệ',
+                'phone' => '12345678', // Invalid format
+            ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['phone']);
+    }
 }

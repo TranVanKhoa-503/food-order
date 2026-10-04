@@ -16,8 +16,13 @@
             <option value="completed" {{ ($status ?? '') === 'completed' ? 'selected' : '' }}>Hoàn tất (completed)</option>
             <option value="cancelled" {{ ($status ?? '') === 'cancelled' ? 'selected' : '' }}>Đã hủy (cancelled)</option>
         </select>
+        <input type="date" name="from" value="{{ $from ?? '' }}" title="Từ ngày" style="padding:8px 10px;border:1px solid var(--border-color);border-radius:var(--radius-md);">
+        <input type="date" name="to" value="{{ $to ?? '' }}" title="Đến ngày" style="padding:8px 10px;border:1px solid var(--border-color);border-radius:var(--radius-md);">
         <button type="submit" class="btn btn-primary"><i class="fa-solid fa-filter"></i> Lọc đơn</button>
-        @if(!empty($search) || !empty($status))
+        <a href="{{ route('admin.orders.export', array_filter(['search' => $search ?? '', 'status' => $status ?? '', 'from' => $from ?? '', 'to' => $to ?? ''])) }}" class="btn" style="background:#ECFDF5;color:#047857;">
+            <i class="fa-solid fa-file-csv"></i> Xuất CSV
+        </a>
+        @if(!empty($search) || !empty($status) || !empty($from) || !empty($to))
             <a href="{{ route('admin.orders.index') }}" class="btn" style="background: #F1F5F9; color: #64748B;">Xóa lọc</a>
         @endif
     </form>
@@ -37,13 +42,16 @@
             @forelse($orders as $order)
                 <tr>
                     <td>
-                        <strong style="color: var(--primary);">{{ $order->order_code }}</strong>
+                        <a href="{{ route('admin.orders.show', $order) }}" style="color: var(--primary);font-weight:800;">{{ $order->order_code }}</a>
                         <div style="font-size: 11px; color: #94A3B8;">{{ $order->created_at->format('d/m/Y H:i') }}</div>
                     </td>
                     <td>
                         <div style="font-weight: 700;">{{ $order->customer_name }}</div>
                         <div style="font-size: 12px; color: #64748B;">{{ $order->customer_phone }}</div>
                         <div style="font-size: 12px; color: #94A3B8; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $order->delivery_address }}</div>
+                        @if($order->delivery_zone_name)
+                            <div style="font-size: 11px; color: #2563EB;">Khu vực: {{ $order->delivery_zone_name }}</div>
+                        @endif
                     </td>
                     <td>
                         @foreach($order->items as $item)
@@ -90,15 +98,12 @@
                                 <button onclick="updateOrderStatus({{ $order->id }}, 'delivering')" class="btn" style="background: #CFFAFE; color: #0E7490; padding: 4px 8px; font-size: 11px;">
                                     Giao hàng
                                 </button>
-                                <button onclick="updateOrderStatus({{ $order->id }}, 'cancelled', true)" class="btn" style="background: #FEE2E2; color: #B91C1C; padding: 4px 8px; font-size: 11px;">
-                                    Hủy
-                                </button>
                             @elseif($order->status->value === 'delivering')
                                 <button onclick="updateOrderStatus({{ $order->id }}, 'completed')" class="btn" style="background: #D1FAE5; color: #047857; padding: 4px 8px; font-size: 11px;">
                                     Hoàn tất
                                 </button>
                                 <button onclick="updateOrderStatus({{ $order->id }}, 'cancelled', true)" class="btn" style="background: #FEE2E2; color: #B91C1C; padding: 4px 8px; font-size: 11px;">
-                                    Hủy
+                                    Hủy (Thất bại)
                                 </button>
                             @else
                                 <span style="font-size: 12px; color: #94A3B8; font-style: italic;">Không có hành động</span>

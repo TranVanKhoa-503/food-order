@@ -86,14 +86,6 @@ class FoodController extends Controller
             return new FoodResource($food);
         }
 
-        return view('home', [
-            'selectedFood' => $food,
-            'foods' => Food::with('category')->where('is_available', true)->latest()->get(),
-            'categories' => Category::withCount(['foods' => function ($q) {
-                $q->where('is_available', true);
-            }])->get(),
-            'categoryId' => null,
-            'search' => '',
-        ]);
+        return view('foods.show', compact('food'));
     }
 }

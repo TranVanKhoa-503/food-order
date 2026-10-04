@@ -2,7 +2,7 @@
 
 ## 1. Trạng thái sẵn sàng
 
-Source hiện tại **chưa sẵn sàng production** vì Auth/Admin chưa có và checkout còn giả lập. Schema/test foundation đã hoàn thành trong Sprint 0. Tài liệu này là quy trình mục tiêu cho MVP sau Sprint 7, dùng đúng Laravel + Blade + Vite hiện có.
+Source hiện tại là MVP đồ án một cửa hàng; tài liệu này mô tả cách triển khai sau khi đã có Auth, Admin, checkout COD, voucher và cấu hình cửa hàng.
 
 Không dùng Docker, Redis, microservices hoặc queue worker trong quy trình này.
 
@@ -144,8 +144,9 @@ Trình tự một release:
 5. Bảo toàn `.env` và `APP_KEY`.
 6. Chạy frontend build hoặc đưa `public/build` đã build lên.
 7. Chạy `php artisan migrate --force`.
-8. Bảo đảm quyền ghi cho `storage/` và `bootstrap/cache/`.
-9. Clear/cache lại cấu hình:
+8. Bảo đảm symbolic link cho storage bằng `php artisan storage:link`.
+9. Bảo đảm quyền ghi cho `storage/` và `bootstrap/cache/`.
+10. Clear/cache lại cấu hình:
 
 ```powershell
 php artisan optimize:clear
@@ -154,8 +155,8 @@ php artisan route:cache
 php artisan view:cache
 ```
 
-10. Tắt maintenance mode.
-11. Chạy smoke test.
+11. Tắt maintenance mode.
+12. Chạy smoke test.
 
 Nếu dùng maintenance mode, các lệnh Laravel tương ứng là:
 
@@ -185,15 +186,9 @@ Trang chủ hiện phụ thuộc Google Fonts, Font Awesome CDN và ảnh Unspla
 
 ## 9. File storage
 
-Source hiện chỉ lưu URL ảnh trong `foods.image`; chưa có upload flow. Vì vậy release hiện không bắt buộc `storage:link`.
+Admin có thể lưu URL ảnh hoặc upload ảnh vào `storage/app/public/foods`. Production cần chạy `php artisan storage:link` và backup thư mục uploaded files.
 
-Nếu Sprint sau thêm upload vào `storage/app/public`, lúc đó mới:
-
-- Chạy `php artisan storage:link`.
-- Backup uploaded files.
-- Validate MIME/size và không tin filename của user.
-
-Không thêm storage service ngoài khi chưa có yêu cầu.
+Upload đã validate MIME/size ở Form Request; không tin filename do người dùng gửi. Không cần thêm storage service ngoài cho phạm vi đồ án.
 
 ## 10. Production hardening
 

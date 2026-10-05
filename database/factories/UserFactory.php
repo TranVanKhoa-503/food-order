@@ -55,6 +55,13 @@ class UserFactory extends Factory
         ]);
     }
 
+    public function shipper(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => UserRole::Shipper->value,
+        ]);
+    }
+
     public function inactive(): static
     {
         return $this->state(fn (array $attributes) => [

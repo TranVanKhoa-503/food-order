@@ -11,7 +11,6 @@
             <option value="">Tất cả trạng thái</option>
             <option value="pending" {{ ($status ?? '') === 'pending' ? 'selected' : '' }}>Chờ xác nhận (pending)</option>
             <option value="confirmed" {{ ($status ?? '') === 'confirmed' ? 'selected' : '' }}>Đã xác nhận (confirmed)</option>
-            <option value="preparing" {{ ($status ?? '') === 'preparing' ? 'selected' : '' }}>Đang chế biến (preparing)</option>
             <option value="delivering" {{ ($status ?? '') === 'delivering' ? 'selected' : '' }}>Đang giao (delivering)</option>
             <option value="completed" {{ ($status ?? '') === 'completed' ? 'selected' : '' }}>Hoàn tất (completed)</option>
             <option value="cancelled" {{ ($status ?? '') === 'cancelled' ? 'selected' : '' }}>Đã hủy (cancelled)</option>
@@ -67,7 +66,6 @@
                             $statusColors = [
                                 'pending' => ['bg' => '#FEF3C7', 'color' => '#D97706'],
                                 'confirmed' => ['bg' => '#E0E7FF', 'color' => '#4338CA'],
-                                'preparing' => ['bg' => '#EDE9FE', 'color' => '#6D28D9'],
                                 'delivering' => ['bg' => '#CFFAFE', 'color' => '#0E7490'],
                                 'completed' => ['bg' => '#D1FAE5', 'color' => '#047857'],
                                 'cancelled' => ['bg' => '#FEE2E2', 'color' => '#B91C1C'],
@@ -88,15 +86,11 @@
                                     Hủy
                                 </button>
                             @elseif($order->status->value === 'confirmed')
-                                <button onclick="updateOrderStatus({{ $order->id }}, 'preparing')" class="btn" style="background: #EDE9FE; color: #6D28D9; padding: 4px 8px; font-size: 11px;">
-                                    Chế biến
+                                <button onclick="updateOrderStatus({{ $order->id }}, 'delivering')" class="btn" style="background: #CFFAFE; color: #0E7490; padding: 4px 8px; font-size: 11px;">
+                                    Giao hàng
                                 </button>
                                 <button onclick="updateOrderStatus({{ $order->id }}, 'cancelled', true)" class="btn" style="background: #FEE2E2; color: #B91C1C; padding: 4px 8px; font-size: 11px;">
                                     Hủy
-                                </button>
-                            @elseif($order->status->value === 'preparing')
-                                <button onclick="updateOrderStatus({{ $order->id }}, 'delivering')" class="btn" style="background: #CFFAFE; color: #0E7490; padding: 4px 8px; font-size: 11px;">
-                                    Giao hàng
                                 </button>
                             @elseif($order->status->value === 'delivering')
                                 <button onclick="updateOrderStatus({{ $order->id }}, 'completed')" class="btn" style="background: #D1FAE5; color: #047857; padding: 4px 8px; font-size: 11px;">

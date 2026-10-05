@@ -18,7 +18,9 @@ use App\Http\Controllers\FoodController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\RecommendationController;
+use App\Http\Controllers\Shipper\ShipperOrderController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VoucherCheckController;
 use Illuminate\Support\Facades\Route;
 
 // Web Public Routes
@@ -66,6 +68,13 @@ Route::middleware(['auth', 'active', 'admin'])->prefix('admin')->name('admin.')-
     Route::get('/settings', [AdminStoreSettingController::class, 'edit'])->name('settings.edit');
 });
 
+// Web Shipper Routes
+Route::middleware(['auth', 'active', 'shipper'])->prefix('shipper')->name('shipper.')->group(function () {
+    Route::get('/orders', [ShipperOrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{order}', [ShipperOrderController::class, 'show'])->name('orders.show');
+    Route::patch('/orders/{order}/status', [ShipperOrderController::class, 'updateStatus'])->name('orders.status');
+});
+
 // API v1 Routes (Session + Cookie + CSRF per ARCHITECTURE.md)
 Route::prefix('api/v1')->group(function () {
     // Public Catalog API
@@ -75,6 +84,7 @@ Route::prefix('api/v1')->group(function () {
     Route::get('/foods', [FoodController::class, 'index']);
     Route::get('/foods/{food}', [FoodController::class, 'show']);
     Route::post('/recommendations', [RecommendationController::class, 'store']);
+    Route::post('/vouchers/check', [VoucherCheckController::class, 'check']);
 
     // API Guest Routes
     Route::middleware('guest')->group(function () {
@@ -151,5 +161,12 @@ Route::prefix('api/v1')->group(function () {
         Route::post('/delivery-zones', [AdminDeliveryZoneController::class, 'store']);
         Route::put('/delivery-zones/{deliveryZone}', [AdminDeliveryZoneController::class, 'update']);
         Route::delete('/delivery-zones/{deliveryZone}', [AdminDeliveryZoneController::class, 'destroy']);
+    });
+
+    // API Shipper Routes
+    Route::middleware(['auth', 'active', 'shipper'])->prefix('shipper')->group(function () {
+        Route::get('/orders', [ShipperOrderController::class, 'index']);
+        Route::get('/orders/{order}', [ShipperOrderController::class, 'show']);
+        Route::patch('/orders/{order}/status', [ShipperOrderController::class, 'updateStatus']);
     });
 });

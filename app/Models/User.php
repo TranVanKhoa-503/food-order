@@ -54,6 +54,11 @@ class User extends Authenticatable
         return $this->role === UserRole::Admin;
     }
 
+    public function isShipper(): bool
+    {
+        return $this->role === UserRole::Shipper;
+    }
+
     /**
      * Get the attributes that should be cast.
      *
@@ -66,6 +71,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'role' => UserRole::class,
             'is_active' => 'boolean',
+            'unlocked_at' => 'datetime',
         ];
     }
 }

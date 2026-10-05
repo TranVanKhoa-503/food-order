@@ -20,7 +20,7 @@
         <label style="font-size:13px;font-weight:700;color:#64748B;">Lọc trạng thái</label>
         <select name="status" style="padding:8px 12px;border:1px solid var(--border-color);border-radius:var(--radius-md);">
             <option value="">Tất cả</option>
-            @foreach(['pending' => 'Chờ xác nhận', 'confirmed' => 'Đã xác nhận', 'preparing' => 'Đang chế biến', 'delivering' => 'Đang giao', 'completed' => 'Hoàn thành', 'cancelled' => 'Đã hủy'] as $value => $label)
+            @foreach(['pending' => 'Chờ xác nhận', 'confirmed' => 'Đã xác nhận', 'delivering' => 'Đang giao', 'completed' => 'Hoàn thành', 'cancelled' => 'Đã hủy'] as $value => $label)
                 <option value="{{ $value }}" {{ ($status ?? '') === $value ? 'selected' : '' }}>{{ $label }}</option>
             @endforeach
         </select>
@@ -49,7 +49,6 @@
                                 $statusColors = [
                                     'pending' => ['bg' => '#FEF3C7', 'color' => '#D97706', 'text' => 'Chờ xác nhận'],
                                     'confirmed' => ['bg' => '#E0E7FF', 'color' => '#4338CA', 'text' => 'Đã xác nhận'],
-                                    'preparing' => ['bg' => '#EDE9FE', 'color' => '#6D28D9', 'text' => 'Đang chế biến'],
                                     'delivering' => ['bg' => '#CFFAFE', 'color' => '#0E7490', 'text' => 'Đang giao hàng'],
                                     'completed' => ['bg' => '#D1FAE5', 'color' => '#047857', 'text' => 'Giao thành công'],
                                     'cancelled' => ['bg' => '#FEE2E2', 'color' => '#B91C1C', 'text' => 'Đã hủy'],

@@ -12,7 +12,7 @@ class OrderPolicy
      */
     public function view(User $user, Order $order): bool
     {
-        return $user->isAdmin() || $user->id === $order->user_id;
+        return $user->isAdmin() || $user->isShipper() || $user->id === $order->user_id;
     }
 
     /**

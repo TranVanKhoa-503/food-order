@@ -67,9 +67,16 @@ class AdminUserController extends Controller
             throw new UnprocessableEntityHttpException('Không thể tự vô hiệu hóa tài khoản quản trị của chính mình.');
         }
 
-        $user->forceFill([
-            'is_active' => (bool) $request->validated('is_active'),
-        ])->save();
+        $isActive = (bool) $request->validated('is_active');
+        $attributes = [
+            'is_active' => $isActive,
+        ];
+
+        if ($isActive) {
+            $attributes['unlocked_at'] = now();
+        }
+
+        $user->forceFill($attributes)->save();
 
         return new UserResource($user);
     }

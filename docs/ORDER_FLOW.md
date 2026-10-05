@@ -4,7 +4,7 @@
 
 Order status phải phản ánh đúng tiến trình xử lý của một cửa hàng:
 
-`pending → confirmed → preparing → delivering → completed`
+`pending → confirmed → delivering → completed`
 
 `cancelled` là nhánh kết thúc khi order không thể tiếp tục. Frontend chỉ hiển thị thao tác phù hợp; backend mới là nơi quyết định transition có hợp lệ hay không.
 
@@ -12,7 +12,6 @@ Giá trị lưu trong database dùng chữ thường:
 
 - `pending`
 - `confirmed`
-- `preparing`
 - `delivering`
 - `completed`
 - `cancelled`
@@ -26,10 +25,8 @@ stateDiagram-v2
     pending --> confirmed: Admin xác nhận
     pending --> cancelled: User/Admin hủy
 
-    confirmed --> preparing: Admin bắt đầu chuẩn bị
+    confirmed --> delivering: Admin bàn giao giao hàng
     confirmed --> cancelled: Admin hủy có lý do
-
-    preparing --> delivering: Admin bàn giao giao hàng
 
     delivering --> completed: Admin xác nhận giao thành công
     delivering --> cancelled: Giao hàng thất bại / Admin hủy có lý do
@@ -44,7 +41,6 @@ stateDiagram-v2
 | --- | --- | --- |
 | `pending` | Order vừa được tạo, chờ cửa hàng kiểm tra | Backend khi user checkout |
 | `confirmed` | Cửa hàng nhận xử lý order | Admin |
-| `preparing` | Cửa hàng đang chuẩn bị món | Admin |
 | `delivering` | Order đã rời cửa hàng và đang giao | Admin |
 | `completed` | Giao thành công; COD được coi là đã thu | Admin |
 | `cancelled` | Order dừng và không được xử lý tiếp (bao gồm giao hàng thất bại) | User hoặc Admin theo rule bên dưới |
@@ -56,9 +52,8 @@ stateDiagram-v2
 | Không có | `pending` | Có | Có | Chỉ thông qua checkout; backend tạo order |
 | `pending` | `confirmed` | Không | Có | Order còn tồn tại và chưa bị xử lý bởi request khác |
 | `pending` | `cancelled` | Có | Có | User chỉ được hủy order của chính mình |
-| `confirmed` | `preparing` | Không | Có | Đi đúng bước kế tiếp |
+| `confirmed` | `delivering` | Không | Có | Đi đúng bước kế tiếp |
 | `confirmed` | `cancelled` | Không | Có | Bắt buộc có lý do |
-| `preparing` | `delivering` | Không | Có | Đi đúng bước kế tiếp |
 | `delivering` | `completed` | Không | Có | Xác nhận giao thành công |
 | `delivering` | `cancelled` | Không | Có | Giao hàng thất bại (không liên lạc được, khách từ chối, sai địa chỉ), bắt buộc có lý do |
 | `completed` | Bất kỳ | Không | Không | Terminal |
@@ -121,9 +116,8 @@ Transition map mục tiêu:
 ```php
 [
     'pending' => ['confirmed', 'cancelled'],
-    'confirmed' => ['preparing', 'cancelled'],
-    'preparing' => ['delivering'],
-    'delivering' => ['completed'],
+    'confirmed' => ['delivering', 'cancelled'],
+    'delivering' => ['completed', 'cancelled'],
     'completed' => [],
     'cancelled' => [],
 ]
@@ -162,3 +156,10 @@ Logic này đặt trong một `OrderStatusService` hoặc action tương đươn
 - Frontend phải xử lý HTTP 409 và tải lại order; không tự sửa trạng thái local.
 
 Ẩn nút không phải authorization. Mọi rule trong tài liệu này phải được kiểm tra lại ở backend.
+
+## 11. Chính sách chống bùng hàng (Anti-Bom Policy)
+
+- **Hủy lúc vừa đặt (`pending → cancelled`):** Khách hàng đổi ý hoặc chỉnh sửa món khi đơn chưa chuẩn bị/giao. **Không bị tính vi phạm**.
+- **Hủy khi đang giao (`delivering → cancelled`):** Shipper mang hàng đến nhưng khách không nhận (không nghe máy, từ chối nhận, bom hàng). Được ghi nhận là **Giao hàng thất bại (1 vi phạm)**.
+- **Tự động khóa tài khoản:** Khách tích lũy từ **3 đơn giao hàng thất bại** trong 30 ngày (hoặc từ lần mở khóa gần nhất) sẽ bị hệ thống tự động khóa (`is_active = false`).
+- **Mở khóa thủ công:** Admin có quyền mở khóa thủ công tại `/admin/users`. Khi mở khóa, trường `unlocked_at = now()` được cập nhật và bộ đếm vi phạm được reset lại từ đầu.

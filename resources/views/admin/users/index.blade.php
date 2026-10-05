@@ -10,6 +10,7 @@
         <select name="role" style="padding: 8px 14px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 14px;">
             <option value="">Tất cả vai trò</option>
             <option value="user" {{ ($role ?? '') === 'user' ? 'selected' : '' }}>User (Khách hàng)</option>
+            <option value="shipper" {{ ($role ?? '') === 'shipper' ? 'selected' : '' }}>Shipper (Giao hàng)</option>
             <option value="admin" {{ ($role ?? '') === 'admin' ? 'selected' : '' }}>Admin (Quản trị)</option>
         </select>
         <select name="is_active" style="padding: 8px 14px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 14px;">
@@ -45,6 +46,8 @@
                     <td>
                         @if($u->isAdmin())
                             <span class="badge" style="background: #EDE9FE; color: #6D28D9;">ADMIN</span>
+                        @elseif($u->isShipper())
+                            <span class="badge" style="background: #E0F2FE; color: #0284C7;"><i class="fa-solid fa-motorcycle"></i> SHIPPER</span>
                         @else
                             <span class="badge" style="background: #F1F5F9; color: #475569;">USER</span>
                         @endif
@@ -52,6 +55,9 @@
                     <td>
                         @if($u->is_active)
                             <span class="badge" style="background: #D1FAE5; color: #047857;">Hoạt động</span>
+                            @if($u->unlocked_at)
+                                <div style="font-size: 11px; color: #64748B; margin-top: 3px;">Mở lại: {{ $u->unlocked_at->format('d/m/Y H:i') }}</div>
+                            @endif
                         @else
                             <span class="badge" style="background: #FEE2E2; color: #B91C1C;">Đã khóa</span>
                         @endif

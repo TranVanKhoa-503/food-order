@@ -93,17 +93,12 @@ class AdminOrderManagementTest extends TestCase
             'status' => 'confirmed',
         ])->assertOk()->assertJsonPath('data.status', 'confirmed');
 
-        // 2. Confirmed -> Preparing
-        $this->actingAs($admin)->patchJson('/api/v1/admin/orders/'.$order->id.'/status', [
-            'status' => 'preparing',
-        ])->assertOk()->assertJsonPath('data.status', 'preparing');
-
-        // 3. Preparing -> Delivering
+        // 2. Confirmed -> Delivering
         $this->actingAs($admin)->patchJson('/api/v1/admin/orders/'.$order->id.'/status', [
             'status' => 'delivering',
         ])->assertOk()->assertJsonPath('data.status', 'delivering');
 
-        // 4. Delivering -> Completed
+        // 3. Delivering -> Completed
         $this->actingAs($admin)->patchJson('/api/v1/admin/orders/'.$order->id.'/status', [
             'status' => 'completed',
         ])->assertOk()
@@ -116,24 +111,18 @@ class AdminOrderManagementTest extends TestCase
         $this->assertNotNull($order->completed_at);
     }
 
-    public function test_admin_cannot_cancel_order_after_preparing(): void
+    public function test_admin_cannot_skip_pending_directly_to_delivering(): void
     {
         $admin = User::factory()->admin()->create();
         $order = Order::factory()->create([
-            'status' => OrderStatus::Preparing,
+            'status' => OrderStatus::Pending,
         ]);
 
         $response = $this->actingAs($admin)->patchJson('/api/v1/admin/orders/'.$order->id.'/status', [
-            'status' => 'cancelled',
-            'reason' => 'Hết nguyên liệu bất khả kháng',
+            'status' => 'delivering',
         ]);
 
         $response->assertStatus(409);
-
-        $this->assertDatabaseHas('orders', [
-            'id' => $order->id,
-            'status' => OrderStatus::Preparing->value,
-        ]);
     }
 
     public function test_admin_can_cancel_confirmed_order_with_reason(): void

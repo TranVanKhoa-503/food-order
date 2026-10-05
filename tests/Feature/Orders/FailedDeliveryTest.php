@@ -67,19 +67,19 @@ class FailedDeliveryTest extends TestCase
         $this->assertSame(OrderStatus::Delivering, $order->fresh()->status);
     }
 
-    public function test_admin_cannot_cancel_preparing_order_directly(): void
+    public function test_admin_cannot_cancel_completed_order_directly(): void
     {
         $admin = User::factory()->admin()->create();
         $order = Order::factory()->create([
-            'status' => OrderStatus::Preparing,
+            'status' => OrderStatus::Completed,
         ]);
 
         $response = $this->actingAs($admin)->patchJson('/api/v1/admin/orders/'.$order->id.'/status', [
             'status' => OrderStatus::Cancelled->value,
-            'reason' => 'Hết nguyên liệu chế biến món ăn',
+            'reason' => 'Không thể hủy đơn đã hoàn tất',
         ]);
 
         $response->assertStatus(409);
-        $this->assertSame(OrderStatus::Preparing, $order->fresh()->status);
+        $this->assertSame(OrderStatus::Completed, $order->fresh()->status);
     }
 }

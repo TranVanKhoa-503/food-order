@@ -52,7 +52,6 @@ class OrderStatusUpdatedNotification extends Notification
         return match ($status) {
             OrderStatus::Pending => 'Chờ xác nhận',
             OrderStatus::Confirmed => 'Đã xác nhận',
-            OrderStatus::Preparing => 'Đang chế biến',
             OrderStatus::Delivering => 'Đang giao hàng',
             OrderStatus::Completed => 'Hoàn tất',
             OrderStatus::Cancelled => 'Đã hủy',

@@ -7,7 +7,6 @@
     $labels = [
         'pending' => 'Chờ xác nhận',
         'confirmed' => 'Đã xác nhận',
-        'preparing' => 'Đang chế biến',
         'delivering' => 'Đang giao hàng',
         'completed' => 'Đã hoàn thành',
         'cancelled' => 'Đã hủy',

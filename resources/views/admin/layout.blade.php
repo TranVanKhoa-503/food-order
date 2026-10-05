@@ -235,6 +235,9 @@
         </div>
 
         <div class="sidebar-footer">
+            <a href="{{ route('shipper.orders.index') }}" class="menu-item" target="_blank">
+                <i class="fa-solid fa-motorcycle"></i> Cổng giao hàng (Shipper)
+            </a>
             <a href="{{ route('home') }}" class="menu-item" target="_blank">
                 <i class="fa-solid fa-arrow-up-right-from-square"></i> Xem website
             </a>

@@ -889,12 +889,18 @@
                     @else
                         <div style="display: flex; align-items: center; gap: 8px;">
                             @if(Auth::user()->isAdmin())
-                                <a href="{{ route('admin.dashboard') }}" style="text-decoration: none; background: #EDE9FE; color: #6D28D9; border: 1px solid #DDD6FE; padding: 7px 12px; border-radius: 50px; font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 6px;">
+                                <a href="{{ route('admin.dashboard') }}" style="text-decoration: none; background: #EDE9FE; color: #6D28D9; border: 1px solid #DDD6FE; padding: 7px 12px; border-radius: 50px; font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 6px; white-space: nowrap;">
                                     <i class="fa-solid fa-chart-pie"></i> Quản trị
                                 </a>
                             @endif
 
-                            <a href="{{ route('orders.index') }}" style="text-decoration: none; background: #F1F5F9; color: var(--dark); border: 1px solid var(--border-color); padding: 7px 12px; border-radius: 50px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                            @if(Auth::user()->isShipper())
+                                <a href="{{ route('shipper.orders.index') }}" style="text-decoration: none; background: #E0F2FE; color: #0284C7; border: 1px solid #BAE6FD; padding: 7px 12px; border-radius: 50px; font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 6px; white-space: nowrap;">
+                                    <i class="fa-solid fa-motorcycle"></i> Giao hàng
+                                </a>
+                            @endif
+
+                            <a href="{{ route('orders.index') }}" style="text-decoration: none; background: #F1F5F9; color: var(--dark); border: 1px solid var(--border-color); padding: 7px 12px; border-radius: 50px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; white-space: nowrap;">
                                 <i class="fa-solid fa-receipt" style="color: var(--primary);"></i> Đơn mua
                             </a>
 
@@ -990,8 +996,13 @@
                             <option value="">Chọn khu vực giao hàng *</option>
                         </select>
                     </div>
-                    <textarea id="checkoutNote" placeholder="Ghi chú thêm cho nhà hàng (tùy chọn)..." rows="2" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px; margin-bottom: 12px;"></textarea>
-                    <input type="text" id="checkoutVoucher" placeholder="Mã giảm giá (nếu có)" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px; margin-bottom: 12px;">
+                    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                        <input type="text" id="checkoutVoucher" placeholder="Mã giảm giá (nếu có)" style="flex: 1; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px; text-transform: uppercase;">
+                        <button type="button" id="applyVoucherBtn" onclick="applyVoucher()" style="padding: 8px 14px; background: var(--primary); color: white; border: none; border-radius: var(--radius-md); font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;">
+                            Áp dụng
+                        </button>
+                    </div>
+                    <div id="voucherFeedback" style="font-size: 12px; margin-bottom: 12px; display: none; font-weight: 600;"></div>
 
                     <button class="checkout-btn" id="submitOrderBtn" onclick="submitRealOrder()" {{ $storeSetting && ! $storeSetting->is_open ? 'disabled' : '' }}>
                         <i class="fa-solid fa-circle-check"></i> Xác Nhận Đặt Hàng
@@ -1123,9 +1134,24 @@
 
         const storeShippingFee = Number(@json((int) ($storeSetting?->shipping_fee ?? 0)));
         let deliveryZones = [];
+        let appliedVoucher = null;
 
         function formatCurrency(amount) {
             return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+        }
+
+        function calculateDiscount(subtotal) {
+            if (!appliedVoucher || subtotal <= 0) return 0;
+            let discount = 0;
+            if (appliedVoucher.discount_type === 'percent') {
+                discount = Math.floor(subtotal * (Number(appliedVoucher.discount_value) / 100));
+            } else {
+                discount = Number(appliedVoucher.discount_value);
+            }
+            if (appliedVoucher.max_discount_amount) {
+                discount = Math.min(discount, Number(appliedVoucher.max_discount_amount));
+            }
+            return Math.min(Math.max(0, discount), subtotal);
         }
 
         function selectedShippingFee() {
@@ -1140,7 +1166,8 @@
             if (feeEl) feeEl.textContent = fee > 0 ? formatCurrency(fee) : 'Miễn phí';
             const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             const totalEl = document.getElementById('cartTotal');
-            if (totalEl && cart.length > 0) totalEl.textContent = formatCurrency(subtotal + fee);
+            const discountAmount = calculateDiscount(subtotal);
+            if (totalEl && cart.length > 0) totalEl.textContent = formatCurrency(Math.max(0, subtotal - discountAmount + fee));
         }
 
         async function loadDeliveryZones() {
@@ -1282,8 +1309,11 @@
             body.replaceChildren(fragment);
             footer.style.display = 'block';
             subtotalEl.innerText = formatCurrency(totalAmount);
-            totalEl.innerText = formatCurrency(totalAmount + selectedShippingFee());
-            if (discountEl) discountEl.innerText = formatCurrency(0);
+            const discountAmount = calculateDiscount(totalAmount);
+            if (discountEl) {
+                discountEl.innerText = discountAmount > 0 ? ('-' + formatCurrency(discountAmount)) : '0 ₫';
+            }
+            totalEl.innerText = formatCurrency(Math.max(0, totalAmount - discountAmount + selectedShippingFee()));
             updateShippingFeeUI();
         }
 
@@ -1295,6 +1325,81 @@
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 3000);
+        }
+
+        async function applyVoucher() {
+            const voucherEl = document.getElementById('checkoutVoucher');
+            const feedbackEl = document.getElementById('voucherFeedback');
+            const applyBtn = document.getElementById('applyVoucherBtn');
+
+            if (!voucherEl || !voucherEl.value.trim()) {
+                if (feedbackEl) {
+                    feedbackEl.style.display = 'block';
+                    feedbackEl.style.color = '#DC2626';
+                    feedbackEl.innerText = 'Vui lòng nhập mã voucher!';
+                }
+                return;
+            }
+
+            const code = voucherEl.value.trim().toUpperCase();
+            voucherEl.value = code;
+
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            if (subtotal <= 0) {
+                alert('Giỏ hàng của bạn đang trống!');
+                return;
+            }
+
+            if (applyBtn) {
+                applyBtn.disabled = true;
+                applyBtn.innerText = '...';
+            }
+
+            try {
+                const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                const res = await fetch('/api/v1/vouchers/check', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': token,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        voucher_code: code,
+                        subtotal: subtotal
+                    })
+                });
+
+                const data = await res.json();
+                if (res.ok && data.data) {
+                    appliedVoucher = data.data;
+                    updateCartUI();
+                    if (feedbackEl) {
+                        feedbackEl.style.display = 'block';
+                        feedbackEl.style.color = '#059669';
+                        feedbackEl.innerText = `✓ Áp dụng mã ${appliedVoucher.code}: Giảm ${formatCurrency(appliedVoucher.discount_amount)}`;
+                    }
+                } else {
+                    appliedVoucher = null;
+                    updateCartUI();
+                    if (feedbackEl) {
+                        feedbackEl.style.display = 'block';
+                        feedbackEl.style.color = '#DC2626';
+                        feedbackEl.innerText = '✕ ' + (data.message || 'Mã giảm giá không hợp lệ.');
+                    }
+                }
+            } catch (err) {
+                if (feedbackEl) {
+                    feedbackEl.style.display = 'block';
+                    feedbackEl.style.color = '#DC2626';
+                    feedbackEl.innerText = '✕ Lỗi kết nối kiểm tra mã giảm giá.';
+                }
+            } finally {
+                if (applyBtn) {
+                    applyBtn.disabled = false;
+                    applyBtn.innerText = 'Áp dụng';
+                }
+            }
         }
 
         async function submitRealOrder() {
@@ -1354,8 +1459,11 @@
 
                 if (res.ok) {
                     cart = [];
+                    appliedVoucher = null;
                     saveCart();
                     if (voucherEl) voucherEl.value = '';
+                    const feedbackEl = document.getElementById('voucherFeedback');
+                    if (feedbackEl) feedbackEl.style.display = 'none';
                     toggleCart(false);
                     alert(`🎉 ĐẶT HÀNG THÀNH CÔNG!\n\nMã đơn hàng: ${data.data.order_code}\nTổng thanh toán: ${formatCurrency(data.data.total_price)}\nPhương thức: Thanh toán khi nhận hàng (COD)\n\nChúng tôi sẽ giao tận nơi trong 15-30 phút!`);
                     window.location.href = '{{ route("orders.index") }}';

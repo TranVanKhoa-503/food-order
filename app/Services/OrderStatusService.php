@@ -19,12 +19,18 @@ class OrderStatusService
      */
     protected const TRANSITION_MAP = [
         'pending' => ['confirmed', 'cancelled'],
-        'confirmed' => ['preparing', 'cancelled'],
-        'preparing' => ['delivering'],
+        'confirmed' => ['delivering', 'cancelled'],
         'delivering' => ['completed', 'cancelled'],
         'completed' => [],
         'cancelled' => [],
     ];
+
+    /**
+     * Number of failed delivery cancellations (bùng hàng) within the evaluation window that triggers an automatic account lock.
+     */
+    public const MAX_FAILED_DELIVERY_THRESHOLD = 3;
+
+    public const MAX_CANCELLED_ORDERS_THRESHOLD = self::MAX_FAILED_DELIVERY_THRESHOLD;
 
     /**
      * Transition order to a new status atomically with lock and side effects.
@@ -96,6 +102,10 @@ class OrderStatusService
                 $reason,
             ));
 
+            if ($currentValue === 'delivering' && $targetStatus === OrderStatus::Cancelled) {
+                $this->checkAndLockCustomerIfExceededFailedDeliveries($lockedOrder->user);
+            }
+
             return $lockedOrder->fresh(['items', 'user', 'statusHistories.actor', 'voucher']);
         });
     }
@@ -145,5 +155,33 @@ class OrderStatusService
 
             return $lockedOrder->fresh(['items', 'user', 'statusHistories.actor', 'voucher']);
         });
+    }
+
+    /**
+     * Automatically lock customer account if they have accumulated too many failed deliveries (bom hàng).
+     */
+    protected function checkAndLockCustomerIfExceededFailedDeliveries(?User $customer): void
+    {
+        if (! $customer || $customer->isAdmin()) {
+            return;
+        }
+
+        $failedDeliveryCount = Order::query()
+            ->where('user_id', $customer->id)
+            ->where('status', OrderStatus::Cancelled)
+            ->whereHas('statusHistories', function ($q) {
+                $q->where('from_status', 'delivering')
+                    ->where('to_status', 'cancelled');
+            })
+            ->when(
+                $customer->unlocked_at,
+                fn ($q) => $q->where('cancelled_at', '>', $customer->unlocked_at),
+                fn ($q) => $q->where('cancelled_at', '>=', now()->subDays(30)),
+            )
+            ->count();
+
+        if ($failedDeliveryCount >= self::MAX_FAILED_DELIVERY_THRESHOLD) {
+            $customer->forceFill(['is_active' => false])->save();
+        }
     }
 }

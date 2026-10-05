@@ -12,9 +12,9 @@ class EnumsTest extends TestCase
 {
     public function test_foundation_enum_values_match_the_database_contract(): void
     {
-        $this->assertSame(['user', 'admin'], array_column(UserRole::cases(), 'value'));
+        $this->assertSame(['user', 'shipper', 'admin'], array_column(UserRole::cases(), 'value'));
         $this->assertSame(
-            ['pending', 'confirmed', 'preparing', 'delivering', 'completed', 'cancelled'],
+            ['pending', 'confirmed', 'delivering', 'completed', 'cancelled'],
             array_column(OrderStatus::cases(), 'value'),
         );
         $this->assertSame(['cod'], array_column(PaymentMethod::cases(), 'value'));

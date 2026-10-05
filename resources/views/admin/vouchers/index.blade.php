@@ -40,12 +40,12 @@
         <form id="voucherForm" onsubmit="submitVoucher(event)">
             <input type="hidden" id="voucherId">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-                <label>Mã voucher<input id="voucherCode" required maxlength="50" style="width:100%;padding:9px;margin-top:5px;"></label>
-                <label>Loại giảm<select id="voucherType" style="width:100%;padding:9px;margin-top:5px;"><option value="fixed">Số tiền</option><option value="percent">Phần trăm</option></select></label>
-                <label>Giá trị giảm<input id="voucherValue" type="number" min="1" required style="width:100%;padding:9px;margin-top:5px;"></label>
-                <label>Đơn tối thiểu<input id="voucherMin" type="number" min="0" value="0" style="width:100%;padding:9px;margin-top:5px;"></label>
-                <label>Giảm tối đa<input id="voucherMax" type="number" min="0" style="width:100%;padding:9px;margin-top:5px;"></label>
-                <label>Giới hạn lượt dùng<input id="voucherLimit" type="number" min="1" style="width:100%;padding:9px;margin-top:5px;"></label>
+                <label>Mã voucher<input id="voucherCode" required maxlength="50" placeholder="VD: GIAM50K" style="width:100%;padding:9px;margin-top:5px;"></label>
+                <label>Loại giảm<select id="voucherType" style="width:100%;padding:9px;margin-top:5px;"><option value="fixed">Số tiền cố định (₫)</option><option value="percent">Phần trăm (%)</option></select></label>
+                <label>Giá trị giảm<input id="voucherValue" type="number" min="1" required placeholder="VD: 50000 (đ) hoặc 20 (%)" style="width:100%;padding:9px;margin-top:5px;"></label>
+                <label>Đơn tối thiểu (₫)<input id="voucherMin" type="number" min="0" value="0" placeholder="0 nếu không yêu cầu" style="width:100%;padding:9px;margin-top:5px;"></label>
+                <label>Giảm tối đa (₫)<span style="font-size:11px;color:#64748B;font-weight:normal;"> (Bỏ trống = không giới hạn)</span><input id="voucherMax" type="number" min="0" placeholder="Để trống nếu không giới hạn (VD: 50000)" style="width:100%;padding:9px;margin-top:5px;"></label>
+                <label>Giới hạn lượt dùng<input id="voucherLimit" type="number" min="1" placeholder="Để trống nếu vô hạn" style="width:100%;padding:9px;margin-top:5px;"></label>
                 <label>Bắt đầu<input id="voucherStarts" type="datetime-local" style="width:100%;padding:9px;margin-top:5px;"></label>
                 <label>Kết thúc<input id="voucherEnds" type="datetime-local" style="width:100%;padding:9px;margin-top:5px;"></label>
             </div>

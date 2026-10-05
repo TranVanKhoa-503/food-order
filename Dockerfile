@@ -5,11 +5,13 @@ RUN apk add --no-cache \
     nginx \
     supervisor \
     curl \
+    ca-certificates \
     libpng-dev \
     libzip-dev \
     zip \
     unzip \
     oniguruma-dev \
+    && update-ca-certificates \
     && docker-php-ext-install pdo_mysql bcmath mbstring opcache
 
 # Get Composer from official image

@@ -59,11 +59,16 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
-            'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA')
-                    ? (file_exists(env('MYSQL_ATTR_SSL_CA')) ? env('MYSQL_ATTR_SSL_CA') : base_path(env('MYSQL_ATTR_SSL_CA')))
-                    : (file_exists(base_path('storage/certs/ca-bundle.pem')) ? base_path('storage/certs/ca-bundle.pem') : null),
-            ]) : [],
+            'options' => extension_loaded('pdo_mysql') ? (
+                in_array(env('DB_HOST'), ['127.0.0.1', 'localhost'], true)
+                    ? []
+                    : array_filter([
+                        PDO::MYSQL_ATTR_SSL_CA => file_exists('/etc/ssl/certs/ca-certificates.crt')
+                            ? '/etc/ssl/certs/ca-certificates.crt'
+                            : (file_exists(base_path('storage/certs/ca-bundle.pem')) ? base_path('storage/certs/ca-bundle.pem') : (file_exists(env('MYSQL_ATTR_SSL_CA', '')) ? env('MYSQL_ATTR_SSL_CA') : null)),
+                        PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,
+                    ], fn ($v) => ! is_null($v))
+            ) : [],
         ],
 
         'mariadb' => [

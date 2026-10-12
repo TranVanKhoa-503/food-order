@@ -32,7 +32,7 @@
                 <i class="fa-solid fa-scale-balanced" style="color: var(--primary); margin-right: 8px;"></i>
                 Báo Cáo Thu Chi & Lợi Nhuận Thực Tế
             </h2>
-            <p style="font-size: 13px; color: #64748B; margin-top: 4px;">Tổng hợp dòng tiền từ đơn hoàn tất, lương & hoa hồng shipper, và chi phí vận hành</p>
+            <p style="font-size: 13px; color: #64748B; margin-top: 4px;">Doanh thu theo ngày giao thành công; lương theo kỳ tháng, gồm bảng lương đã tạo và ước tính phần còn thiếu.</p>
         </div>
         <div style="display: flex; gap: 10px;">
             <a href="{{ route('admin.payrolls.index') }}" class="btn" style="background: #EEF2FF; color: #4338CA;">

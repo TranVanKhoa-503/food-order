@@ -63,6 +63,8 @@ class VoucherCheckController extends Controller
                 'discount_type' => $voucher->discount_type,
                 'discount_value' => (float) $voucher->discount_value,
                 'discount_amount' => $discountAmount,
+                'min_order_value' => (int) $voucher->min_order_value,
+                'max_discount_amount' => $voucher->max_discount_amount === null ? null : (int) $voucher->max_discount_amount,
                 'description' => $voucher->description,
             ],
         ]);

@@ -7,23 +7,22 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\OrderResource;
 use App\Models\Food;
-use App\Models\OperatingExpense;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\ShipperPayroll;
 use App\Models\User;
 use App\Services\ShipperPayrollService;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AdminDashboardController extends Controller
 {
     /**
      * Get aggregate statistics for admin dashboard (API) or render view (Web).
      */
-    public function index(Request $request): View|JsonResponse
+    public function index(Request $request, ShipperPayrollService $payrollService): View|JsonResponse
     {
         $request->validate([
             'from' => ['nullable', 'date'],
@@ -39,66 +38,18 @@ class AdminDashboardController extends Controller
                 ->when($to, fn ($query) => $query->whereDate('created_at', '<=', $to));
         };
 
-        $completedOrders = fn () => $ordersInRange()->where('status', OrderStatus::Completed);
-        $totalRevenue = (int) $completedOrders()->sum('total_price');
-
         $totalOrders = $ordersInRange()->count();
         $todayOrders = $ordersInRange()->whereDate('created_at', today())->count();
         $pendingOrders = $ordersInRange()->where('status', OrderStatus::Pending)->count();
 
-        // Financial & Payroll calculations
-        $payrollsInRange = ShipperPayroll::query();
-        if ($from && $to) {
-            $startDate = Carbon::parse($from);
-            $endDate = Carbon::parse($to);
-            $payrollsInRange->where(function ($q) use ($startDate, $endDate) {
-                $cur = $startDate->copy()->startOfMonth();
-                while ($cur->lte($endDate)) {
-                    $q->orWhere(function ($sub) use ($cur) {
-                        $sub->where('year', $cur->year)->where('month', $cur->month);
-                    });
-                    $cur->addMonth();
-                }
-            });
-        } elseif ($from) {
-            $startDate = Carbon::parse($from);
-            $payrollsInRange->where(function ($q) use ($startDate) {
-                $q->where('year', '>', $startDate->year)
-                    ->orWhere(function ($sub) use ($startDate) {
-                        $sub->where('year', $startDate->year)->where('month', '>=', $startDate->month);
-                    });
-            });
-        } elseif ($to) {
-            $endDate = Carbon::parse($to);
-            $payrollsInRange->where(function ($q) use ($endDate) {
-                $q->where('year', '<', $endDate->year)
-                    ->orWhere(function ($sub) use ($endDate) {
-                        $sub->where('year', $endDate->year)->where('month', '<=', $endDate->month);
-                    });
-            });
-        }
-
-        $payrollCount = $payrollsInRange->count();
-        if ($payrollCount > 0) {
-            $totalBaseSalary = (int) $payrollsInRange->sum('base_salary');
-            $totalCommission = (int) $payrollsInRange->sum('total_commission');
-        } else {
-            // Dynamic estimation if no formal payroll records exist yet
-            $activeShippersCount = User::query()->where('role', UserRole::Shipper)->where('is_active', true)->count();
-            $totalBaseSalary = $activeShippersCount * ShipperPayrollService::DEFAULT_BASE_SALARY;
-            $shippingFeeSum = (float) $completedOrders()->sum('shipping_fee');
-            $totalCommission = (int) round($shippingFeeSum * ShipperPayrollService::DEFAULT_COMMISSION_RATE);
-        }
-
-        $totalPayrollCost = $totalBaseSalary + $totalCommission;
-
-        $totalOperatingExpenses = (int) OperatingExpense::query()
-            ->when($from, fn ($q) => $q->whereDate('expense_date', '>=', $from))
-            ->when($to, fn ($q) => $q->whereDate('expense_date', '<=', $to))
-            ->sum('amount');
-
-        $totalExpenses = $totalPayrollCost + $totalOperatingExpenses;
-        $netProfit = $totalRevenue - $totalExpenses;
+        $financial = $payrollService->getFinancialSummary($from, $to);
+        $totalRevenue = $financial['total_revenue'];
+        $totalBaseSalary = $financial['total_base_salary'];
+        $totalCommission = $financial['total_commission'];
+        $totalPayrollCost = $financial['total_payroll_cost'];
+        $totalOperatingExpenses = $financial['total_operating_expenses'];
+        $totalExpenses = $financial['total_cost'];
+        $netProfit = $financial['net_profit'];
 
         // Aggregate status counts in a single query instead of 6 queries in a loop
         $rawStatusCounts = $ordersInRange()
@@ -120,8 +71,8 @@ class AdminDashboardController extends Controller
             ->selectRaw('food_name, SUM(quantity) as quantity, SUM(line_total) as revenue')
             ->whereHas('order', function ($query) use ($from, $to) {
                 $query->where('status', OrderStatus::Completed)
-                    ->when($from, fn ($q) => $q->whereDate('created_at', '>=', $from))
-                    ->when($to, fn ($q) => $q->whereDate('created_at', '<=', $to));
+                    ->when($from, fn ($q) => $q->whereDate(DB::raw('COALESCE(completed_at, created_at)'), '>=', $from))
+                    ->when($to, fn ($q) => $q->whereDate(DB::raw('COALESCE(completed_at, created_at)'), '<=', $to));
             })
             ->groupBy('food_name')
             ->orderByDesc('quantity')
@@ -136,9 +87,9 @@ class AdminDashboardController extends Controller
         // Aggregate daily completed revenue in a single query
         $aggregatedDaily = Order::query()
             ->where('status', OrderStatus::Completed)
-            ->whereDate('created_at', '>=', $dailyStart->toDateString())
-            ->whereDate('created_at', '<=', $dailyEnd->toDateString())
-            ->selectRaw('DATE(created_at) as order_date, SUM(total_price) as daily_total')
+            ->whereDate(DB::raw('COALESCE(completed_at, created_at)'), '>=', $dailyStart->toDateString())
+            ->whereDate(DB::raw('COALESCE(completed_at, created_at)'), '<=', $dailyEnd->toDateString())
+            ->selectRaw('DATE(COALESCE(completed_at, created_at)) as order_date, SUM(total_price) as daily_total')
             ->groupBy('order_date')
             ->pluck('daily_total', 'order_date');
 

@@ -13,6 +13,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 class ShipperOrderController extends Controller
@@ -32,7 +34,7 @@ class ShipperOrderController extends Controller
         if ($user && $user->isShipper()) {
             $query->where(function ($q) use ($user) {
                 $q->where('shipper_id', $user->id)
-                    ->orWhereNull('shipper_id');
+                    ->orWhere(fn ($unassigned) => $unassigned->whereNull('shipper_id')->where('status', OrderStatus::Delivering));
             });
         }
 
@@ -64,7 +66,8 @@ class ShipperOrderController extends Controller
         $cancelledTodayCountQuery = Order::query()->where('status', OrderStatus::Cancelled)->whereDate('cancelled_at', today());
 
         if ($user && $user->isShipper()) {
-            $filterShipper = fn ($q) => $q->where(fn ($sub) => $sub->where('shipper_id', $user->id)->orWhereNull('shipper_id'));
+            $filterShipper = fn ($q) => $q->where(fn ($sub) => $sub->where('shipper_id', $user->id)
+                ->orWhere(fn ($unassigned) => $unassigned->whereNull('shipper_id')->where('status', OrderStatus::Delivering)));
             $deliveringCountQuery->where($filterShipper);
             $completedTodayCountQuery->where($filterShipper);
             $cancelledTodayCountQuery->where($filterShipper);
@@ -93,6 +96,8 @@ class ShipperOrderController extends Controller
      */
     public function show(Request $request, Order $order): View|OrderResource
     {
+        abort_unless($request->user()->can('view', $order), 404, 'Không tìm thấy đơn hàng.');
+
         $order->load(['items', 'user', 'statusHistories.actor', 'deliveryZone']);
 
         if ($request->expectsJson() || $request->is('api/*')) {
@@ -111,33 +116,47 @@ class ShipperOrderController extends Controller
         OrderStatusService $orderStatusService,
     ): OrderResource|JsonResponse|RedirectResponse {
         $user = $request->user();
-
-        if ($user && $user->isShipper()) {
-            if ($order->shipper_id && $order->shipper_id !== $user->id) {
-                abort(403, 'Đơn hàng này đã được phân công cho shipper khác.');
-            }
-            if (! $order->shipper_id) {
-                $order->update(['shipper_id' => $user->id, 'assigned_at' => now()]);
-            }
-        }
-
-        $currentStatus = $order->status instanceof OrderStatus ? $order->status->value : (string) $order->status;
-
-        if ($currentStatus !== 'delivering') {
-            throw new UnprocessableEntityHttpException(
-                "Shipper chỉ có thể cập nhật trạng thái đơn hàng khi đang ở trạng thái 'Đang giao hàng' (delivering). Trạng thái hiện tại: '{$currentStatus}'."
-            );
-        }
-
         $targetStatus = OrderStatus::from($request->validated('status'));
         $reason = $request->validated('reason');
 
-        $updatedOrder = $orderStatusService->transition(
-            $order,
-            $targetStatus,
-            $reason,
-            $request->user(),
-        );
+        try {
+            $updatedOrder = DB::transaction(function () use ($order, $user, $targetStatus, $reason, $orderStatusService) {
+                // Read assignment and status under the same lock as the update.
+                $lockedOrder = Order::query()->lockForUpdate()->findOrFail($order->id);
+
+                if ($user->isShipper() && $lockedOrder->shipper_id && $lockedOrder->shipper_id !== $user->id) {
+                    abort(403, 'Đơn hàng này đã được phân công cho shipper khác.');
+                }
+
+                if ($lockedOrder->status !== OrderStatus::Delivering) {
+                    $statusLabel = match ($lockedOrder->status) {
+                        OrderStatus::Pending => 'chờ xác nhận',
+                        OrderStatus::Confirmed => 'đã xác nhận',
+                        OrderStatus::Completed => 'giao thành công',
+                        OrderStatus::Cancelled => 'đã hủy',
+                        default => $lockedOrder->status->value,
+                    };
+
+                    throw new UnprocessableEntityHttpException(
+                        "Đơn hàng #{$lockedOrder->order_code} hiện ở trạng thái {$statusLabel}. Chỉ có thể xác nhận kết quả khi đơn đang giao hàng."
+                    );
+                }
+
+                if ($user->isShipper() && ! $lockedOrder->shipper_id) {
+                    $lockedOrder->update(['shipper_id' => $user->id, 'assigned_at' => now()]);
+                }
+
+                return $orderStatusService->transition($lockedOrder, $targetStatus, $reason, $user);
+            });
+        } catch (ConflictHttpException|UnprocessableEntityHttpException $exception) {
+            if ($request->expectsJson() || $request->is('api/*')) {
+                throw $exception;
+            }
+
+            $request->session()->forget('success');
+
+            return redirect()->route('shipper.orders.index')->with('error', $exception->getMessage());
+        }
 
         if ($request->expectsJson() || $request->is('api/*')) {
             return new OrderResource($updatedOrder);

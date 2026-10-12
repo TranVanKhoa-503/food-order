@@ -158,6 +158,7 @@ class AdminPayrollController extends Controller
             ->where('status', OrderStatus::Completed)
             ->whereYear('completed_at', $payroll->year)
             ->whereMonth('completed_at', $payroll->month)
+            ->when($payroll->finalized_at, fn ($q) => $q->where('completed_at', '<=', $payroll->finalized_at))
             ->latest('completed_at')
             ->get();
 

@@ -111,7 +111,7 @@
                         @endif
                     </td>
                     <td>
-                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                        <div data-order-actions="{{ $order->id }}" style="display: flex; gap: 6px; flex-wrap: wrap;">
                             @if($order->status->value === 'pending')
                                 <button onclick="updateOrderStatus({{ $order->id }}, 'confirmed')" class="btn" style="background: #E0E7FF; color: #4338CA; padding: 4px 8px; font-size: 11px;">
                                     Xác nhận
@@ -155,7 +155,11 @@
 
 @section('scripts')
 <script>
+    const pendingOrderUpdates = new Set();
+
     async function updateOrderStatus(orderId, targetStatus, requireReason = false) {
+        if (pendingOrderUpdates.has(orderId)) return;
+
         let reason = null;
         if (requireReason) {
             reason = prompt('Vui lòng nhập lý do hủy đơn hàng:');
@@ -164,7 +168,14 @@
                 alert('Lý do hủy không được để trống!');
                 return;
             }
+            reason = reason.trim();
         }
+
+        pendingOrderUpdates.add(orderId);
+        const buttons = document.querySelectorAll(`[data-order-actions="${orderId}"] button`);
+        const buttonStates = Array.from(buttons, (button) => button.disabled);
+        buttons.forEach((button) => { button.disabled = true; });
+        let reloading = false;
 
         try {
             const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -182,13 +193,34 @@
             });
 
             if (res.ok) {
+                reloading = true;
                 window.location.reload();
-            } else {
-                const data = await res.json();
-                alert(data.message || 'Lỗi cập nhật trạng thái đơn hàng!');
+                return;
             }
+
+            if (res.status === 409) {
+                alert('Đơn hàng đã được cập nhật. Trang sẽ tải lại để hiển thị trạng thái mới.');
+                reloading = true;
+                window.location.reload();
+                return;
+            }
+
+            if (res.status === 401 || res.status === 419) {
+                alert('Phiên đăng nhập đã hết hạn hoặc thay đổi. Trang sẽ tải lại, vui lòng đăng nhập nếu được yêu cầu.');
+                reloading = true;
+                window.location.reload();
+                return;
+            }
+
+            const data = await res.json().catch(() => ({}));
+            alert(data.errors?.reason?.[0] || data.message || 'Không thể cập nhật trạng thái đơn hàng. Vui lòng thử lại.');
         } catch (e) {
-            alert('Lỗi kết nối máy chủ!');
+            alert('Không thể kết nối máy chủ. Vui lòng thử lại.');
+        } finally {
+            if (!reloading) {
+                pendingOrderUpdates.delete(orderId);
+                buttons.forEach((button, index) => { button.disabled = buttonStates[index]; });
+            }
         }
     }
 </script>

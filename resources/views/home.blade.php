@@ -490,22 +490,30 @@
     .add-to-cart-btn {
         background: var(--primary-light);
         color: var(--primary);
-        border: none;
-        padding: 10px 16px;
+        border: 1px solid rgba(255, 87, 34, 0.15);
+        padding: 9px 16px;
         border-radius: var(--radius-md);
         font-weight: 700;
         font-size: 13px;
         cursor: pointer;
-        display: flex;
+        display: inline-flex;
         align-items: center;
+        justify-content: center;
         gap: 6px;
         transition: var(--transition);
+        box-shadow: 0 1px 2px rgba(255, 87, 34, 0.05);
     }
 
     .add-to-cart-btn:hover {
-        background: var(--primary);
+        background: linear-gradient(135deg, #FF5722 0%, #FF7043 100%);
         color: white;
-        transform: scale(1.03);
+        border-color: transparent;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 14px rgba(255, 87, 34, 0.35);
+    }
+
+    .add-to-cart-btn:active {
+        transform: scale(0.97);
     }
 
     /* Empty state */

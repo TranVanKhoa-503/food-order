@@ -12,11 +12,12 @@
         'cancelled' => 'Đã hủy',
     ];
     $currentStatus = $order->status->value;
+    $backRoute = Auth::user()->isAdmin() ? 'admin.orders.index' : (Auth::user()->isShipper() ? 'shipper.orders.index' : 'orders.index');
 @endphp
 <div class="container" style="max-width:1000px;padding:40px 20px;">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:24px;">
         <div>
-            <a href="{{ Auth::user()->isAdmin() ? route('admin.orders.index') : route('orders.index') }}" style="color:#64748B;text-decoration:none;font-size:13px;"><i class="fa-solid fa-arrow-left"></i> Quay lại danh sách đơn</a>
+            <a href="{{ route($backRoute) }}" style="color:#64748B;text-decoration:none;font-size:13px;"><i class="fa-solid fa-arrow-left"></i> Quay lại danh sách đơn</a>
             <h1 style="font-size:28px;font-weight:800;margin-top:10px;">Đơn hàng {{ $order->order_code }}</h1>
             <p style="color:#64748B;font-size:13px;">Đặt lúc {{ $order->created_at?->format('d/m/Y H:i') }}</p>
         </div>
@@ -65,8 +66,8 @@
                 <p style="margin-top:16px;color:#64748B;font-size:13px;">Thanh toán: <strong>{{ strtoupper($order->payment_method->value) }}</strong> · {{ $order->payment_status->value === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán' }}</p>
             </div>
 
-            @if(!Auth::user()->isAdmin() && $currentStatus === 'pending')
-                <button onclick="cancelOrder({{ $order->id }})" class="checkout-btn" style="background:#FEE2E2;color:#B91C1C;border:1px solid #FECACA;"><i class="fa-solid fa-xmark"></i> Hủy đơn hàng</button>
+            @if(!Auth::user()->isAdmin() && Auth::id() === $order->user_id && $currentStatus === 'pending')
+                <button type="button" data-cancel-order onclick="cancelOrder({{ $order->id }}, this)" class="checkout-btn" style="background:#FEE2E2;color:#B91C1C;border:1px solid #FECACA;"><i class="fa-solid fa-xmark"></i> Hủy đơn hàng</button>
             @endif
         </div>
     </div>
@@ -74,13 +75,5 @@
 @endsection
 
 @section('scripts')
-<script>
-async function cancelOrder(orderId) {
-    if (!confirm('Bạn có chắc muốn hủy đơn hàng này không?')) return;
-    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    const response = await fetch(`/api/v1/orders/${orderId}/cancel`, {method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':token,'Accept':'application/json'},body:JSON.stringify({reason:'Khách hàng hủy từ trang chi tiết'})});
-    if (response.ok) window.location.reload();
-    else { const data = await response.json(); alert(data.message || 'Không thể hủy đơn hàng.'); }
-}
-</script>
+@include('partials.cancel-order-script')
 @endsection

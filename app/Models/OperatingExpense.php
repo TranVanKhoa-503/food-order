@@ -16,6 +16,7 @@ class OperatingExpense extends Model
         'expense_date',
         'description',
         'created_by',
+        'submission_token',
     ];
 
     public const CATEGORIES = [

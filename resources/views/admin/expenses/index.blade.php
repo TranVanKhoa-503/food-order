@@ -35,8 +35,9 @@
         </h3>
     </div>
 
-    <form method="POST" action="{{ route('admin.expenses.store') }}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; align-items: end;">
+    <form method="POST" action="{{ route('admin.expenses.store') }}" data-prevent-double-submit style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; align-items: end;">
         @csrf
+        <input type="hidden" name="submission_token" value="{{ old('submission_token', (string) \Illuminate\Support\Str::uuid()) }}">
         <div>
             <label style="display: block; font-size: 12px; color: #64748B; font-weight: 700; margin-bottom: 6px;">Danh mục chi phí *</label>
             <select name="category" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 14px;">

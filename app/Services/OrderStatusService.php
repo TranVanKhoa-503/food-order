@@ -169,6 +169,7 @@ class OrderStatusService
         $failedDeliveryCount = Order::query()
             ->where('user_id', $customer->id)
             ->where('status', OrderStatus::Cancelled)
+            ->where('cancelled_at', '>=', now()->subDays(30))
             ->whereHas('statusHistories', function ($q) {
                 $q->where('from_status', 'delivering')
                     ->where('to_status', 'cancelled');
@@ -176,7 +177,6 @@ class OrderStatusService
             ->when(
                 $customer->unlocked_at,
                 fn ($q) => $q->where('cancelled_at', '>', $customer->unlocked_at),
-                fn ($q) => $q->where('cancelled_at', '>=', now()->subDays(30)),
             )
             ->count();
 

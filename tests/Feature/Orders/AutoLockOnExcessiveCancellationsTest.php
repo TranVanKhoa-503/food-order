@@ -13,6 +13,25 @@ class AutoLockOnExcessiveCancellationsTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_unlock_does_not_remove_the_thirty_day_failed_delivery_window(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $customer = User::factory()->create(['is_active' => true, 'unlocked_at' => now()->subDays(60)]);
+        foreach ([45, 40] as $days) {
+            $past = Order::factory()->for($customer)->create([
+                'status' => OrderStatus::Cancelled, 'cancelled_at' => now()->subDays($days),
+            ]);
+            $past->statusHistories()->create(['from_status' => 'delivering', 'to_status' => 'cancelled']);
+        }
+        $order = Order::factory()->for($customer)->create(['status' => OrderStatus::Delivering]);
+
+        $this->actingAs($admin)->patchJson('/api/v1/admin/orders/'.$order->id.'/status', [
+            'status' => 'cancelled', 'reason' => 'Giao thất bại hôm nay',
+        ])->assertOk();
+
+        $this->assertTrue($customer->fresh()->is_active);
+    }
+
     public function test_customer_account_is_automatically_locked_when_reaching_failed_delivery_threshold(): void
     {
         $admin = User::factory()->admin()->create();

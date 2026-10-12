@@ -14,6 +14,29 @@ class AdminFoodCrudTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_food_form_can_create_and_update_using_multipart_and_method_override(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->admin()->create();
+        $category = Category::factory()->create();
+        $payload = [
+            'category_id' => (string) $category->id, 'name' => 'Món từ form',
+            'price' => '50000', 'is_available' => '1',
+            'image_upload' => UploadedFile::fake()->image('food.jpg'),
+        ];
+        $created = $this->actingAs($admin)->post('/api/v1/admin/foods', $payload, ['Accept' => 'application/json']);
+        $created->assertCreated()->assertJsonPath('data.is_available', true);
+        $food = Food::findOrFail($created->json('data.id'));
+
+        $this->post('/api/v1/admin/foods/'.$food->id, [
+            '_method' => 'PUT', 'category_id' => (string) $category->id,
+            'name' => 'Món đã sửa', 'price' => '60000', 'is_available' => '0',
+        ], ['Accept' => 'application/json'])->assertOk()
+            ->assertJsonPath('data.name', 'Món đã sửa')
+            ->assertJsonPath('data.price', 60000)
+            ->assertJsonPath('data.is_available', false);
+    }
+
     public function test_regular_user_cannot_access_admin_foods(): void
     {
         $user = User::factory()->create();

@@ -88,14 +88,14 @@
 
         <div style="margin-top: 20px; display: flex; gap: 10px;">
             @if($payroll->status === 'draft')
-                <form method="POST" action="{{ route('admin.payrolls.finalize', $payroll) }}" style="flex: 1;" onsubmit="return confirm('Chốt bảng lương này?');">
+                <form method="POST" action="{{ route('admin.payrolls.finalize', $payroll) }}" data-prevent-double-submit style="flex: 1;" onsubmit="return confirm('Tính lại số liệu mới nhất và chốt bảng lương này?');">
                     @csrf
                     <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
                         <i class="fa-solid fa-lock"></i> Chốt bảng lương
                     </button>
                 </form>
             @elseif($payroll->status === 'finalized')
-                <form method="POST" action="{{ route('admin.payrolls.pay', $payroll) }}" style="flex: 1;" onsubmit="return confirm('Xác nhận đã thanh toán?');">
+                <form method="POST" action="{{ route('admin.payrolls.pay', $payroll) }}" data-prevent-double-submit style="flex: 1;" onsubmit="return confirm('Xác nhận đã thanh toán?');">
                     @csrf
                     <button type="submit" class="btn" style="width: 100%; justify-content: center; background: #059669; color: white;">
                         <i class="fa-solid fa-check-double"></i> Xác nhận thanh toán

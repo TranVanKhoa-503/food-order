@@ -140,6 +140,13 @@
 
 @section('scripts')
 <script>
+    let savingFood = false;
+    window.addEventListener('pageshow', (event) => {
+        if (event.persisted) {
+            savingFood = false;
+            document.querySelector('#foodForm button[type="submit"]').disabled = false;
+        }
+    });
     function openFoodModal() {
         document.getElementById('foodId').value = '';
         document.getElementById('foodName').value = '';
@@ -171,13 +178,14 @@
 
     async function handleFoodSubmit(e) {
         e.preventDefault();
+        if (savingFood) return;
         const id = document.getElementById('foodId').value;
         const payload = new FormData();
         payload.append('category_id', document.getElementById('foodCategory').value);
         payload.append('name', document.getElementById('foodName').value);
         payload.append('price', document.getElementById('foodPrice').value);
         payload.append('description', document.getElementById('foodDesc').value || '');
-        payload.append('is_available', document.getElementById('foodAvailable').value);
+        payload.append('is_available', document.getElementById('foodAvailable').value === 'true' ? '1' : '0');
         const imageUpload = document.getElementById('foodImageUpload').files[0];
         if (imageUpload) payload.append('image_upload', imageUpload);
         else if (document.getElementById('foodImage').value) payload.append('image', document.getElementById('foodImage').value);
@@ -186,20 +194,30 @@
         const url = id ? `/api/v1/admin/foods/${id}` : '/api/v1/admin/foods';
         if (id) payload.append('_method', 'PUT');
 
-        const res = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': token,
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        });
-
-        if (res.ok) {
-            window.location.reload();
-        } else {
-            const data = await res.json();
-            alert(data.message || 'Có lỗi xảy ra khi lưu món ăn!');
+        savingFood = true;
+        const submitButton = document.querySelector('#foodForm button[type="submit"]');
+        submitButton.disabled = true;
+        let reloading = false;
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {'X-CSRF-TOKEN': token, 'Accept': 'application/json'},
+                body: payload
+            });
+            if (res.ok) {
+                reloading = true;
+                window.location.reload();
+            } else {
+                const data = await res.json().catch(() => ({}));
+                alert(data.message || 'Có lỗi xảy ra khi lưu món ăn!');
+            }
+        } catch (error) {
+            alert('Không thể kết nối máy chủ. Vui lòng thử lại.');
+        } finally {
+            if (!reloading) {
+                savingFood = false;
+                submitButton.disabled = false;
+            }
         }
     }
 

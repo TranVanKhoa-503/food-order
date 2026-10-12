@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Food;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class FoodRecommendationService
 {
@@ -67,15 +68,19 @@ class FoodRecommendationService
 
     private function isVegetarian(Food $food): bool
     {
-        $text = $this->foodText($food);
+        // A vegetable ingredient does not make a meat dish vegetarian.
+        $label = Str::lower(Str::ascii($food->name.' '.$food->category?->name));
 
         return $food->category?->slug === 'mon-chay'
-            || preg_match('/\b(chay|rau|nấm|nam|salad|đậu|dau|hạt sen|hat sen|trái cây|trai cay|bơ|bo)\b/iu', $text) === 1;
+            || preg_match('/\b(chay|vegetarian|vegan)\b/', $label) === 1;
     }
 
     private function isSpicy(Food $food): bool
     {
-        return preg_match('/\b(cay|ớt|ot|tiêu|tieu)\b/iu', $this->foodText($food)) === 1;
+        $text = Str::lower(Str::ascii($this->foodText($food)));
+        $text = preg_replace('/\bkhong\s+(?:(?:co|them|dung|su dung)\s+)?(?:cay|ot|tieu)\b/', '', $text);
+
+        return preg_match('/\b(cay|ot|tieu)\b/', $text) === 1;
     }
 
     private function foodText(Food $food): string

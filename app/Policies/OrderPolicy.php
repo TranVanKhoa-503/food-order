@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\User;
 
@@ -12,7 +13,12 @@ class OrderPolicy
      */
     public function view(User $user, Order $order): bool
     {
-        return $user->isAdmin() || $user->isShipper() || $user->id === $order->user_id;
+        return $user->isAdmin()
+            || $user->id === $order->user_id
+            || ($user->isShipper() && (
+                $order->shipper_id === $user->id
+                || ($order->shipper_id === null && $order->status === OrderStatus::Delivering)
+            ));
     }
 
     /**

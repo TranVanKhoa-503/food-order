@@ -91,7 +91,7 @@
                             </div>
 
                             @if($order->status->value === 'pending')
-                                <button onclick="cancelOrder({{ $order->id }})" style="background: #FEE2E2; color: #DC2626; border: 1px solid #FECACA; padding: 8px 16px; border-radius: 50px; font-size: 13px; font-weight: 700; cursor: pointer; transition: var(--transition);">
+                                <button type="button" data-cancel-order onclick="cancelOrder({{ $order->id }}, this)" style="background: #FEE2E2; color: #DC2626; border: 1px solid #FECACA; padding: 8px 16px; border-radius: 50px; font-size: 13px; font-weight: 700; cursor: pointer; transition: var(--transition);">
                                     <i class="fa-solid fa-xmark"></i> Hủy đơn
                                 </button>
                             @endif
@@ -118,32 +118,5 @@
 @endsection
 
 @section('scripts')
-<script>
-    async function cancelOrder(orderId) {
-        if (!confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')) return;
-
-        try {
-            const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-            const res = await fetch(`/api/v1/orders/${orderId}/cancel`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': token,
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({ reason: 'Khách hàng hủy từ trang web' })
-            });
-
-            if (res.ok) {
-                alert('Đã hủy đơn hàng thành công.');
-                window.location.reload();
-            } else {
-                const data = await res.json();
-                alert(data.message || 'Không thể hủy đơn hàng vào lúc này.');
-            }
-        } catch (e) {
-            alert('Lỗi kết nối tới máy chủ.');
-        }
-    }
-</script>
+@include('partials.cancel-order-script')
 @endsection

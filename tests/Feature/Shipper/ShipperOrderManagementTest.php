@@ -8,6 +8,7 @@ use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\User;
+use App\Models\Voucher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -199,5 +200,95 @@ class ShipperOrderManagementTest extends TestCase
         ]);
 
         $response->assertUnprocessable();
+        $this->assertNull($pendingOrder->fresh()->shipper_id);
+        $this->assertNull($pendingOrder->fresh()->assigned_at);
+    }
+
+    public function test_repeated_delivery_failure_redirects_without_repeating_side_effects(): void
+    {
+        $shipper = User::factory()->shipper()->create();
+        $customer = User::factory()->create();
+        $voucher = Voucher::create([
+            'code' => 'DELIVERY-RETRY',
+            'discount_type' => 'fixed',
+            'discount_value' => 10000,
+            'used_count' => 2,
+        ]);
+        $order = Order::factory()->for($customer)->create([
+            'status' => OrderStatus::Delivering,
+            'voucher_id' => $voucher->id,
+        ]);
+        $url = "/shipper/orders/{$order->id}/status";
+        $payload = ['status' => 'cancelled', 'reason' => 'Khách không nghe máy'];
+
+        $this->actingAs($shipper)->from('/shipper/orders')->patch($url, $payload)
+            ->assertRedirect('/shipper/orders')
+            ->assertSessionHas('success');
+
+        $cancelledAt = $order->fresh()->cancelled_at;
+        $payload['reason'] = 'Lý do ở lần gửi trùng';
+        $this->patch($url, $payload)
+            ->assertRedirect('/shipper/orders')
+            ->assertSessionHas('error')
+            ->assertSessionMissing('success');
+
+        $order->refresh();
+        $this->assertSame(OrderStatus::Cancelled, $order->status);
+        $this->assertSame('Khách không nghe máy', $order->cancel_reason);
+        $this->assertEquals($cancelledAt, $order->cancelled_at);
+        $this->assertSame($shipper->id, $order->shipper_id);
+        $this->assertSame(1, $order->statusHistories()->count());
+        $this->assertSame(1, $customer->notifications()->count());
+        $this->assertSame(1, $voucher->fresh()->used_count);
+    }
+
+    public function test_stale_failure_form_cannot_cancel_or_claim_completed_order(): void
+    {
+        $shipper = User::factory()->shipper()->create();
+        $order = Order::factory()->create([
+            'status' => OrderStatus::Completed,
+            'payment_status' => PaymentStatus::Paid,
+            'shipper_id' => null,
+        ]);
+
+        $this->actingAs($shipper)->patch("/shipper/orders/{$order->id}/status", [
+            'status' => 'cancelled',
+            'reason' => 'Form mở ở tab cũ',
+        ])->assertRedirect('/shipper/orders')->assertSessionHas('error');
+
+        $order->refresh();
+        $this->assertSame(OrderStatus::Completed, $order->status);
+        $this->assertSame(PaymentStatus::Paid, $order->payment_status);
+        $this->assertNull($order->shipper_id);
+        $this->assertNull($order->assigned_at);
+        $this->assertNull($order->cancelled_at);
+        $this->assertSame(0, $order->statusHistories()->count());
+    }
+
+    public function test_shipper_cannot_view_another_shippers_order_details(): void
+    {
+        $shipper = User::factory()->shipper()->create();
+        $other = User::factory()->shipper()->create();
+        $order = Order::factory()->create(['shipper_id' => $other->id, 'status' => OrderStatus::Delivering]);
+
+        $this->actingAs($shipper)->get('/shipper/orders/'.$order->id)->assertNotFound();
+        $this->getJson('/api/v1/shipper/orders/'.$order->id)->assertNotFound();
+    }
+
+    public function test_shipper_can_view_assigned_orders_and_unassigned_deliveries_only(): void
+    {
+        $shipper = User::factory()->shipper()->create();
+        $assigned = Order::factory()->create(['shipper_id' => $shipper->id, 'status' => OrderStatus::Completed]);
+        $available = Order::factory()->create(['shipper_id' => null, 'status' => OrderStatus::Delivering]);
+        $pending = Order::factory()->create(['shipper_id' => null, 'status' => OrderStatus::Pending]);
+        $completed = Order::factory()->create(['shipper_id' => null, 'status' => OrderStatus::Completed]);
+
+        $this->actingAs($shipper)->getJson('/api/v1/shipper/orders?status=all')
+            ->assertOk()->assertJsonCount(2, 'data');
+        $this->getJson('/api/v1/shipper/orders/'.$assigned->id)->assertOk();
+        $this->get('/shipper/orders/'.$available->id)->assertOk()
+            ->assertSee(route('shipper.orders.index'));
+        $this->getJson('/api/v1/shipper/orders/'.$pending->id)->assertNotFound();
+        $this->getJson('/api/v1/shipper/orders/'.$completed->id)->assertNotFound();
     }
 }

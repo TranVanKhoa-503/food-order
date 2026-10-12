@@ -10,6 +10,7 @@ use App\Models\ShipperPayroll;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 class ShipperPayrollService
@@ -67,47 +68,52 @@ class ShipperPayrollService
      */
     public function generateOrUpdatePayroll(User $shipper, int $year, int $month, ?string $note = null): ShipperPayroll
     {
-        $existing = ShipperPayroll::query()
-            ->where('shipper_id', $shipper->id)
-            ->where('year', $year)
-            ->where('month', $month)
-            ->first();
+        return DB::transaction(function () use ($shipper, $year, $month, $note) {
+            // Serialize both first-time creation and updates with payroll finalization.
+            User::query()->whereKey($shipper->id)->lockForUpdate()->firstOrFail();
+            $existing = ShipperPayroll::query()
+                ->where('shipper_id', $shipper->id)
+                ->where('year', $year)
+                ->where('month', $month)
+                ->lockForUpdate()
+                ->first();
 
-        if ($existing && $existing->status !== 'draft') {
-            throw new UnprocessableEntityHttpException(
-                "Bảng lương tháng {$month}/{$year} của shipper '{$shipper->name}' đã ở trạng thái '{$existing->status}' và không thể tạo lại tự động."
-            );
-        }
+            if ($existing && $existing->status !== 'draft') {
+                throw new UnprocessableEntityHttpException(
+                    "Bảng lương tháng {$month}/{$year} của shipper '{$shipper->name}' đã ở trạng thái '{$existing->status}' và không thể tạo lại tự động."
+                );
+            }
 
-        $metrics = $this->calculate($shipper, $year, $month);
+            $metrics = $this->calculate($shipper, $year, $month);
 
-        if ($existing) {
-            $existing->update([
+            if ($existing) {
+                $existing->update([
+                    'base_salary' => $metrics['base_salary'],
+                    'commission_rate' => $metrics['commission_rate'],
+                    'completed_orders_count' => $metrics['completed_orders_count'],
+                    'total_shipping_fee' => $metrics['total_shipping_fee'],
+                    'total_commission' => $metrics['total_commission'],
+                    'total_salary' => $metrics['total_salary'],
+                    'note' => $note ?? $existing->note,
+                ]);
+
+                return $existing;
+            }
+
+            return ShipperPayroll::create([
+                'shipper_id' => $shipper->id,
+                'year' => $year,
+                'month' => $month,
                 'base_salary' => $metrics['base_salary'],
                 'commission_rate' => $metrics['commission_rate'],
                 'completed_orders_count' => $metrics['completed_orders_count'],
                 'total_shipping_fee' => $metrics['total_shipping_fee'],
                 'total_commission' => $metrics['total_commission'],
                 'total_salary' => $metrics['total_salary'],
-                'note' => $note ?? $existing->note,
+                'status' => 'draft',
+                'note' => $note,
             ]);
-
-            return $existing;
-        }
-
-        return ShipperPayroll::create([
-            'shipper_id' => $shipper->id,
-            'year' => $year,
-            'month' => $month,
-            'base_salary' => $metrics['base_salary'],
-            'commission_rate' => $metrics['commission_rate'],
-            'completed_orders_count' => $metrics['completed_orders_count'],
-            'total_shipping_fee' => $metrics['total_shipping_fee'],
-            'total_commission' => $metrics['total_commission'],
-            'total_salary' => $metrics['total_salary'],
-            'status' => 'draft',
-            'note' => $note,
-        ]);
+        });
     }
 
     /**
@@ -132,6 +138,7 @@ class ShipperPayrollService
             // Skip finalized or paid ones
             if ($payroll && $payroll->status !== 'draft') {
                 $generated->push($payroll);
+
                 continue;
             }
 
@@ -146,18 +153,23 @@ class ShipperPayrollService
      */
     public function finalize(ShipperPayroll $payroll, User $admin, ?string $note = null): ShipperPayroll
     {
-        if ($payroll->status !== 'draft') {
-            throw new UnprocessableEntityHttpException("Chỉ có thể chốt bảng lương đang ở trạng thái nháp (draft). Trạng thái hiện tại: '{$payroll->status}'.");
-        }
+        return DB::transaction(function () use ($payroll, $admin, $note) {
+            $lockedPayroll = ShipperPayroll::query()->lockForUpdate()->findOrFail($payroll->id);
+            if ($lockedPayroll->status !== 'draft') {
+                throw new UnprocessableEntityHttpException("Chỉ có thể chốt bảng lương đang ở trạng thái nháp (draft). Trạng thái hiện tại: '{$lockedPayroll->status}'.");
+            }
 
-        $payroll->update([
-            'status' => 'finalized',
-            'finalized_at' => now(),
-            'finalized_by' => $admin->id,
-            'note' => $note ?? $payroll->note,
-        ]);
+            $metrics = $this->calculate($lockedPayroll->shipper, $lockedPayroll->year, $lockedPayroll->month);
+            $lockedPayroll->update([
+                ...$metrics,
+                'status' => 'finalized',
+                'finalized_at' => now(),
+                'finalized_by' => $admin->id,
+                'note' => $note ?? $lockedPayroll->note,
+            ]);
 
-        return $payroll;
+            return $lockedPayroll;
+        });
     }
 
     /**
@@ -165,18 +177,21 @@ class ShipperPayrollService
      */
     public function markAsPaid(ShipperPayroll $payroll, User $admin, ?string $note = null): ShipperPayroll
     {
-        if ($payroll->status !== 'finalized') {
-            throw new UnprocessableEntityHttpException("Bảng lương phải được chốt (finalized) trước khi xác nhận thanh toán (paid). Trạng thái hiện tại: '{$payroll->status}'.");
-        }
+        return DB::transaction(function () use ($payroll, $admin, $note) {
+            $lockedPayroll = ShipperPayroll::query()->lockForUpdate()->findOrFail($payroll->id);
+            if ($lockedPayroll->status !== 'finalized') {
+                throw new UnprocessableEntityHttpException("Bảng lương phải được chốt (finalized) trước khi xác nhận thanh toán (paid). Trạng thái hiện tại: '{$lockedPayroll->status}'.");
+            }
 
-        $payroll->update([
-            'status' => 'paid',
-            'paid_at' => now(),
-            'paid_by' => $admin->id,
-            'note' => $note ?? $payroll->note,
-        ]);
+            $lockedPayroll->update([
+                'status' => 'paid',
+                'paid_at' => now(),
+                'paid_by' => $admin->id,
+                'note' => $note ?? $lockedPayroll->note,
+            ]);
 
-        return $payroll;
+            return $lockedPayroll;
+        });
     }
 
     /**
@@ -197,8 +212,8 @@ class ShipperPayrollService
         // 1. Total revenue from completed orders
         $revenueQuery = Order::query()
             ->where('status', OrderStatus::Completed)
-            ->when($from, fn ($q) => $q->whereDate('completed_at', '>=', $from))
-            ->when($to, fn ($q) => $q->whereDate('completed_at', '<=', $to));
+            ->when($from, fn ($q) => $q->whereDate(DB::raw('COALESCE(completed_at, created_at)'), '>=', $from))
+            ->when($to, fn ($q) => $q->whereDate(DB::raw('COALESCE(completed_at, created_at)'), '<=', $to));
 
         $totalRevenue = (int) $revenueQuery->sum('total_price');
 
@@ -235,8 +250,43 @@ class ShipperPayrollService
             });
         }
 
-        $totalBaseSalary = (int) $payrollQuery->sum('base_salary');
-        $totalCommission = (int) $payrollQuery->sum('total_commission');
+        $payrolls = $payrollQuery->get();
+        $totalBaseSalary = (int) $payrolls->sum('base_salary');
+        $totalCommission = (int) $payrolls->sum('total_commission');
+
+        // Add estimates only for shipper/month pairs without a payroll record.
+        $recordedPeriods = $payrolls->keyBy(fn ($payroll) => "{$payroll->shipper_id}:{$payroll->year}:{$payroll->month}");
+        $shippers = User::query()->where('role', UserRole::Shipper)->get();
+        $firstCompletedAt = Order::query()->where('status', OrderStatus::Completed)
+            ->whereNotNull('shipper_id')->min(DB::raw('COALESCE(completed_at, created_at)'));
+        $firstPayrollPeriod = $payrolls->map(fn ($payroll) => sprintf('%04d-%02d-01', $payroll->year, $payroll->month))->min();
+        $firstPeriod = $from ? Carbon::parse($from)->startOfMonth() : collect([
+            now()->toDateString(),
+            $shippers->min('created_at'),
+            $firstCompletedAt,
+            $firstPayrollPeriod,
+        ])->filter()->map(fn ($date) => Carbon::parse($date)->startOfMonth())->sortBy(fn ($date) => $date->timestamp)->first();
+        $lastPeriod = $to ? Carbon::parse($to)->startOfMonth() : now()->startOfMonth();
+
+        for ($period = $firstPeriod->copy(); $period->lte($lastPeriod); $period->addMonth()) {
+            // Future salaries have not been incurred; existing records above remain authoritative.
+            if ($period->gt(now()->startOfMonth())) {
+                break;
+            }
+            foreach ($shippers as $shipper) {
+                $key = "{$shipper->id}:{$period->year}:{$period->month}";
+                if ($recordedPeriods->has($key)) {
+                    continue;
+                }
+                $metrics = $this->calculate($shipper, $period->year, $period->month);
+                if ($metrics['completed_orders_count'] === 0
+                    && (! $shipper->is_active || $shipper->created_at->gt($period->copy()->endOfMonth()))) {
+                    continue;
+                }
+                $totalBaseSalary += (int) $metrics['base_salary'];
+                $totalCommission += (int) $metrics['total_commission'];
+            }
+        }
         $totalPayrollCost = $totalBaseSalary + $totalCommission;
 
         // 3. Operating expenses

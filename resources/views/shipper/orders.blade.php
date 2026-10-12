@@ -268,6 +268,7 @@
                 Nhân viên giao hàng: <strong>{{ Auth::user()->name }}</strong> ({{ Auth::user()->phone ?? Auth::user()->email }})
             </p>
         </div>
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
             <a href="{{ route('shipper.salary') }}" class="btn" style="background: #10B981; color: white; border: none; font-size: 13px; font-weight: 700; border-radius: 50px; padding: 8px 16px; text-decoration: none;">
                 <i class="fa-solid fa-wallet"></i> Bảng Lương & Thu Nhập
             </a>
@@ -297,6 +298,14 @@
         </div>
     @endif
 
+    @if($errors->any())
+        <div role="alert" style="background: #FEE2E2; border: 1px solid #FECACA; color: #991B1B; padding: 14px 18px; border-radius: var(--radius-md); margin-bottom: 20px;">
+            @foreach($errors->all() as $error)
+                <p>{{ $error }}</p>
+            @endforeach
+        </div>
+    @endif
+
     <!-- Status Tabs -->
     <div class="shipper-tabs">
         <a href="{{ route('shipper.orders.index', ['status' => 'delivering']) }}" class="shipper-tab {{ ($status ?? '') === 'delivering' ? 'active' : '' }}">
@@ -323,23 +332,6 @@
             Thu nhập & Lương
         </a>
     </div>
-
-    <!-- Search Form -->
-    <form method="GET" action="{{ route('shipper.orders.index') }}" style="display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap;">
-        <input type="hidden" name="status" value="{{ $status ?? 'delivering' }}">
-        <div style="flex: 1; min-width: 260px; position: relative;">
-            <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Tìm mã đơn, tên khách, số điện thoại, địa chỉ..." style="width: 100%; padding: 12px 16px 12px 42px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 14px; outline: none; background: white;">
-            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 15px; top: 14px; color: #94A3B8;"></i>
-        </div>
-        <button type="submit" class="btn" style="background: var(--dark); color: white; padding: 12px 20px; font-weight: 700; border-radius: var(--radius-md); cursor: pointer;">
-            <i class="fa-solid fa-filter"></i> Lọc
-        </button>
-        @if(!empty($search))
-            <a href="{{ route('shipper.orders.index', ['status' => $status]) }}" class="btn" style="background: #F1F5F9; color: #64748B; padding: 12px 18px; font-weight: 700; border-radius: var(--radius-md); text-decoration: none; display: flex; align-items: center;">
-                Xóa tìm kiếm
-            </a>
-        @endif
-    </form>
 
     <!-- Orders List -->
     @if($orders->count() > 0)
@@ -476,12 +468,12 @@
                     @if(($order->status->value ?? $order->status) === 'delivering')
                         <div style="display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; padding-top: 10px; border-top: 1px solid var(--border-color);">
                             <!-- Nút báo thất bại -->
-                            <button type="button" onclick="openFailModal({{ $order->id }}, '{{ $order->order_code }}')" class="btn-action-fail">
+                            <button type="button" onclick="openFailModal(this)" data-order-code="{{ $order->order_code }}" data-status-url="{{ route('shipper.orders.status', $order) }}" class="btn-action-fail">
                                 <i class="fa-solid fa-xmark"></i> Báo giao thất bại
                             </button>
 
                             <!-- Form xác nhận hoàn thành -->
-                            <form action="{{ route('shipper.orders.status', $order) }}" method="POST" onsubmit="return confirm('Xác nhận bạn đã giao thành công đơn hàng #{{ $order->order_code }} và thu đủ tiền (nếu có)?');" style="margin: 0;">
+                            <form action="{{ route('shipper.orders.status', $order) }}" method="POST" data-prevent-double-submit data-confirm="Xác nhận bạn đã giao thành công đơn hàng #{{ $order->order_code }} và thu đủ tiền (nếu có)?" style="margin: 0;">
                                 @csrf
                                 @method('PATCH')
                                 <input type="hidden" name="status" value="completed">
@@ -530,7 +522,7 @@
             Đơn hàng: <strong id="modalOrderCode" style="color: var(--dark);"></strong>
         </p>
 
-        <form id="failForm" method="POST" action="">
+        <form id="failForm" method="POST" action="" data-prevent-double-submit>
             @csrf
             @method('PATCH')
             <input type="hidden" name="status" value="cancelled">
@@ -553,7 +545,7 @@
                 <label style="display: block; font-size: 13px; font-weight: 700; color: var(--dark); margin-bottom: 8px;">
                     Chi tiết lý do thất bại <span style="color: #EF4444;">*</span>:
                 </label>
-                <textarea name="reason" id="modalReasonText" rows="3" required placeholder="Nhập lý do cụ thể không thể giao đơn hàng..." style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-family: inherit; font-size: 14px;"></textarea>
+                <textarea name="reason" id="modalReasonText" rows="3" required maxlength="500" placeholder="Nhập lý do cụ thể không thể giao đơn hàng..." style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-family: inherit; font-size: 14px;"></textarea>
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 10px;">
@@ -571,15 +563,19 @@
 
 @section('scripts')
 <script>
-    function openFailModal(orderId, orderCode) {
-        document.getElementById('modalOrderCode').innerText = '#' + orderCode;
-        document.getElementById('failForm').action = '/shipper/orders/' + orderId + '/status';
+    function openFailModal(button) {
+        const form = document.getElementById('failForm');
+        if (form.dataset.submitting === 'true') return;
+
+        document.getElementById('modalOrderCode').innerText = '#' + button.dataset.orderCode;
+        form.action = button.dataset.statusUrl;
         document.getElementById('quickReasonSelect').value = '';
         document.getElementById('modalReasonText').value = '';
         document.getElementById('failModal').classList.add('active');
     }
 
     function closeFailModal() {
+        if (document.getElementById('failForm').dataset.submitting === 'true') return;
         document.getElementById('failModal').classList.remove('active');
     }
 

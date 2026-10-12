@@ -47,7 +47,7 @@
             @endif
         </form>
 
-        <form method="POST" action="{{ route('admin.payrolls.generate') }}" onsubmit="return confirm('Hệ thống sẽ tính toán lại bảng lương tháng {{ $month }}/{{ $year }} cho tất cả shipper đang ở trạng thái Nháp. Tiếp tục?');">
+        <form method="POST" action="{{ route('admin.payrolls.generate') }}" data-prevent-double-submit onsubmit="return confirm('Hệ thống sẽ tính toán lại bảng lương tháng {{ $month }}/{{ $year }} cho tất cả shipper đang ở trạng thái Nháp. Tiếp tục?');">
             @csrf
             <input type="hidden" name="month" value="{{ $month }}">
             <input type="hidden" name="year" value="{{ $year }}">
@@ -181,14 +181,14 @@
                             </a>
 
                             @if($payroll->status === 'draft')
-                                <form method="POST" action="{{ route('admin.payrolls.finalize', $payroll) }}" onsubmit="return confirm('Bạn có chắc chắn muốn CHỐT bảng lương này? Sau khi chốt, số liệu sẽ được khóa.');">
+                                <form method="POST" action="{{ route('admin.payrolls.finalize', $payroll) }}" data-prevent-double-submit onsubmit="return confirm('Bạn có chắc chắn muốn CHỐT bảng lương này? Số liệu sẽ được tính lại trước khi chốt và sau đó được khóa.');">
                                     @csrf
                                     <button type="submit" class="btn" style="background: #2563EB; color: white; font-size: 11px; padding: 5px 8px;">
                                         <i class="fa-solid fa-lock"></i> Chốt lương
                                     </button>
                                 </form>
                             @elseif($payroll->status === 'finalized')
-                                <form method="POST" action="{{ route('admin.payrolls.pay', $payroll) }}" onsubmit="return confirm('Xác nhận ĐÃ THANH TOÁN tiền lương cho shipper này?');">
+                                <form method="POST" action="{{ route('admin.payrolls.pay', $payroll) }}" data-prevent-double-submit onsubmit="return confirm('Xác nhận ĐÃ THANH TOÁN tiền lương cho shipper này?');">
                                     @csrf
                                     <button type="submit" class="btn" style="background: #059669; color: white; font-size: 11px; padding: 5px 8px;">
                                         <i class="fa-solid fa-check-double"></i> Đã thanh toán

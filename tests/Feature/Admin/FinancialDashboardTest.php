@@ -5,14 +5,70 @@ namespace Tests\Feature\Admin;
 use App\Enums\OrderStatus;
 use App\Models\OperatingExpense;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\ShipperPayroll;
 use App\Models\User;
+use App\Services\ShipperPayrollService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class FinancialDashboardTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_partial_payroll_generation_does_not_remove_other_shippers_costs(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $shippers = User::factory()->shipper()->count(2)->create();
+        foreach ($shippers as $shipper) {
+            Order::factory()->create([
+                'shipper_id' => $shipper->id, 'status' => OrderStatus::Completed,
+                'shipping_fee' => 30000, 'completed_at' => now(),
+            ]);
+        }
+        $url = '/api/v1/admin/dashboard?from='.now()->startOfMonth()->toDateString().'&to='.now()->endOfMonth()->toDateString();
+        $this->actingAs($admin)->getJson($url)->assertOk()
+            ->assertJsonPath('data.financial_summary.total_payroll_cost', 4030000);
+
+        app(ShipperPayrollService::class)->generateOrUpdatePayroll($shippers[0], now()->year, now()->month);
+        $this->getJson($url)->assertOk()
+            ->assertJsonPath('data.financial_summary.total_payroll_cost', 4030000);
+    }
+
+    public function test_revenue_and_top_foods_use_completion_date_instead_of_order_creation_date(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $order = Order::factory()->create([
+            'status' => OrderStatus::Completed, 'total_price' => 100000,
+            'created_at' => '2026-09-30 23:00:00', 'completed_at' => '2026-10-01 00:10:00',
+        ]);
+        OrderItem::factory()->for($order)->create(['food_name' => 'Món giao qua tháng', 'quantity' => 1, 'line_total' => 100000]);
+        $this->actingAs($admin)->getJson('/api/v1/admin/dashboard?from=2026-10-01&to=2026-10-31')
+            ->assertOk()->assertJsonPath('data.total_revenue', 100000)
+            ->assertJsonPath('data.total_orders', 0)
+            ->assertJsonPath('data.daily_revenue.2026-10-01', 100000)
+            ->assertJsonPath('data.top_foods.0.food_name', 'Món giao qua tháng');
+        $this->assertSame(100000, app(ShipperPayrollService::class)->getFinancialSummary('2026-10-01', '2026-10-31')['total_revenue']);
+    }
+
+    public function test_missing_payroll_estimates_are_added_per_month_without_double_counting(): void
+    {
+        $this->travelTo(now()->setDate(2026, 10, 12));
+        $admin = User::factory()->admin()->create();
+        $shippers = User::factory()->shipper()->count(2)->create(['created_at' => '2026-09-01 00:00:00']);
+        $service = app(ShipperPayrollService::class);
+        foreach ([9, 10] as $month) {
+            foreach ($shippers as $shipper) {
+                Order::factory()->create([
+                    'shipper_id' => $shipper->id, 'status' => OrderStatus::Completed,
+                    'shipping_fee' => 30000, 'completed_at' => "2026-{$month}-05 12:00:00",
+                ]);
+            }
+            $service->generateOrUpdatePayroll($shippers[0], 2026, $month);
+        }
+        $this->actingAs($admin)->getJson('/api/v1/admin/dashboard?from=2026-09-01&to=2026-10-31')
+            ->assertOk()->assertJsonPath('data.financial_summary.total_payroll_cost', 8060000);
+    }
 
     public function test_dashboard_calculates_and_displays_full_financial_breakdown(): void
     {

@@ -29,7 +29,9 @@ class VoucherCheckTest extends TestCase
 
         $response->assertOk()
             ->assertJsonPath('data.code', 'SALE50')
-            ->assertJsonPath('data.discount_amount', 40000);
+            ->assertJsonPath('data.discount_amount', 40000)
+            ->assertJsonPath('data.max_discount_amount', 40000)
+            ->assertJsonPath('data.min_order_value', 50000);
     }
 
     public function test_can_check_fixed_voucher_successfully(): void
@@ -49,7 +51,8 @@ class VoucherCheckTest extends TestCase
 
         $response->assertOk()
             ->assertJsonPath('data.code', 'GIAM20K')
-            ->assertJsonPath('data.discount_amount', 20000);
+            ->assertJsonPath('data.discount_amount', 20000)
+            ->assertJsonPath('data.max_discount_amount', null);
     }
 
     public function test_fails_when_subtotal_is_below_min_order_value(): void

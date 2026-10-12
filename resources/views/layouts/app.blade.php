@@ -933,7 +933,7 @@
                                 <i class="fa-solid fa-circle-user" style="color: var(--primary); font-size: 18px;"></i>
                                 <span>{{ Auth::user()->name }}</span>
                             </a>
-                            <form action="{{ route('logout') }}" method="POST" style="margin: 0; display: inline;">
+                            <form action="{{ route('logout') }}" method="POST" data-prevent-double-submit style="margin: 0; display: inline;">
                                 @csrf
                                 <button type="submit" title="Đăng xuất" style="background: #F1F5F9; border: 1px solid var(--border-color); color: #64748B; cursor: pointer; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: var(--transition);">
                                     <i class="fa-solid fa-right-from-bracket"></i>
@@ -1151,13 +1151,14 @@
 
         function calculateDiscount(subtotal) {
             if (!appliedVoucher || subtotal <= 0) return 0;
+            if (subtotal < Number(appliedVoucher.min_order_value || 0)) return 0;
             let discount = 0;
             if (appliedVoucher.discount_type === 'percent') {
                 discount = Math.floor(subtotal * (Number(appliedVoucher.discount_value) / 100));
             } else {
                 discount = Number(appliedVoucher.discount_value);
             }
-            if (appliedVoucher.max_discount_amount) {
+            if (appliedVoucher.max_discount_amount !== null && appliedVoucher.max_discount_amount !== undefined) {
                 discount = Math.min(discount, Number(appliedVoucher.max_discount_amount));
             }
             return Math.min(Math.max(0, discount), subtotal);
@@ -1209,19 +1210,21 @@
             updateCartUI();
         }
 
-        function addToCart(id, name, price, image) {
+        function addToCart(id, name, price, image, quantity = 1) {
+            quantity = Math.min(Math.max(parseInt(quantity, 10) || 1, 1), 99);
             const existing = cart.find(item => item.id === id);
+            const addedQuantity = Math.min(quantity, 99 - (existing?.quantity || 0));
+            if (addedQuantity <= 0) {
+                showToast('Mỗi món chỉ được đặt tối đa 99 phần.');
+                return;
+            }
             if (existing) {
-                if (existing.quantity >= 99) {
-                    showToast('Mỗi món chỉ được đặt tối đa 99 phần.');
-                    return;
-                }
-                existing.quantity += 1;
+                existing.quantity += addedQuantity;
             } else {
-                cart.push({ id, name, price: Number(price), image, quantity: 1 });
+                cart.push({ id, name, price: Number(price), image, quantity: addedQuantity });
             }
             saveCart();
-            showToast(`Đã thêm "${name}" vào giỏ hàng!`);
+            showToast(`Đã thêm ${addedQuantity} phần "${name}" vào giỏ hàng!`);
         }
 
         function changeQty(id, delta) {
@@ -1319,6 +1322,15 @@
             footer.style.display = 'block';
             subtotalEl.innerText = formatCurrency(totalAmount);
             const discountAmount = calculateDiscount(totalAmount);
+            const voucherFeedback = document.getElementById('voucherFeedback');
+            if (appliedVoucher && voucherFeedback) {
+                const eligible = totalAmount >= Number(appliedVoucher.min_order_value || 0);
+                voucherFeedback.style.display = 'block';
+                voucherFeedback.style.color = eligible ? '#059669' : '#DC2626';
+                voucherFeedback.innerText = eligible
+                    ? `✓ Áp dụng mã ${appliedVoucher.code}: Giảm ${formatCurrency(discountAmount)}`
+                    : `Đơn hàng phải từ ${formatCurrency(appliedVoucher.min_order_value)} để dùng mã ${appliedVoucher.code}.`;
+            }
             if (discountEl) {
                 discountEl.innerText = discountAmount > 0 ? ('-' + formatCurrency(discountAmount)) : '0 ₫';
             }
@@ -1398,6 +1410,8 @@
                     }
                 }
             } catch (err) {
+                appliedVoucher = null;
+                updateCartUI();
                 if (feedbackEl) {
                     feedbackEl.style.display = 'block';
                     feedbackEl.style.color = '#DC2626';
@@ -1504,6 +1518,13 @@
         document.getElementById('cartTriggerBtn').addEventListener('click', () => toggleCart(true));
         document.getElementById('closeCartBtn').addEventListener('click', () => toggleCart(false));
         document.getElementById('cartOverlay').addEventListener('click', () => toggleCart(false));
+        document.getElementById('checkoutVoucher')?.addEventListener('input', (event) => {
+            if (appliedVoucher && event.target.value.trim().toUpperCase() !== appliedVoucher.code) {
+                appliedVoucher = null;
+                document.getElementById('voucherFeedback').style.display = 'none';
+                updateCartUI();
+            }
+        });
 
         // Initial UI load
         updateCartUI();
@@ -1683,6 +1704,7 @@
         loadNotifications();
     </script>
     @endauth
+    @include('partials.submit-guard')
     @yield('scripts')
 </body>
 </html>

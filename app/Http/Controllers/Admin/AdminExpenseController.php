@@ -85,21 +85,31 @@ class AdminExpenseController extends Controller
             'amount' => ['required', 'numeric', 'min:1'],
             'expense_date' => ['required', 'date'],
             'description' => ['nullable', 'string', 'max:1000'],
+            'submission_token' => ['nullable', 'uuid'],
         ]);
 
-        $expense = OperatingExpense::create([
+        $attributes = [
             ...$validated,
             'created_by' => $request->user()->id,
-        ]);
+        ];
+        $expense = filled($validated['submission_token'] ?? null)
+            ? OperatingExpense::firstOrCreate([
+                'created_by' => $request->user()->id,
+                'submission_token' => $validated['submission_token'],
+            ], $attributes)
+            : OperatingExpense::create($attributes);
+        $message = $expense->wasRecentlyCreated
+            ? 'Đã thêm chi phí vận hành thành công.'
+            : 'Khoản chi phí này đã được ghi nhận, không tạo thêm bản ghi trùng.';
 
         if ($request->expectsJson() || $request->is('api/*')) {
             return response()->json([
-                'message' => 'Tạo khoản chi phí thành công.',
+                'message' => $message,
                 'data' => $expense->load('creator'),
-            ], 201);
+            ], $expense->wasRecentlyCreated ? 201 : 200);
         }
 
-        return redirect()->route('admin.expenses.index')->with('success', 'Đã thêm chi phí vận hành thành công.');
+        return redirect()->route('admin.expenses.index')->with('success', $message);
     }
 
     /**

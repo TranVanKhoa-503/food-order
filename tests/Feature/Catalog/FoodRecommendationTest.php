@@ -11,6 +11,40 @@ class FoodRecommendationTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_meat_dishes_with_vegetables_are_not_recommended_as_vegetarian(): void
+    {
+        $category = Category::factory()->create(['name' => 'Món chính', 'slug' => 'mon-chinh']);
+        Food::factory()->for($category)->create([
+            'name' => 'Salad gà', 'description' => 'Thịt gà ăn kèm rau', 'is_available' => true,
+        ]);
+        Food::factory()->for($category)->create([
+            'name' => 'Bún thịt nướng', 'description' => 'Ăn kèm rau và đậu', 'is_available' => true,
+        ]);
+        Food::factory()->for($category)->create([
+            'name' => 'Cơm chay', 'description' => 'Rau củ và nấm', 'is_available' => true,
+        ]);
+
+        $this->postJson('/api/v1/recommendations', ['preference' => 'vegetarian', 'limit' => 6])
+            ->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.name', 'Cơm chay');
+    }
+
+    public function test_not_spicy_filter_handles_negation_without_hiding_actual_spicy_ingredients(): void
+    {
+        $category = Category::factory()->create(['name' => 'Món chính', 'slug' => 'mon-chinh']);
+        Food::factory()->for($category)->create([
+            'name' => 'Salad gà', 'description' => 'Không cay, không thêm ớt', 'is_available' => true,
+        ]);
+        Food::factory()->for($category)->create([
+            'name' => 'Gà sốt cay', 'description' => 'Có ớt', 'is_available' => true,
+        ]);
+        Food::factory()->for($category)->create([
+            'name' => 'Mì sốt ớt', 'description' => 'Rau không cay nhưng sốt ớt cay', 'is_available' => true,
+        ]);
+
+        $this->postJson('/api/v1/recommendations', ['preference' => 'not_spicy', 'limit' => 6])
+            ->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.name', 'Salad gà');
+    }
+
     public function test_public_can_get_available_recommendations_by_budget_and_category(): void
     {
         $main = Category::factory()->create(['slug' => 'mon-chinh', 'name' => 'Món chính']);

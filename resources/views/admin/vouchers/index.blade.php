@@ -67,14 +67,25 @@
 
 @section('scripts')
 <script>
-function toLocalDate(value) { return value ? new Date(value).toISOString().slice(0, 16) : ''; }
+function toLocalDate(value) {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    const parts = new Intl.DateTimeFormat('sv-SE', {
+        timeZone: @json(config('app.timezone')),
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+    }).formatToParts(date);
+    const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+    return `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}`;
+}
 function openVoucherModal(voucher = null) {
     document.getElementById('voucherId').value = voucher?.id || '';
     document.getElementById('voucherCode').value = voucher?.code || '';
     document.getElementById('voucherType').value = voucher?.discount_type || 'fixed';
     document.getElementById('voucherValue').value = voucher?.discount_value || '';
     document.getElementById('voucherMin').value = voucher?.min_order_value || 0;
-    document.getElementById('voucherMax').value = voucher?.max_discount_amount || '';
+    document.getElementById('voucherMax').value = voucher?.max_discount_amount ?? '';
     document.getElementById('voucherLimit').value = voucher?.usage_limit || '';
     document.getElementById('voucherStarts').value = toLocalDate(voucher?.starts_at);
     document.getElementById('voucherEnds').value = toLocalDate(voucher?.ends_at);

@@ -339,7 +339,7 @@
 
             <div class="topbar-user">
                 <span style="font-weight: 700; font-size: 14px;">{{ Auth::user()->name }}</span>
-                <form action="{{ route('logout') }}" method="POST" style="margin: 0;">
+                <form action="{{ route('logout') }}" method="POST" data-prevent-double-submit style="margin: 0;">
                     @csrf
                     <button type="submit" title="Đăng xuất" style="background: #F1F5F9; border: 1px solid var(--border-color); color: #64748B; cursor: pointer; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px;">
                         <i class="fa-solid fa-right-from-bracket"></i>
@@ -376,6 +376,7 @@
         </main>
     </div>
 
+    @include('partials.submit-guard')
     @yield('scripts')
 </body>
 </html>

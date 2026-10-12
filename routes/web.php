@@ -46,10 +46,11 @@ Route::middleware('guest')->group(function () {
     Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
 });
 
+// Locked accounts must still be able to end their session.
+Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth')->name('logout');
+
 // Web Auth Routes (Authenticated & Active)
 Route::middleware(['auth', 'active'])->group(function () {
-    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
-
     Route::get('/profile', [UserController::class, 'show'])->name('profile');
     Route::put('/profile', [UserController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [UserController::class, 'updatePassword'])->name('profile.password');
@@ -110,9 +111,10 @@ Route::prefix('api/v1')->group(function () {
         Route::post('/auth/reset-password', [ResetPasswordController::class, 'reset']);
     });
 
+    Route::post('/auth/logout', [LoginController::class, 'logout'])->middleware('auth');
+
     // API Authenticated User Routes
     Route::middleware(['auth', 'active'])->group(function () {
-        Route::post('/auth/logout', [LoginController::class, 'logout']);
         Route::get('/auth/me', [LoginController::class, 'me']);
 
         // Customer notifications

@@ -8,11 +8,50 @@ use App\Models\ShipperPayroll;
 use App\Models\User;
 use App\Services\ShipperPayrollService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Tests\TestCase;
 
 class AdminPayrollManagementTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_finalizing_payroll_recalculates_orders_completed_after_the_draft_was_created(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $shipper = User::factory()->shipper()->create();
+        Order::factory()->create([
+            'shipper_id' => $shipper->id, 'status' => OrderStatus::Completed,
+            'shipping_fee' => 30000, 'completed_at' => now(),
+        ]);
+        $service = app(ShipperPayrollService::class);
+        $payroll = $service->generateOrUpdatePayroll($shipper, now()->year, now()->month);
+        Order::factory()->create([
+            'shipper_id' => $shipper->id, 'status' => OrderStatus::Completed,
+            'shipping_fee' => 30000, 'completed_at' => now(),
+        ]);
+
+        $this->actingAs($admin)->postJson('/api/v1/admin/payrolls/'.$payroll->id.'/finalize')
+            ->assertOk()->assertJsonPath('data.completed_orders_count', 2)
+            ->assertJsonPath('data.total_commission', '30000')
+            ->assertJsonPath('data.total_salary', '2030000');
+        $this->getJson('/api/v1/admin/payrolls/'.$payroll->id)->assertOk()->assertJsonCount(2, 'data.orders');
+
+        $this->postJson('/api/v1/admin/payrolls/'.$payroll->id.'/pay')->assertOk();
+        $this->assertEquals(2030000, $payroll->fresh()->total_salary);
+    }
+
+    public function test_paid_payroll_cannot_be_changed_by_a_stale_finalize_request(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $shipper = User::factory()->shipper()->create();
+        $service = app(ShipperPayrollService::class);
+        $draft = $service->generateOrUpdatePayroll($shipper, now()->year, now()->month);
+        $finalized = $service->finalize($draft, $admin);
+        $service->markAsPaid($finalized, $admin);
+
+        $this->expectException(UnprocessableEntityHttpException::class);
+        $service->finalize($draft, $admin);
+    }
 
     public function test_payroll_service_calculates_correct_salary_and_commission(): void
     {

@@ -200,6 +200,84 @@
             font-weight: 700;
             display: inline-block;
         }
+
+        /* Pagination Styling */
+        nav[role="navigation"] {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 13px;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        nav[role="navigation"] svg {
+            width: 16px !important;
+            height: 16px !important;
+            max-width: 16px !important;
+            max-height: 16px !important;
+            display: inline-block !important;
+            vertical-align: middle;
+        }
+
+        nav[role="navigation"] .hidden {
+            display: flex !important;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        nav[role="navigation"] > div:first-child:not(.hidden) {
+            display: none !important;
+        }
+
+        nav[role="navigation"] span.relative,
+        nav[role="navigation"] a.relative {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 34px;
+            height: 34px;
+            padding: 0 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            text-decoration: none;
+            margin: 0 2px;
+            transition: var(--transition);
+        }
+
+        nav[role="navigation"] a.relative:hover {
+            background: #F1F5F9;
+            color: var(--primary);
+            border-color: #CBD5E1;
+        }
+
+        nav[role="navigation"] span[aria-current="page"] span.relative,
+        nav[role="navigation"] span[aria-current="page"] > span {
+            background: var(--primary) !important;
+            color: white !important;
+            border-color: var(--primary) !important;
+        }
+
+        nav[role="navigation"] p {
+            font-size: 13px;
+            color: #64748B;
+        }
+
+        nav[role="navigation"] p span.font-medium,
+        nav[role="navigation"] p span.font-semibold {
+            font-weight: 700;
+            color: var(--dark);
+        }
     </style>
     @yield('styles')
 </head>

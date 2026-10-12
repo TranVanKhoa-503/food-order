@@ -18,8 +18,13 @@
             <option value="1" {{ ($isActive ?? '') === '1' ? 'selected' : '' }}>Đang hoạt động</option>
             <option value="0" {{ ($isActive ?? '') === '0' ? 'selected' : '' }}>Bị khóa</option>
         </select>
+        <select name="per_page" onchange="this.form.submit()" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 14px;">
+            <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15 người dùng/trang</option>
+            <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25 người dùng/trang</option>
+            <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 người dùng/trang</option>
+        </select>
         <button type="submit" class="btn btn-primary"><i class="fa-solid fa-filter"></i> Lọc</button>
-        @if(!empty($search) || !empty($role) || !is_null($isActive))
+        @if(!empty($search) || !empty($role) || !is_null($isActive) || request()->has('per_page'))
             <a href="{{ route('admin.users.index') }}" class="btn" style="background: #F1F5F9; color: #64748B;">Xóa lọc</a>
         @endif
     </form>
@@ -81,7 +86,7 @@
     </table>
 
     <div style="margin-top: 20px;">
-        {{ $users->links() }}
+        {{ $users->withQueryString()->links() }}
     </div>
 </div>
 @endsection

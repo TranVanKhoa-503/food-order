@@ -45,7 +45,7 @@ class AdminFoodController extends Controller
             });
         }
 
-        $foods = $query->latest()->paginate($perPage);
+        $foods = $query->latest()->paginate($perPage)->withQueryString();
 
         if ($request->expectsJson() || $request->is('api/*')) {
             return FoodResource::collection($foods);

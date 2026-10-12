@@ -33,7 +33,7 @@ class AdminCategoryController extends Controller
             });
         }
 
-        $categories = $query->latest()->paginate($perPage);
+        $categories = $query->latest()->paginate($perPage)->withQueryString();
 
         if ($request->expectsJson() || $request->is('api/*')) {
             return CategoryResource::collection($categories);

@@ -6,10 +6,15 @@
 @section('content')
 <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
-        <form method="GET" action="{{ route('admin.categories.index') }}" style="display: flex; gap: 10px;">
+        <form method="GET" action="{{ route('admin.categories.index') }}" style="display: flex; gap: 10px; flex-wrap: wrap;">
             <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Tìm tên danh mục..." style="padding: 8px 14px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 14px; width: 220px;">
+            <select name="per_page" onchange="this.form.submit()" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 14px;">
+                <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15 danh mục/trang</option>
+                <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25 danh mục/trang</option>
+                <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 danh mục/trang</option>
+            </select>
             <button type="submit" class="btn btn-primary"><i class="fa-solid fa-filter"></i> Tìm</button>
-            @if(!empty($search))
+            @if(!empty($search) || request()->has('per_page'))
                 <a href="{{ route('admin.categories.index') }}" class="btn" style="background: #F1F5F9; color: #64748B;">Xóa</a>
             @endif
         </form>
@@ -64,7 +69,7 @@
     </table>
 
     <div style="margin-top: 20px;">
-        {{ $categories->links() }}
+        {{ $categories->withQueryString()->links() }}
     </div>
 </div>
 

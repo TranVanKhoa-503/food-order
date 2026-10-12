@@ -26,7 +26,7 @@ class AdminVoucherController extends Controller
             });
         }
 
-        $vouchers = $query->paginate(min(max((int) $request->query('per_page', 15), 1), 50));
+        $vouchers = $query->paginate(min(max((int) $request->query('per_page', 15), 1), 50))->withQueryString();
 
         if ($request->expectsJson() || $request->is('api/*')) {
             return VoucherResource::collection($vouchers);

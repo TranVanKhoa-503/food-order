@@ -6,9 +6,17 @@
 @section('content')
 <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px;">
-        <form method="GET" action="{{ route('admin.vouchers.index') }}" style="display:flex;gap:10px;">
+        <form method="GET" action="{{ route('admin.vouchers.index') }}" style="display:flex;gap:10px;flex-wrap:wrap;">
             <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Tìm mã voucher..." style="padding:8px 14px;border:1px solid var(--border-color);border-radius:var(--radius-md);font-size:14px;">
+            <select name="per_page" onchange="this.form.submit()" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 14px;">
+                <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15 voucher/trang</option>
+                <option value="25" {{ request('per_page', 25) == 25 ? 'selected' : '' }}>25 voucher/trang</option>
+                <option value="50" {{ request('per_page', 50) == 50 ? 'selected' : '' }}>50 voucher/trang</option>
+            </select>
             <button class="btn btn-primary" type="submit"><i class="fa-solid fa-filter"></i> Lọc</button>
+            @if(!empty($search) || request()->has('per_page'))
+                <a href="{{ route('admin.vouchers.index') }}" class="btn" style="background:#F1F5F9;color:#64748B;">Xóa lọc</a>
+            @endif
         </form>
         <button class="btn btn-primary" onclick="openVoucherModal()"><i class="fa-solid fa-plus"></i> Thêm voucher</button>
     </div>
@@ -31,7 +39,7 @@
         @endforelse
         </tbody>
     </table>
-    <div style="margin-top:20px;">{{ $vouchers->links() }}</div>
+    <div style="margin-top:20px;">{{ $vouchers->withQueryString()->links() }}</div>
 </div>
 
 <div id="voucherModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center;">

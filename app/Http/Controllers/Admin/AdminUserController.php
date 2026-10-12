@@ -41,7 +41,7 @@ class AdminUserController extends Controller
             });
         }
 
-        $users = $query->latest()->paginate($perPage);
+        $users = $query->latest()->paginate($perPage)->withQueryString();
 
         if ($request->expectsJson() || $request->is('api/*')) {
             return UserResource::collection($users);

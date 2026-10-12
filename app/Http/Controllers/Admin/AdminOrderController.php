@@ -50,7 +50,7 @@ class AdminOrderController extends Controller
             $query->whereDate('created_at', '<=', $to);
         }
 
-        $orders = $query->latest()->paginate($perPage);
+        $orders = $query->latest()->paginate($perPage)->withQueryString();
 
         if ($request->expectsJson() || $request->is('api/*')) {
             return OrderResource::collection($orders);

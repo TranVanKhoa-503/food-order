@@ -17,11 +17,16 @@
         </select>
         <input type="date" name="from" value="{{ $from ?? '' }}" title="Từ ngày" style="padding:8px 10px;border:1px solid var(--border-color);border-radius:var(--radius-md);">
         <input type="date" name="to" value="{{ $to ?? '' }}" title="Đến ngày" style="padding:8px 10px;border:1px solid var(--border-color);border-radius:var(--radius-md);">
+        <select name="per_page" onchange="this.form.submit()" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 14px;">
+            <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15 đơn/trang</option>
+            <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25 đơn/trang</option>
+            <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 đơn/trang</option>
+        </select>
         <button type="submit" class="btn btn-primary"><i class="fa-solid fa-filter"></i> Lọc đơn</button>
         <a href="{{ route('admin.orders.export', array_filter(['search' => $search ?? '', 'status' => $status ?? '', 'from' => $from ?? '', 'to' => $to ?? ''])) }}" class="btn" style="background:#ECFDF5;color:#047857;">
             <i class="fa-solid fa-file-csv"></i> Xuất CSV
         </a>
-        @if(!empty($search) || !empty($status) || !empty($from) || !empty($to))
+        @if(!empty($search) || !empty($status) || !empty($from) || !empty($to) || request()->has('per_page'))
             <a href="{{ route('admin.orders.index') }}" class="btn" style="background: #F1F5F9; color: #64748B;">Xóa lọc</a>
         @endif
     </form>
@@ -114,7 +119,7 @@
     </table>
 
     <div style="margin-top: 20px;">
-        {{ $orders->links() }}
+        {{ $orders->withQueryString()->links() }}
     </div>
 </div>
 @endsection

@@ -19,8 +19,13 @@
                 <option value="1" {{ (string)($isAvailable ?? '') === '1' ? 'selected' : '' }}>Đang bán</option>
                 <option value="0" {{ (string)($isAvailable ?? '') === '0' ? 'selected' : '' }}>Tạm ngưng</option>
             </select>
+            <select name="per_page" onchange="this.form.submit()" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 14px;">
+                <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15 món/trang</option>
+                <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25 món/trang</option>
+                <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 món/trang</option>
+            </select>
             <button type="submit" class="btn btn-primary"><i class="fa-solid fa-filter"></i> Lọc</button>
-            @if(!empty($search) || !empty($categoryId) || $isAvailable !== null && $isAvailable !== '')
+            @if(!empty($search) || !empty($categoryId) || ($isAvailable !== null && $isAvailable !== '') || request()->has('per_page'))
                 <a href="{{ route('admin.foods.index') }}" class="btn" style="background: #F1F5F9; color: #64748B;">Xóa lọc</a>
             @endif
         </form>
@@ -82,7 +87,7 @@
     </table>
 
     <div style="margin-top: 20px;">
-        {{ $foods->links() }}
+        {{ $foods->withQueryString()->links() }}
     </div>
 </div>
 

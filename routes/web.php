@@ -3,8 +3,11 @@
 use App\Http\Controllers\Admin\AdminCategoryController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminDeliveryZoneController;
+use App\Http\Controllers\Admin\AdminExpenseController;
 use App\Http\Controllers\Admin\AdminFoodController;
 use App\Http\Controllers\Admin\AdminOrderController;
+use App\Http\Controllers\Admin\AdminPayrollController;
+use App\Http\Controllers\Admin\AdminShipperController;
 use App\Http\Controllers\Admin\AdminStoreSettingController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminVoucherController;
@@ -19,6 +22,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\RecommendationController;
 use App\Http\Controllers\Shipper\ShipperOrderController;
+use App\Http\Controllers\Shipper\ShipperPayrollController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VoucherCheckController;
 use Illuminate\Support\Facades\Route;
@@ -61,9 +65,20 @@ Route::middleware(['auth', 'active', 'admin'])->prefix('admin')->name('admin.')-
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/export', [AdminOrderController::class, 'export'])->name('orders.export');
     Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
+    Route::post('/orders/{order}/assign-shipper', [AdminShipperController::class, 'assignOrder'])->name('orders.assign-shipper');
     Route::get('/foods', [AdminFoodController::class, 'index'])->name('foods.index');
     Route::get('/categories', [AdminCategoryController::class, 'index'])->name('categories.index');
     Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+    Route::get('/shippers', [AdminShipperController::class, 'index'])->name('shippers.index');
+    Route::get('/payrolls', [AdminPayrollController::class, 'index'])->name('payrolls.index');
+    Route::post('/payrolls/generate', [AdminPayrollController::class, 'generate'])->name('payrolls.generate');
+    Route::get('/payrolls/{payroll}', [AdminPayrollController::class, 'show'])->name('payrolls.show');
+    Route::post('/payrolls/{payroll}/finalize', [AdminPayrollController::class, 'finalize'])->name('payrolls.finalize');
+    Route::post('/payrolls/{payroll}/pay', [AdminPayrollController::class, 'pay'])->name('payrolls.pay');
+    Route::get('/expenses', [AdminExpenseController::class, 'index'])->name('expenses.index');
+    Route::post('/expenses', [AdminExpenseController::class, 'store'])->name('expenses.store');
+    Route::put('/expenses/{expense}', [AdminExpenseController::class, 'update'])->name('expenses.update');
+    Route::delete('/expenses/{expense}', [AdminExpenseController::class, 'destroy'])->name('expenses.destroy');
     Route::get('/vouchers', [AdminVoucherController::class, 'index'])->name('vouchers.index');
     Route::get('/settings', [AdminStoreSettingController::class, 'edit'])->name('settings.edit');
 });
@@ -73,6 +88,7 @@ Route::middleware(['auth', 'active', 'shipper'])->prefix('shipper')->name('shipp
     Route::get('/orders', [ShipperOrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [ShipperOrderController::class, 'show'])->name('orders.show');
     Route::patch('/orders/{order}/status', [ShipperOrderController::class, 'updateStatus'])->name('orders.status');
+    Route::get('/salary', [ShipperPayrollController::class, 'index'])->name('salary');
 });
 
 // API v1 Routes (Session + Cookie + CSRF per ARCHITECTURE.md)
@@ -161,6 +177,23 @@ Route::prefix('api/v1')->group(function () {
         Route::post('/delivery-zones', [AdminDeliveryZoneController::class, 'store']);
         Route::put('/delivery-zones/{deliveryZone}', [AdminDeliveryZoneController::class, 'update']);
         Route::delete('/delivery-zones/{deliveryZone}', [AdminDeliveryZoneController::class, 'destroy']);
+
+        // Shippers
+        Route::get('/shippers', [AdminShipperController::class, 'index']);
+        Route::post('/orders/{order}/assign-shipper', [AdminShipperController::class, 'assignOrder']);
+
+        // Payrolls
+        Route::get('/payrolls', [AdminPayrollController::class, 'index']);
+        Route::post('/payrolls/generate', [AdminPayrollController::class, 'generate']);
+        Route::get('/payrolls/{payroll}', [AdminPayrollController::class, 'show']);
+        Route::post('/payrolls/{payroll}/finalize', [AdminPayrollController::class, 'finalize']);
+        Route::post('/payrolls/{payroll}/pay', [AdminPayrollController::class, 'pay']);
+
+        // Expenses
+        Route::get('/expenses', [AdminExpenseController::class, 'index']);
+        Route::post('/expenses', [AdminExpenseController::class, 'store']);
+        Route::put('/expenses/{expense}', [AdminExpenseController::class, 'update']);
+        Route::delete('/expenses/{expense}', [AdminExpenseController::class, 'destroy']);
     });
 
     // API Shipper Routes
@@ -168,5 +201,6 @@ Route::prefix('api/v1')->group(function () {
         Route::get('/orders', [ShipperOrderController::class, 'index']);
         Route::get('/orders/{order}', [ShipperOrderController::class, 'show']);
         Route::patch('/orders/{order}/status', [ShipperOrderController::class, 'updateStatus']);
+        Route::get('/salary', [ShipperPayrollController::class, 'index']);
     });
 });

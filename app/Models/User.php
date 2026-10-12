@@ -49,6 +49,22 @@ class User extends Authenticatable
         return $this->hasMany(OrderStatusHistory::class, 'actor_id');
     }
 
+    /**
+     * @return HasMany<Order, $this>
+     */
+    public function shipperOrders(): HasMany
+    {
+        return $this->hasMany(Order::class, 'shipper_id');
+    }
+
+    /**
+     * @return HasMany<ShipperPayroll, $this>
+     */
+    public function payrolls(): HasMany
+    {
+        return $this->hasMany(ShipperPayroll::class, 'shipper_id');
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === UserRole::Admin;

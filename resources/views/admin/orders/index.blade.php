@@ -39,6 +39,7 @@
                 <th>MÓN ĂN</th>
                 <th>TỔNG TIỀN</th>
                 <th>TRẠNG THÁI</th>
+                <th>SHIPPER GIAO HÀNG</th>
                 <th>CHUYỂN TRẠNG THÁI</th>
             </tr>
         </thead>
@@ -82,6 +83,34 @@
                         </span>
                     </td>
                     <td>
+                        @if(in_array($order->status->value, ['completed', 'cancelled']))
+                            @if($order->shipper)
+                                <span style="font-weight: 600; color: #2563EB; font-size: 13px;">
+                                    <i class="fa-solid fa-motorcycle"></i> {{ $order->shipper->name }}
+                                </span>
+                            @else
+                                <span style="color: #94A3B8; font-size: 12px;">Chưa phân công</span>
+                            @endif
+                        @else
+                            <form action="{{ route('admin.orders.assign-shipper', $order) }}" method="POST">
+                                @csrf
+                                <select name="shipper_id" onchange="this.form.submit()" style="padding: 5px 8px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 12px; background: white; cursor: pointer;">
+                                    <option value="">-- Phân công --</option>
+                                    @foreach($shippers as $s)
+                                        <option value="{{ $s->id }}" {{ $order->shipper_id === $s->id ? 'selected' : '' }}>
+                                            {{ $s->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </form>
+                            @if($order->assigned_at)
+                                <div style="font-size: 10px; color: #64748B; margin-top: 3px;">
+                                    <i class="fa-solid fa-clock"></i> {{ $order->assigned_at->format('H:i d/m') }}
+                                </div>
+                            @endif
+                        @endif
+                    </td>
+                    <td>
                         <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                             @if($order->status->value === 'pending')
                                 <button onclick="updateOrderStatus({{ $order->id }}, 'confirmed')" class="btn" style="background: #E0E7FF; color: #4338CA; padding: 4px 8px; font-size: 11px;">
@@ -112,7 +141,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" style="text-align: center; color: #94A3B8; padding: 30px;">Không tìm thấy đơn hàng nào.</td>
+                    <td colspan="7" style="text-align: center; color: #94A3B8; padding: 30px;">Không tìm thấy đơn hàng nào.</td>
                 </tr>
             @endforelse
         </tbody>

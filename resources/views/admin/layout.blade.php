@@ -304,6 +304,15 @@
             <a href="{{ route('admin.users.index') }}" class="menu-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                 <i class="fa-solid fa-users"></i> Khách hàng
             </a>
+            <a href="{{ route('admin.shippers.index') }}" class="menu-item {{ request()->routeIs('admin.shippers.*') ? 'active' : '' }}">
+                <i class="fa-solid fa-motorcycle"></i> Đội ngũ Shipper
+            </a>
+            <a href="{{ route('admin.payrolls.index') }}" class="menu-item {{ request()->routeIs('admin.payrolls.*') ? 'active' : '' }}">
+                <i class="fa-solid fa-money-check-dollar"></i> Bảng lương Shipper
+            </a>
+            <a href="{{ route('admin.expenses.index') }}" class="menu-item {{ request()->routeIs('admin.expenses.*') ? 'active' : '' }}">
+                <i class="fa-solid fa-file-invoice-dollar"></i> Chi phí vận hành
+            </a>
             <a href="{{ route('admin.vouchers.index') }}" class="menu-item {{ request()->routeIs('admin.vouchers.*') ? 'active' : '' }}">
                 <i class="fa-solid fa-ticket"></i> Voucher
             </a>
@@ -340,9 +349,26 @@
         </header>
 
         <main class="admin-content">
-            @if(session('status'))
+            @if(session('status') || session('success'))
                 <div style="background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 14px 18px; border-radius: var(--radius-md); margin-bottom: 20px; font-size: 14px; font-weight: 600;">
-                    <i class="fa-solid fa-circle-check" style="margin-right: 8px;"></i> {{ session('status') }}
+                    <i class="fa-solid fa-circle-check" style="margin-right: 8px;"></i> {{ session('status') ?? session('success') }}
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div style="background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; padding: 14px 18px; border-radius: var(--radius-md); margin-bottom: 20px; font-size: 14px; font-weight: 600;">
+                    <i class="fa-solid fa-circle-exclamation" style="margin-right: 8px;"></i> {{ session('error') }}
+                </div>
+            @endif
+
+            @if($errors->any())
+                <div style="background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; padding: 14px 18px; border-radius: var(--radius-md); margin-bottom: 20px; font-size: 14px; font-weight: 600;">
+                    <div style="font-weight: 700; margin-bottom: 6px;"><i class="fa-solid fa-triangle-exclamation"></i> Vui lòng kiểm tra lại:</div>
+                    <ul style="margin-left: 20px; font-size: 13px;">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
                 </div>
             @endif
 

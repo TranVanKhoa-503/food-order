@@ -22,11 +22,19 @@ class ShipperOrderController extends Controller
      */
     public function index(Request $request): View|AnonymousResourceCollection
     {
+        $user = $request->user();
         $status = $request->query('status', 'delivering');
         $search = trim((string) $request->query('search', ''));
         $perPage = min((int) $request->query('per_page', 15), 50);
 
         $query = Order::with(['items', 'user', 'deliveryZone'])->latest();
+
+        if ($user && $user->isShipper()) {
+            $query->where(function ($q) use ($user) {
+                $q->where('shipper_id', $user->id)
+                    ->orWhereNull('shipper_id');
+            });
+        }
 
         if ($status !== 'all') {
             if ($status === 'completed_today') {
@@ -51,9 +59,20 @@ class ShipperOrderController extends Controller
 
         $orders = $query->paginate($perPage)->withQueryString();
 
-        $deliveringCount = Order::query()->where('status', OrderStatus::Delivering)->count();
-        $completedTodayCount = Order::query()->where('status', OrderStatus::Completed)->whereDate('completed_at', today())->count();
-        $cancelledTodayCount = Order::query()->where('status', OrderStatus::Cancelled)->whereDate('cancelled_at', today())->count();
+        $deliveringCountQuery = Order::query()->where('status', OrderStatus::Delivering);
+        $completedTodayCountQuery = Order::query()->where('status', OrderStatus::Completed)->whereDate('completed_at', today());
+        $cancelledTodayCountQuery = Order::query()->where('status', OrderStatus::Cancelled)->whereDate('cancelled_at', today());
+
+        if ($user && $user->isShipper()) {
+            $filterShipper = fn ($q) => $q->where(fn ($sub) => $sub->where('shipper_id', $user->id)->orWhereNull('shipper_id'));
+            $deliveringCountQuery->where($filterShipper);
+            $completedTodayCountQuery->where($filterShipper);
+            $cancelledTodayCountQuery->where($filterShipper);
+        }
+
+        $deliveringCount = $deliveringCountQuery->count();
+        $completedTodayCount = $completedTodayCountQuery->count();
+        $cancelledTodayCount = $cancelledTodayCountQuery->count();
 
         if ($request->expectsJson() || $request->is('api/*')) {
             return OrderResource::collection($orders);
@@ -91,6 +110,17 @@ class ShipperOrderController extends Controller
         Order $order,
         OrderStatusService $orderStatusService,
     ): OrderResource|JsonResponse|RedirectResponse {
+        $user = $request->user();
+
+        if ($user && $user->isShipper()) {
+            if ($order->shipper_id && $order->shipper_id !== $user->id) {
+                abort(403, 'Đơn hàng này đã được phân công cho shipper khác.');
+            }
+            if (! $order->shipper_id) {
+                $order->update(['shipper_id' => $user->id, 'assigned_at' => now()]);
+            }
+        }
+
         $currentStatus = $order->status instanceof OrderStatus ? $order->status->value : (string) $order->status;
 
         if ($currentStatus !== 'delivering') {

@@ -7,9 +7,12 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\OrderResource;
 use App\Models\Food;
+use App\Models\OperatingExpense;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\ShipperPayroll;
 use App\Models\User;
+use App\Services\ShipperPayrollService;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -43,6 +46,60 @@ class AdminDashboardController extends Controller
         $todayOrders = $ordersInRange()->whereDate('created_at', today())->count();
         $pendingOrders = $ordersInRange()->where('status', OrderStatus::Pending)->count();
 
+        // Financial & Payroll calculations
+        $payrollsInRange = ShipperPayroll::query();
+        if ($from && $to) {
+            $startDate = Carbon::parse($from);
+            $endDate = Carbon::parse($to);
+            $payrollsInRange->where(function ($q) use ($startDate, $endDate) {
+                $cur = $startDate->copy()->startOfMonth();
+                while ($cur->lte($endDate)) {
+                    $q->orWhere(function ($sub) use ($cur) {
+                        $sub->where('year', $cur->year)->where('month', $cur->month);
+                    });
+                    $cur->addMonth();
+                }
+            });
+        } elseif ($from) {
+            $startDate = Carbon::parse($from);
+            $payrollsInRange->where(function ($q) use ($startDate) {
+                $q->where('year', '>', $startDate->year)
+                    ->orWhere(function ($sub) use ($startDate) {
+                        $sub->where('year', $startDate->year)->where('month', '>=', $startDate->month);
+                    });
+            });
+        } elseif ($to) {
+            $endDate = Carbon::parse($to);
+            $payrollsInRange->where(function ($q) use ($endDate) {
+                $q->where('year', '<', $endDate->year)
+                    ->orWhere(function ($sub) use ($endDate) {
+                        $sub->where('year', $endDate->year)->where('month', '<=', $endDate->month);
+                    });
+            });
+        }
+
+        $payrollCount = $payrollsInRange->count();
+        if ($payrollCount > 0) {
+            $totalBaseSalary = (int) $payrollsInRange->sum('base_salary');
+            $totalCommission = (int) $payrollsInRange->sum('total_commission');
+        } else {
+            // Dynamic estimation if no formal payroll records exist yet
+            $activeShippersCount = User::query()->where('role', UserRole::Shipper)->where('is_active', true)->count();
+            $totalBaseSalary = $activeShippersCount * ShipperPayrollService::DEFAULT_BASE_SALARY;
+            $shippingFeeSum = (float) $completedOrders()->sum('shipping_fee');
+            $totalCommission = (int) round($shippingFeeSum * ShipperPayrollService::DEFAULT_COMMISSION_RATE);
+        }
+
+        $totalPayrollCost = $totalBaseSalary + $totalCommission;
+
+        $totalOperatingExpenses = (int) OperatingExpense::query()
+            ->when($from, fn ($q) => $q->whereDate('expense_date', '>=', $from))
+            ->when($to, fn ($q) => $q->whereDate('expense_date', '<=', $to))
+            ->sum('amount');
+
+        $totalExpenses = $totalPayrollCost + $totalOperatingExpenses;
+        $netProfit = $totalRevenue - $totalExpenses;
+
         // Aggregate status counts in a single query instead of 6 queries in a loop
         $rawStatusCounts = $ordersInRange()
             ->selectRaw('status, COUNT(*) as aggregate_count')
@@ -55,8 +112,9 @@ class AdminDashboardController extends Controller
         }
 
         $totalUsers = User::query()->where('role', UserRole::User)->count();
+        $totalShippers = User::query()->where('role', UserRole::Shipper)->count();
         $totalFoods = Food::query()->count();
-        $recentOrders = $ordersInRange()->with(['items', 'user'])->latest()->take(5)->get();
+        $recentOrders = $ordersInRange()->with(['items', 'user', 'shipper'])->latest()->take(5)->get();
 
         $topFoods = OrderItem::query()
             ->selectRaw('food_name, SUM(quantity) as quantity, SUM(line_total) as revenue')
@@ -75,7 +133,7 @@ class AdminDashboardController extends Controller
             : ($to ? Carbon::parse($to)->subDays(6)->startOfDay() : today()->subDays(6)->startOfDay());
         $dailyEnd = $to ? Carbon::parse($to)->endOfDay() : today()->endOfDay();
 
-        // Aggregate daily completed revenue in a single query instead of 7-31 queries in a loop
+        // Aggregate daily completed revenue in a single query
         $aggregatedDaily = Order::query()
             ->where('status', OrderStatus::Completed)
             ->whereDate('created_at', '>=', $dailyStart->toDateString())
@@ -99,10 +157,20 @@ class AdminDashboardController extends Controller
                     'pending_orders' => $pendingOrders,
                     'orders_by_status' => $statusCounts,
                     'total_users' => $totalUsers,
+                    'total_shippers' => $totalShippers,
                     'total_foods' => $totalFoods,
                     'recent_orders' => OrderResource::collection($recentOrders),
                     'top_foods' => $topFoods,
                     'daily_revenue' => $dailyRevenue,
+                    'financial_summary' => [
+                        'total_revenue' => $totalRevenue,
+                        'total_base_salary' => $totalBaseSalary,
+                        'total_commission' => $totalCommission,
+                        'total_payroll_cost' => $totalPayrollCost,
+                        'total_operating_expenses' => $totalOperatingExpenses,
+                        'total_expenses' => $totalExpenses,
+                        'net_profit' => $netProfit,
+                    ],
                     'from' => $from,
                     'to' => $to,
                 ],
@@ -116,10 +184,17 @@ class AdminDashboardController extends Controller
             'pendingOrders',
             'statusCounts',
             'totalUsers',
+            'totalShippers',
             'totalFoods',
             'recentOrders',
             'topFoods',
             'dailyRevenue',
+            'totalBaseSalary',
+            'totalCommission',
+            'totalPayrollCost',
+            'totalOperatingExpenses',
+            'totalExpenses',
+            'netProfit',
             'from',
             'to',
         ));

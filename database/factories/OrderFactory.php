@@ -37,6 +37,8 @@ class OrderFactory extends Factory
             'cancel_reason' => null,
             'cancelled_at' => null,
             'completed_at' => null,
+            'shipper_id' => null,
+            'assigned_at' => null,
         ];
     }
 }

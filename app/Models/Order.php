@@ -36,6 +36,8 @@ class Order extends Model
         'cancel_reason',
         'cancelled_at',
         'completed_at',
+        'shipper_id',
+        'assigned_at',
     ];
 
     /**
@@ -71,6 +73,14 @@ class Order extends Model
     }
 
     /**
+     * @return BelongsTo<User, $this>
+     */
+    public function shipper(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'shipper_id');
+    }
+
+    /**
      * @return HasMany<OrderStatusHistory, $this>
      */
     public function statusHistories(): HasMany
@@ -93,6 +103,7 @@ class Order extends Model
             'status' => OrderStatus::class,
             'cancelled_at' => 'datetime',
             'completed_at' => 'datetime',
+            'assigned_at' => 'datetime',
         ];
     }
 }

@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\OrderStatus;
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateOrderStatusRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
+use App\Models\User;
 use App\Services\OrderStatusService;
 use App\Support\CsvSanitizer;
 use Illuminate\Contracts\View\View;
@@ -28,7 +30,7 @@ class AdminOrderController extends Controller
         $to = $request->query('to');
         $perPage = min((int) $request->query('per_page', 15), 50);
 
-        $query = Order::with(['items', 'user']);
+        $query = Order::with(['items', 'user', 'shipper']);
 
         if (! empty($status)) {
             $query->where('status', $status);
@@ -56,7 +58,9 @@ class AdminOrderController extends Controller
             return OrderResource::collection($orders);
         }
 
-        return view('admin.orders.index', compact('orders', 'status', 'search', 'from', 'to'));
+        $shippers = User::query()->where('role', UserRole::Shipper)->where('is_active', true)->orderBy('name')->get();
+
+        return view('admin.orders.index', compact('orders', 'status', 'search', 'from', 'to', 'shippers'));
     }
 
     /**

@@ -46,6 +46,9 @@ class OrderResource extends JsonResource
             'cancel_reason' => $this->cancel_reason,
             'cancelled_at' => $this->cancelled_at?->toISOString(),
             'completed_at' => $this->completed_at?->toISOString(),
+            'shipper_id' => $this->shipper_id,
+            'shipper' => new UserResource($this->whenLoaded('shipper')),
+            'assigned_at' => $this->assigned_at?->toISOString(),
             'items' => OrderItemResource::collection($this->whenLoaded('items')),
             'status_history' => $this->whenLoaded('statusHistories', fn () => $this->statusHistories->map(fn ($history) => [
                 'id' => $history->id,

@@ -268,7 +268,9 @@
                 Nhân viên giao hàng: <strong>{{ Auth::user()->name }}</strong> ({{ Auth::user()->phone ?? Auth::user()->email }})
             </p>
         </div>
-        <div style="display: flex; gap: 10px; align-items: center;">
+            <a href="{{ route('shipper.salary') }}" class="btn" style="background: #10B981; color: white; border: none; font-size: 13px; font-weight: 700; border-radius: 50px; padding: 8px 16px; text-decoration: none;">
+                <i class="fa-solid fa-wallet"></i> Bảng Lương & Thu Nhập
+            </a>
             <a href="{{ route('shipper.orders.index') }}" class="btn" style="background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.2); font-size: 13px; font-weight: 700; border-radius: 50px; padding: 8px 16px;">
                 <i class="fa-solid fa-rotate-right"></i> Làm mới
             </a>
@@ -315,6 +317,10 @@
         <a href="{{ route('shipper.orders.index', ['status' => 'all']) }}" class="shipper-tab {{ ($status ?? '') === 'all' ? 'active' : '' }}">
             <i class="fa-solid fa-list-check"></i>
             Tất cả đơn
+        </a>
+        <a href="{{ route('shipper.salary') }}" class="shipper-tab" style="margin-left: auto; background: #EEF2FF; color: #4338CA; border-color: #C7D2FE;">
+            <i class="fa-solid fa-wallet"></i>
+            Thu nhập & Lương
         </a>
     </div>
 

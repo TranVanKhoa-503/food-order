@@ -34,6 +34,25 @@ class WebPagesIntegrationTest extends TestCase
             ->assertSee('Chưa biết ăn gì? Để trợ lý gợi ý');
     }
 
+    public function test_home_page_supports_sorting_foods_by_price(): void
+    {
+        $category = Category::factory()->create();
+        Food::factory()->create(['category_id' => $category->id, 'name' => 'Món Rẻ', 'price' => 20000, 'is_available' => true]);
+        Food::factory()->create(['category_id' => $category->id, 'name' => 'Món Đắt', 'price' => 90000, 'is_available' => true]);
+
+        $responseAsc = $this->get('/?sort=price_asc');
+        $responseAsc->assertOk()
+            ->assertSee('Khoảng giá:')
+            ->assertSee('Sắp xếp giá:')
+            ->assertSee('Thấp đến cao')
+            ->assertSee('Cao đến thấp')
+            ->assertSee('Giá: Thấp đến cao');
+
+        $responseDesc = $this->get('/?sort=price_desc');
+        $responseDesc->assertOk()
+            ->assertSee('Giá: Cao đến thấp');
+    }
+
     public function test_customer_can_view_orders_page_via_web(): void
     {
         $user = User::factory()->create();

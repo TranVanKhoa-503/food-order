@@ -869,6 +869,15 @@
                         @if(request('category'))
                             <input type="hidden" name="category" value="{{ request('category') }}">
                         @endif
+                        @if(request('sort'))
+                            <input type="hidden" name="sort" value="{{ request('sort') }}">
+                        @endif
+                        @if(request('min_price'))
+                            <input type="hidden" name="min_price" value="{{ request('min_price') }}">
+                        @endif
+                        @if(request('max_price'))
+                            <input type="hidden" name="max_price" value="{{ request('max_price') }}">
+                        @endif
                     </form>
                 </div>
 

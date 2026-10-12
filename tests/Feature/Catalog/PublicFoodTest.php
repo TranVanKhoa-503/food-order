@@ -69,6 +69,38 @@ class PublicFoodTest extends TestCase
             ->assertJsonPath('data.0.name', 'Món 60k');
     }
 
+    public function test_public_can_sort_foods_by_price_ascending(): void
+    {
+        $category = Category::factory()->create();
+        Food::factory()->create(['category_id' => $category->id, 'name' => 'Món 100k', 'price' => 100000, 'is_available' => true]);
+        Food::factory()->create(['category_id' => $category->id, 'name' => 'Món 30k', 'price' => 30000, 'is_available' => true]);
+        Food::factory()->create(['category_id' => $category->id, 'name' => 'Món 60k', 'price' => 60000, 'is_available' => true]);
+
+        $response = $this->getJson('/api/v1/foods?sort=price_asc');
+
+        $response->assertOk()
+            ->assertJsonCount(3, 'data')
+            ->assertJsonPath('data.0.name', 'Món 30k')
+            ->assertJsonPath('data.1.name', 'Món 60k')
+            ->assertJsonPath('data.2.name', 'Món 100k');
+    }
+
+    public function test_public_can_sort_foods_by_price_descending(): void
+    {
+        $category = Category::factory()->create();
+        Food::factory()->create(['category_id' => $category->id, 'name' => 'Món 30k', 'price' => 30000, 'is_available' => true]);
+        Food::factory()->create(['category_id' => $category->id, 'name' => 'Món 100k', 'price' => 100000, 'is_available' => true]);
+        Food::factory()->create(['category_id' => $category->id, 'name' => 'Món 60k', 'price' => 60000, 'is_available' => true]);
+
+        $response = $this->getJson('/api/v1/foods?sort=price_desc');
+
+        $response->assertOk()
+            ->assertJsonCount(3, 'data')
+            ->assertJsonPath('data.0.name', 'Món 100k')
+            ->assertJsonPath('data.1.name', 'Món 60k')
+            ->assertJsonPath('data.2.name', 'Món 30k');
+    }
+
     public function test_public_can_get_available_food_detail(): void
     {
         $category = Category::factory()->create(['name' => 'Món Chính']);

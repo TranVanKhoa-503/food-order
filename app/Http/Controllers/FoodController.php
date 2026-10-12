@@ -21,6 +21,8 @@ class FoodController extends Controller
             'search' => ['nullable', 'string', 'max:100'],
             'min_price' => ['nullable', 'numeric', 'min:0'],
             'max_price' => ['nullable', 'numeric', 'min:0'],
+            'sort' => ['nullable', 'string', 'max:30'],
+            'sort_price' => ['nullable', 'string', 'max:30'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:50'],
         ]);
 
@@ -28,6 +30,7 @@ class FoodController extends Controller
         $search = trim((string) $request->query('search', ''));
         $minPrice = $request->query('min_price');
         $maxPrice = $request->query('max_price');
+        $sort = $request->query('sort') ?: $request->query('sort_price');
         $perPage = min((int) $request->query('per_page', 15), 50);
 
         $foodsQuery = Food::with('category')->where('is_available', true);
@@ -57,8 +60,16 @@ class FoodController extends Controller
             $foodsQuery->where('price', '<=', (float) $maxPrice);
         }
 
+        if (in_array($sort, ['price_asc', 'asc'], true)) {
+            $foodsQuery->orderBy('price', 'asc')->orderBy('id', 'asc');
+        } elseif (in_array($sort, ['price_desc', 'desc'], true)) {
+            $foodsQuery->orderBy('price', 'desc')->orderBy('id', 'desc');
+        } else {
+            $foodsQuery->latest();
+        }
+
         if ($request->expectsJson() || $request->is('api/*')) {
-            $foods = $foodsQuery->latest()->paginate($perPage);
+            $foods = $foodsQuery->paginate($perPage);
 
             return FoodResource::collection($foods);
         }
@@ -67,10 +78,10 @@ class FoodController extends Controller
             $q->where('is_available', true);
         }])->get();
 
-        $foods = $foodsQuery->latest()->get();
+        $foods = $foodsQuery->get();
         $categoryId = is_numeric($categoryIdOrSlug) ? (int) $categoryIdOrSlug : null;
 
-        return view('home', compact('foods', 'categories', 'categoryId', 'search'));
+        return view('home', compact('foods', 'categories', 'categoryId', 'search', 'sort'));
     }
 
     /**

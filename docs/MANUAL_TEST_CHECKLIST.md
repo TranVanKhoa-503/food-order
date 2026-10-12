@@ -77,6 +77,9 @@ Tài liệu này tổng hợp toàn bộ các ca kiểm thử (Test Cases) đã 
 - [x] Lọc món ăn theo khoảng giá: giá tối thiểu (`min_price`), giá tối đa (`max_price`)
 - [x] Kiểm tra khoảng giá ngược (`min_price > max_price`) trả về danh sách rỗng an toàn
 - [x] Chặn nhập giá trị âm cho bộ lọc khoảng giá thông qua validation (`min:0`)
+- [x] Sắp xếp món ăn theo giá từ thấp đến cao (`sort=price_asc`)
+- [x] Sắp xếp món ăn theo giá từ cao đến thấp (`sort=price_desc`)
+- [x] Kết hợp lọc khoảng giá và sắp xếp giá cùng lúc, hỗ trợ nút Đặt lại bộ lọc
 - [x] Xem chi tiết món ăn khả dụng (`/foods/{id}`)
 - [x] Truy cập món ăn tạm ngưng bán hoặc không tồn tại trả về lỗi HTTP 404 Not Found
 

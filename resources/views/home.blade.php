@@ -170,6 +170,201 @@
         color: white;
     }
 
+    /* Price Filter & Sort Bar */
+    .filter-sort-wrapper {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 14px 20px;
+        margin: 20px 0 28px;
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition);
+    }
+
+    .filter-sort-wrapper:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    }
+
+    .filter-sort-form {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .filter-section {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .filter-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #475569;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+    }
+
+    .filter-title i {
+        color: var(--primary);
+        font-size: 14px;
+    }
+
+    .price-input-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .filter-price-input {
+        width: 125px;
+        padding: 9px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--dark);
+        background: #F8FAFC;
+        transition: var(--transition);
+        outline: none;
+    }
+
+    .filter-price-input:focus {
+        background: white;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.12);
+    }
+
+    .price-range-sep {
+        color: #94A3B8;
+        font-weight: 700;
+    }
+
+    .filter-submit-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 9px 16px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: var(--radius-md);
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: var(--transition);
+        box-shadow: 0 2px 8px rgba(255, 87, 34, 0.25);
+    }
+
+    .filter-submit-btn:hover {
+        background: var(--primary-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(255, 87, 34, 0.35);
+    }
+
+    .filter-vertical-divider {
+        height: 28px;
+        width: 1px;
+        background: #E2E8F0;
+    }
+
+    .sort-pills-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .sort-pill-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 16px;
+        border-radius: 50px;
+        border: 1px solid var(--border-color);
+        background: #F8FAFC;
+        color: var(--dark-muted);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        white-space: nowrap;
+    }
+
+    .sort-pill-btn:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        background: var(--primary-light);
+        transform: translateY(-1px);
+    }
+
+    .sort-pill-btn.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+        box-shadow: 0 3px 10px rgba(255, 87, 34, 0.35);
+    }
+
+    .sort-pill-btn.active i {
+        color: white;
+    }
+
+    .filter-reset-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: var(--radius-md);
+        background: #F1F5F9;
+        color: #64748B;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 700;
+        transition: var(--transition);
+        margin-left: auto;
+    }
+
+    .filter-reset-btn:hover {
+        background: #E2E8F0;
+        color: var(--dark);
+    }
+
+    .sort-tag-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--primary);
+        background: var(--primary-light);
+        padding: 4px 12px;
+        border-radius: 50px;
+        margin-left: 10px;
+        vertical-align: middle;
+        border: 1px solid rgba(255, 87, 34, 0.2);
+    }
+
+    @media (max-width: 768px) {
+        .filter-vertical-divider {
+            display: none;
+        }
+        .filter-reset-btn {
+            margin-left: 0;
+            width: 100%;
+            justify-content: center;
+        }
+        .price-input-group {
+            width: 100%;
+        }
+        .filter-price-input {
+            flex: 1;
+            width: auto;
+        }
+    }
+
     /* Food Grid */
     .food-grid {
         display: grid;
@@ -436,7 +631,7 @@
 
     <!-- Categories Filter Bar -->
     <div class="categories-bar">
-        <a href="{{ route('home', array_filter(['search' => request('search')])) }}" 
+        <a href="{{ route('home', array_filter(['search' => request('search'), 'min_price' => request('min_price'), 'max_price' => request('max_price'), 'sort' => request('sort')])) }}" 
            class="category-pill {{ !$categoryId ? 'active' : '' }}">
             <i class="fa-solid fa-layer-group"></i>
             <span>Tất cả món</span>
@@ -444,7 +639,7 @@
         </a>
 
         @foreach($categories as $cat)
-            <a href="{{ route('home', array_filter(['category' => $cat->id, 'search' => request('search')])) }}" 
+            <a href="{{ route('home', array_filter(['category' => $cat->id, 'search' => request('search'), 'min_price' => request('min_price'), 'max_price' => request('max_price'), 'sort' => request('sort')])) }}" 
                class="category-pill {{ $categoryId == $cat->id ? 'active' : '' }}">
                 <i class="fa-solid {{ $cat->icon ?? 'fa-utensils' }}"></i>
                 <span>{{ $cat->name }}</span>
@@ -453,14 +648,79 @@
         @endforeach
     </div>
 
-    <form method="GET" action="{{ route('home') }}" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:20px 0;">
-        @if(request('search'))<input type="hidden" name="search" value="{{ request('search') }}">@endif
-        @if($categoryId)<input type="hidden" name="category" value="{{ $categoryId }}">@endif
-        <span style="font-size:13px;font-weight:700;color:#64748B;">Khoảng giá:</span>
-        <input type="number" name="min_price" min="0" value="{{ request('min_price') }}" placeholder="Từ (₫)" style="width:120px;padding:8px 10px;border:1px solid var(--border-color);border-radius:var(--radius-md);">
-        <input type="number" name="max_price" min="0" value="{{ request('max_price') }}" placeholder="Đến (₫)" style="width:120px;padding:8px 10px;border:1px solid var(--border-color);border-radius:var(--radius-md);">
-        <button type="submit" class="btn btn-primary" style="padding:8px 14px;"><i class="fa-solid fa-filter"></i> Lọc giá</button>
-    </form>
+    <!-- Price Filter & Sort Bar -->
+    <div class="filter-sort-wrapper">
+        <form method="GET" action="{{ route('home') }}" id="priceFilterForm" class="filter-sort-form">
+            @if(request('search'))<input type="hidden" name="search" value="{{ request('search') }}">@endif
+            @if($categoryId)<input type="hidden" name="category" value="{{ $categoryId }}">@endif
+            <input type="hidden" name="sort" id="sortPriceInput" value="{{ request('sort') }}">
+
+            <!-- Price Range Filter -->
+            <div class="filter-section">
+                <span class="filter-title">
+                    <i class="fa-solid fa-filter-circle-dollar"></i> Khoảng giá:
+                </span>
+                <div class="price-input-group">
+                    <input type="number" 
+                           name="min_price" 
+                           min="0" 
+                           step="1000" 
+                           value="{{ request('min_price') }}" 
+                           placeholder="Từ (₫)" 
+                           class="filter-price-input" 
+                           aria-label="Giá từ">
+                    <span class="price-range-sep">-</span>
+                    <input type="number" 
+                           name="max_price" 
+                           min="0" 
+                           step="1000" 
+                           value="{{ request('max_price') }}" 
+                           placeholder="Đến (₫)" 
+                           class="filter-price-input" 
+                           aria-label="Giá đến">
+                    <button type="submit" class="filter-submit-btn" title="Áp dụng khoảng giá">
+                        <i class="fa-solid fa-filter"></i>
+                        <span>Lọc giá</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="filter-vertical-divider"></div>
+
+            <!-- Price Sort Filter -->
+            <div class="filter-section">
+                <span class="filter-title">
+                    <i class="fa-solid fa-arrow-down-up-across-line"></i> Sắp xếp giá:
+                </span>
+                <div class="sort-pills-group">
+                    <button type="button" 
+                            onclick="applyPriceSort('price_asc')" 
+                            class="sort-pill-btn {{ request('sort') === 'price_asc' ? 'active' : '' }}" 
+                            title="Sắp xếp giá từ thấp đến cao">
+                        <i class="fa-solid fa-arrow-trend-up"></i>
+                        <span>Thấp đến cao</span>
+                    </button>
+                    <button type="button" 
+                            onclick="applyPriceSort('price_desc')" 
+                            class="sort-pill-btn {{ request('sort') === 'price_desc' ? 'active' : '' }}" 
+                            title="Sắp xếp giá từ cao đến thấp">
+                        <i class="fa-solid fa-arrow-trend-down"></i>
+                        <span>Cao đến thấp</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Reset Filter Button (Only when filters are applied) -->
+            @if(request('min_price') || request('max_price') || request('sort'))
+                <a href="{{ route('home', array_filter(['search' => request('search'), 'category' => $categoryId])) }}" 
+                   class="filter-reset-btn" 
+                   title="Xóa bộ lọc giá và sắp xếp">
+                    <i class="fa-solid fa-arrow-rotate-left"></i>
+                    <span>Đặt lại</span>
+                </a>
+            @endif
+        </form>
+    </div>
 
     <!-- Section Header / Search Notification -->
     <div class="section-header">
@@ -473,9 +733,19 @@
             @else
                 Món Ngon Nổi Bật Hôm Nay
             @endif
+
+            @if(request('sort') === 'price_asc')
+                <span class="sort-tag-badge">
+                    <i class="fa-solid fa-arrow-trend-up"></i> Giá: Thấp đến cao
+                </span>
+            @elseif(request('sort') === 'price_desc')
+                <span class="sort-tag-badge">
+                    <i class="fa-solid fa-arrow-trend-down"></i> Giá: Cao đến thấp
+                </span>
+            @endif
         </h2>
 
-        @if($search || $categoryId)
+        @if($search || $categoryId || request('min_price') || request('max_price') || request('sort'))
             <a href="{{ route('home') }}" style="color: #64748B; text-decoration: none; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
                 <i class="fa-solid fa-arrow-rotate-left"></i> Xem tất cả món
             </a>
@@ -578,4 +848,21 @@
     </section>
 
 </div>
+@endsection
+
+@section('scripts')
+<script>
+    function applyPriceSort(sortValue) {
+        const sortInput = document.getElementById('sortPriceInput');
+        const form = document.getElementById('priceFilterForm');
+        if (!sortInput || !form) return;
+
+        if (sortInput.value === sortValue) {
+            sortInput.value = '';
+        } else {
+            sortInput.value = sortValue;
+        }
+        form.submit();
+    }
+</script>
 @endsection

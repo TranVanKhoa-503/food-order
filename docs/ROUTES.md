@@ -310,6 +310,7 @@ Delete/logout thành công có thể trả HTTP 204 không có body.
   - `category`: category id hoặc slug.
   - `search`: tối đa 100 ký tự.
   - `min_price`, `max_price`: số nguyên không âm.
+  - `sort`: `price_asc` (giá thấp đến cao), `price_desc` (giá cao đến thấp).
   - `page`: mặc định 1.
   - `per_page`: mặc định 15, tối đa 50.
 - Chỉ trả food có `is_available=true`.

@@ -298,7 +298,7 @@ stateDiagram-v2
 2. **Khám phá thực đơn & Tìm kiếm (Catalog & Search):**
    * Xem toàn bộ thực đơn kèm ảnh món ăn chất lượng cao, giá niêm yết và danh mục món.
    * Thanh danh mục dạng Pills trực quan, hiển thị số lượng món ăn trong từng nhóm.
-   * Bộ lọc nâng cao: Lọc theo danh mục, lọc theo khoảng giá (`min_price` đến `max_price`), tìm kiếm món theo từ khóa.
+   * Bộ lọc & sắp xếp nâng cao: Lọc theo danh mục, lọc theo khoảng giá (`min_price` đến `max_price`), sắp xếp theo giá (thấp đến cao / cao đến thấp), tìm kiếm món theo từ khóa.
    * Trang chi tiết món ăn hiển thị ảnh phóng to, thành phần mô tả chi tiết, trạng thái phục vụ và nút thêm vào giỏ.
 
 3. **Trợ lý thông minh gợi ý món ăn (Food Recommendation Assistant):**

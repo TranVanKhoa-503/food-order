@@ -3,27 +3,47 @@
 @section('title', 'Cấu Hình Cửa Hàng - FoodOrder Admin')
 @section('header_title', 'Cấu Hình Cửa Hàng')
 
+@section('styles')
+<style>
+    @media (max-width: 640px) {
+        .settings-grid-2col {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+        }
+        .delivery-zone-grid {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+        }
+        .delivery-zone-grid button[type="submit"] {
+            width: 100%;
+            justify-content: center;
+            padding: 10px;
+        }
+    }
+</style>
+@endsection
+
 @section('content')
 <div class="card" style="max-width:720px;">
     <h2 style="font-size:18px;font-weight:800;margin-bottom:20px;">Quy tắc nhận đơn</h2>
     <form method="POST" action="{{ url('/api/v1/admin/settings') }}" id="storeSettingForm">
         @csrf
         @method('PUT')
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-            <label>Tên cửa hàng<input name="store_name" value="{{ $setting->store_name }}" required style="width:100%;padding:10px;margin-top:6px;"></label>
+        <div class="settings-grid-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <label>Tên cửa hàng<input name="store_name" value="{{ $setting->store_name }}" required style="width:100%;padding:10px;margin-top:6px;border:1px solid var(--border-color);border-radius:var(--radius-md);"> </label>
             <label style="display:flex;align-items:center;gap:8px;margin-top:28px;"><input type="checkbox" name="is_open" value="1" {{ $setting->is_open ? 'checked' : '' }}> Đang nhận đơn</label>
-            <label>Giờ mở cửa<input name="opens_at" type="time" value="{{ $setting->opens_at }}" required style="width:100%;padding:10px;margin-top:6px;"></label>
-            <label>Giờ đóng cửa<input name="closes_at" type="time" value="{{ $setting->closes_at }}" required style="width:100%;padding:10px;margin-top:6px;"></label>
-            <label>Đơn tối thiểu (₫)<input name="min_order_value" type="number" min="0" value="{{ (int) $setting->min_order_value }}" required style="width:100%;padding:10px;margin-top:6px;"></label>
-            <label>Phí giao hàng (₫)<input name="shipping_fee" type="number" min="0" value="{{ (int) $setting->shipping_fee }}" required style="width:100%;padding:10px;margin-top:6px;"></label>
-            <label>Thời gian giao dự kiến (phút)<input name="estimated_delivery_minutes" type="number" min="1" max="240" value="{{ $setting->estimated_delivery_minutes }}" required style="width:100%;padding:10px;margin-top:6px;"></label>
+            <label>Giờ mở cửa<input name="opens_at" type="time" value="{{ $setting->opens_at }}" required style="width:100%;padding:10px;margin-top:6px;border:1px solid var(--border-color);border-radius:var(--radius-md);"></label>
+            <label>Giờ đóng cửa<input name="closes_at" type="time" value="{{ $setting->closes_at }}" required style="width:100%;padding:10px;margin-top:6px;border:1px solid var(--border-color);border-radius:var(--radius-md);"></label>
+            <label>Đơn tối thiểu (₫)<input name="min_order_value" type="number" min="0" value="{{ (int) $setting->min_order_value }}" required style="width:100%;padding:10px;margin-top:6px;border:1px solid var(--border-color);border-radius:var(--radius-md);"></label>
+            <label>Phí giao hàng (₫)<input name="shipping_fee" type="number" min="0" value="{{ (int) $setting->shipping_fee }}" required style="width:100%;padding:10px;margin-top:6px;border:1px solid var(--border-color);border-radius:var(--radius-md);"></label>
+            <label>Thời gian giao dự kiến (phút)<input name="estimated_delivery_minutes" type="number" min="1" max="240" value="{{ $setting->estimated_delivery_minutes }}" required style="width:100%;padding:10px;margin-top:6px;border:1px solid var(--border-color);border-radius:var(--radius-md);"></label>
         </div>
         <button class="btn btn-primary" type="submit" style="margin-top:20px;"><i class="fa-solid fa-save"></i> Lưu cấu hình</button>
     </form>
 </div>
 
 <div class="card" style="max-width:720px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap;">
         <div>
             <h2 style="font-size:18px;font-weight:800;margin-bottom:4px;">Khu vực giao hàng</h2>
             <p style="font-size:12px;color:#64748B;">Khách sẽ chọn khu vực này khi thanh toán; phí được tính từ server.</p>
@@ -31,7 +51,7 @@
         <button type="button" class="btn" style="background:#F1F5F9;color:#475569;" onclick="resetDeliveryZoneForm()">Thêm khu vực</button>
     </div>
 
-    <form id="deliveryZoneForm" style="display:grid;grid-template-columns:1fr 150px auto auto;gap:10px;align-items:end;margin-bottom:18px;">
+    <form id="deliveryZoneForm" class="delivery-zone-grid" style="display:grid;grid-template-columns:1fr 150px auto auto;gap:10px;align-items:end;margin-bottom:18px;">
         <input type="hidden" id="deliveryZoneId">
         <label style="font-size:12px;font-weight:700;color:#475569;">Tên khu vực
             <input id="deliveryZoneName" required placeholder="Ví dụ: Quận 1" style="width:100%;padding:9px 10px;margin-top:6px;border:1px solid var(--border-color);border-radius:var(--radius-md);">

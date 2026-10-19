@@ -29,61 +29,63 @@
         @endif
     </form>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>HỌ VÀ TÊN</th>
-                <th>EMAIL</th>
-                <th>SỐ ĐIỆN THOẠI</th>
-                <th>VAI TRÒ</th>
-                <th>TRẠNG THÁI</th>
-                <th>HÀNH ĐỘNG</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($users as $u)
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
                 <tr>
-                    <td>#{{ $u->id }}</td>
-                    <td><strong>{{ $u->name }}</strong></td>
-                    <td>{{ $u->email }}</td>
-                    <td>{{ $u->phone ?? '---' }}</td>
-                    <td>
-                        @if($u->isAdmin())
-                            <span class="badge" style="background: #EDE9FE; color: #6D28D9;">ADMIN</span>
-                        @elseif($u->isShipper())
-                            <span class="badge" style="background: #E0F2FE; color: #0284C7;"><i class="fa-solid fa-motorcycle"></i> SHIPPER</span>
-                        @else
-                            <span class="badge" style="background: #F1F5F9; color: #475569;">USER</span>
-                        @endif
-                    </td>
-                    <td>
-                        @if($u->is_active)
-                            <span class="badge" style="background: #D1FAE5; color: #047857;">Hoạt động</span>
-                            @if($u->unlocked_at)
-                                <div style="font-size: 11px; color: #64748B; margin-top: 3px;">Mở lại: {{ $u->unlocked_at->format('d/m/Y H:i') }}</div>
+                    <th>ID</th>
+                    <th>HỌ VÀ TÊN</th>
+                    <th>EMAIL</th>
+                    <th>SỐ ĐIỆN THOẠI</th>
+                    <th>VAI TRÒ</th>
+                    <th>TRẠNG THÁI</th>
+                    <th>HÀNH ĐỘNG</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($users as $u)
+                    <tr>
+                        <td>#{{ $u->id }}</td>
+                        <td><strong>{{ $u->name }}</strong></td>
+                        <td>{{ $u->email }}</td>
+                        <td>{{ $u->phone ?? '---' }}</td>
+                        <td>
+                            @if($u->isAdmin())
+                                <span class="badge" style="background: #EDE9FE; color: #6D28D9;">ADMIN</span>
+                            @elseif($u->isShipper())
+                                <span class="badge" style="background: #E0F2FE; color: #0284C7;"><i class="fa-solid fa-motorcycle"></i> SHIPPER</span>
+                            @else
+                                <span class="badge" style="background: #F1F5F9; color: #475569;">USER</span>
                             @endif
-                        @else
-                            <span class="badge" style="background: #FEE2E2; color: #B91C1C;">Đã khóa</span>
-                        @endif
-                    </td>
-                    <td>
-                        @if($u->id !== Auth::id())
-                            <button onclick="toggleUserStatus({{ $u->id }}, {{ $u->is_active ? 'false' : 'true' }})" class="btn" style="padding: 4px 10px; font-size: 12px; background: {{ $u->is_active ? '#FEE2E2' : '#D1FAE5' }}; color: {{ $u->is_active ? '#B91C1C' : '#047857' }};">
-                                {{ $u->is_active ? 'Khóa tài khoản' : 'Mở khóa' }}
-                            </button>
-                        @else
-                            <span style="font-size: 12px; color: #94A3B8; font-style: italic;">(Chính bạn)</span>
-                        @endif
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="7" style="text-align: center; color: #94A3B8; padding: 30px;">Không tìm thấy người dùng nào.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+                        </td>
+                        <td>
+                            @if($u->is_active)
+                                <span class="badge" style="background: #D1FAE5; color: #047857;">Hoạt động</span>
+                                @if($u->unlocked_at)
+                                    <div style="font-size: 11px; color: #64748B; margin-top: 3px;">Mở lại: {{ $u->unlocked_at->format('d/m/Y H:i') }}</div>
+                                @endif
+                            @else
+                                <span class="badge" style="background: #FEE2E2; color: #B91C1C;">Đã khóa</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if($u->id !== Auth::id())
+                                <button onclick="toggleUserStatus({{ $u->id }}, {{ $u->is_active ? 'false' : 'true' }})" class="btn" style="padding: 4px 10px; font-size: 12px; background: {{ $u->is_active ? '#FEE2E2' : '#D1FAE5' }}; color: {{ $u->is_active ? '#B91C1C' : '#047857' }};">
+                                    {{ $u->is_active ? 'Khóa tài khoản' : 'Mở khóa' }}
+                                </button>
+                            @else
+                                <span style="font-size: 12px; color: #94A3B8; font-style: italic;">(Chính bạn)</span>
+                            @endif
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: #94A3B8; padding: 30px;">Không tìm thấy người dùng nào.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 
     <div style="margin-top: 20px;">
         {{ $users->withQueryString()->links() }}

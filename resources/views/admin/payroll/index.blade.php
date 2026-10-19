@@ -110,104 +110,106 @@
         <span style="font-size: 13px; color: #64748B;">Có <strong>{{ $payrolls->count() }}</strong> bản ghi</span>
     </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>SHIPPER</th>
-                <th>LƯƠNG CỨNG</th>
-                <th>SỐ ĐƠN GIAO</th>
-                <th>TỔNG PHÍ SHIP</th>
-                <th>HOA HỒNG (50%)</th>
-                <th>TỔNG THỰC NHẬN</th>
-                <th>TRẠNG THÁI</th>
-                <th>HÀNH ĐỘNG</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($payrolls as $payroll)
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
                 <tr>
-                    <td>
-                        <a href="{{ route('admin.payrolls.show', $payroll) }}" style="font-weight: 800; color: #2563EB; text-decoration: none;">
-                            {{ $payroll->shipper?->name ?? 'Shipper đã xóa' }}
-                        </a>
-                        <div style="font-size: 12px; color: #94A3B8;">{{ $payroll->shipper?->phone }}</div>
-                    </td>
-                    <td>
-                        <span style="font-weight: 700;">{{ number_format($payroll->base_salary, 0, ',', '.') }} ₫</span>
-                    </td>
-                    <td>
-                        <span style="font-weight: 800; color: #1E293B;">{{ $payroll->completed_orders_count }}</span> đơn
-                    </td>
-                    <td>
-                        <span style="color: #64748B;">{{ number_format($payroll->total_shipping_fee, 0, ',', '.') }} ₫</span>
-                    </td>
-                    <td>
-                        <span style="font-weight: 700; color: #D97706;">{{ number_format($payroll->total_commission, 0, ',', '.') }} ₫</span>
-                    </td>
-                    <td>
-                        <span style="font-size: 15px; font-weight: 800; color: #059669;">
-                            {{ number_format($payroll->total_salary, 0, ',', '.') }} ₫
-                        </span>
-                    </td>
-                    <td>
-                        @if($payroll->status === 'draft')
-                            <span class="badge" style="background: #FEF3C7; color: #D97706;">
-                                <i class="fa-solid fa-pencil"></i> Nháp (Draft)
-                            </span>
-                        @elseif($payroll->status === 'finalized')
-                            <span class="badge" style="background: #EFF6FF; color: #2563EB;">
-                                <i class="fa-solid fa-lock"></i> Đã chốt (Finalized)
-                            </span>
-                            @if($payroll->finalized_at)
-                                <div style="font-size: 10px; color: #64748B; margin-top: 3px;">
-                                    {{ $payroll->finalized_at->format('d/m/Y H:i') }}
-                                </div>
-                            @endif
-                        @elseif($payroll->status === 'paid')
-                            <span class="badge" style="background: #ECFDF5; color: #059669;">
-                                <i class="fa-solid fa-circle-check"></i> Đã thanh toán
-                            </span>
-                            @if($payroll->paid_at)
-                                <div style="font-size: 10px; color: #059669; margin-top: 3px;">
-                                    {{ $payroll->paid_at->format('d/m/Y H:i') }}
-                                </div>
-                            @endif
-                        @endif
-                    </td>
-                    <td>
-                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                            <a href="{{ route('admin.payrolls.show', $payroll) }}" class="btn" style="background: #F8FAFC; border: 1px solid var(--border-color); color: #334155; font-size: 11px; padding: 5px 8px;">
-                                Chi tiết
+                    <th>SHIPPER</th>
+                    <th>LƯƠNG CỨNG</th>
+                    <th>SỐ ĐƠN GIAO</th>
+                    <th>TỔNG PHÍ SHIP</th>
+                    <th>HOA HỒNG (50%)</th>
+                    <th>TỔNG THỰC NHẬN</th>
+                    <th>TRẠNG THÁI</th>
+                    <th>HÀNH ĐỘNG</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($payrolls as $payroll)
+                    <tr>
+                        <td>
+                            <a href="{{ route('admin.payrolls.show', $payroll) }}" style="font-weight: 800; color: #2563EB; text-decoration: none;">
+                                {{ $payroll->shipper?->name ?? 'Shipper đã xóa' }}
                             </a>
-
+                            <div style="font-size: 12px; color: #94A3B8;">{{ $payroll->shipper?->phone }}</div>
+                        </td>
+                        <td>
+                            <span style="font-weight: 700;">{{ number_format($payroll->base_salary, 0, ',', '.') }} ₫</span>
+                        </td>
+                        <td>
+                            <span style="font-weight: 800; color: #1E293B;">{{ $payroll->completed_orders_count }}</span> đơn
+                        </td>
+                        <td>
+                            <span style="color: #64748B;">{{ number_format($payroll->total_shipping_fee, 0, ',', '.') }} ₫</span>
+                        </td>
+                        <td>
+                            <span style="font-weight: 700; color: #D97706;">{{ number_format($payroll->total_commission, 0, ',', '.') }} ₫</span>
+                        </td>
+                        <td>
+                            <span style="font-size: 15px; font-weight: 800; color: #059669;">
+                                {{ number_format($payroll->total_salary, 0, ',', '.') }} ₫
+                            </span>
+                        </td>
+                        <td>
                             @if($payroll->status === 'draft')
-                                <form method="POST" action="{{ route('admin.payrolls.finalize', $payroll) }}" data-prevent-double-submit onsubmit="return confirm('Bạn có chắc chắn muốn CHỐT bảng lương này? Số liệu sẽ được tính lại trước khi chốt và sau đó được khóa.');">
-                                    @csrf
-                                    <button type="submit" class="btn" style="background: #2563EB; color: white; font-size: 11px; padding: 5px 8px;">
-                                        <i class="fa-solid fa-lock"></i> Chốt lương
-                                    </button>
-                                </form>
+                                <span class="badge" style="background: #FEF3C7; color: #D97706;">
+                                    <i class="fa-solid fa-pencil"></i> Nháp (Draft)
+                                </span>
                             @elseif($payroll->status === 'finalized')
-                                <form method="POST" action="{{ route('admin.payrolls.pay', $payroll) }}" data-prevent-double-submit onsubmit="return confirm('Xác nhận ĐÃ THANH TOÁN tiền lương cho shipper này?');">
-                                    @csrf
-                                    <button type="submit" class="btn" style="background: #059669; color: white; font-size: 11px; padding: 5px 8px;">
-                                        <i class="fa-solid fa-check-double"></i> Đã thanh toán
-                                    </button>
-                                </form>
+                                <span class="badge" style="background: #EFF6FF; color: #2563EB;">
+                                    <i class="fa-solid fa-lock"></i> Đã chốt (Finalized)
+                                </span>
+                                @if($payroll->finalized_at)
+                                    <div style="font-size: 10px; color: #64748B; margin-top: 3px;">
+                                        {{ $payroll->finalized_at->format('d/m/Y H:i') }}
+                                    </div>
+                                @endif
+                            @elseif($payroll->status === 'paid')
+                                <span class="badge" style="background: #ECFDF5; color: #059669;">
+                                    <i class="fa-solid fa-circle-check"></i> Đã thanh toán
+                                </span>
+                                @if($payroll->paid_at)
+                                    <div style="font-size: 10px; color: #059669; margin-top: 3px;">
+                                        {{ $payroll->paid_at->format('d/m/Y H:i') }}
+                                    </div>
+                                @endif
                             @endif
-                        </div>
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="8" style="text-align: center; color: #94A3B8; padding: 36px;">
-                        <i class="fa-solid fa-file-invoice" style="font-size: 32px; color: #CBD5E1; margin-bottom: 12px; display: block;"></i>
-                        Chưa có dữ liệu bảng lương cho tháng {{ $month }}/{{ $year }}.<br>
-                        Nhấn nút <strong>"Tính / Làm mới bảng lương"</strong> ở trên để tự động tổng hợp từ dữ liệu đơn hàng đã giao thành công.
-                    </td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                <a href="{{ route('admin.payrolls.show', $payroll) }}" class="btn" style="background: #F8FAFC; border: 1px solid var(--border-color); color: #334155; font-size: 11px; padding: 5px 8px;">
+                                    Chi tiết
+                                </a>
+
+                                @if($payroll->status === 'draft')
+                                    <form method="POST" action="{{ route('admin.payrolls.finalize', $payroll) }}" data-prevent-double-submit onsubmit="return confirm('Bạn có chắc chắn muốn CHỐT bảng lương này? Số liệu sẽ được tính lại trước khi chốt và sau đó được khóa.');">
+                                        @csrf
+                                        <button type="submit" class="btn" style="background: #2563EB; color: white; font-size: 11px; padding: 5px 8px;">
+                                            <i class="fa-solid fa-lock"></i> Chốt lương
+                                        </button>
+                                    </form>
+                                @elseif($payroll->status === 'finalized')
+                                    <form method="POST" action="{{ route('admin.payrolls.pay', $payroll) }}" data-prevent-double-submit onsubmit="return confirm('Xác nhận ĐÃ THANH TOÁN tiền lương cho shipper này?');">
+                                        @csrf
+                                        <button type="submit" class="btn" style="background: #059669; color: white; font-size: 11px; padding: 5px 8px;">
+                                            <i class="fa-solid fa-check-double"></i> Đã thanh toán
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="8" style="text-align: center; color: #94A3B8; padding: 36px;">
+                            <i class="fa-solid fa-file-invoice" style="font-size: 32px; color: #CBD5E1; margin-bottom: 12px; display: block;"></i>
+                            Chưa có dữ liệu bảng lương cho tháng {{ $month }}/{{ $year }}.<br>
+                            Nhấn nút <strong>"Tính / Làm mới bảng lương"</strong> ở trên để tự động tổng hợp từ dữ liệu đơn hàng đã giao thành công.
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 </div>
 @endsection

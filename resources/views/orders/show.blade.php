@@ -66,7 +66,7 @@
                 </div>
             </div>
 
-            <div style="background:white;border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:24px;">
+            <div class="order-card-box" style="background:white;border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:24px;">
                 <h2 style="font-size:17px;font-weight:800;margin-bottom:16px;"><i class="fa-solid fa-route" style="color:var(--primary);"></i> Lịch sử trạng thái</h2>
                 @forelse($order->statusHistories as $history)
                     <div style="display:flex;gap:12px;position:relative;padding-bottom:18px;">
@@ -80,7 +80,7 @@
         </div>
 
         <div>
-            <div style="background:white;border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:24px;margin-bottom:20px;">
+            <div class="order-card-box" style="background:white;border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:24px;margin-bottom:20px;">
                 <h2 style="font-size:17px;font-weight:800;margin-bottom:16px;"><i class="fa-solid fa-location-dot" style="color:var(--primary);"></i> Thông tin giao hàng</h2>
                 <p style="margin-bottom:8px;"><strong>{{ $order->customer_name }}</strong></p>
                 <p style="color:#475569;margin-bottom:8px;">{{ $order->customer_phone }}</p>

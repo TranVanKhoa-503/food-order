@@ -21,24 +21,26 @@
         <button class="btn btn-primary" onclick="openVoucherModal()"><i class="fa-solid fa-plus"></i> Thêm voucher</button>
     </div>
 
-    <table class="table">
-        <thead><tr><th>MÃ</th><th>GIẢM</th><th>ĐƠN TỐI THIỂU</th><th>LƯỢT DÙNG</th><th>HIỆU LỰC</th><th>TRẠNG THÁI</th><th></th></tr></thead>
-        <tbody>
-        @forelse($vouchers as $voucher)
-            <tr>
-                <td><strong style="color:var(--primary);">{{ $voucher->code }}</strong><div style="font-size:12px;color:#64748B;">{{ $voucher->description }}</div></td>
-                <td>{{ $voucher->discount_type === 'percent' ? $voucher->discount_value.'%' : number_format($voucher->discount_value, 0, ',', '.').' ₫' }}</td>
-                <td>{{ number_format($voucher->min_order_value, 0, ',', '.') }} ₫</td>
-                <td>{{ $voucher->used_count }} / {{ $voucher->usage_limit ?? '∞' }}</td>
-                <td style="font-size:12px;">{{ $voucher->starts_at?->format('d/m/Y H:i') ?? 'Ngay' }}<br>{{ $voucher->ends_at?->format('d/m/Y H:i') ?? 'Không hạn' }}</td>
-                <td><span class="badge" style="background:{{ $voucher->is_active ? '#D1FAE5' : '#FEE2E2' }};color:{{ $voucher->is_active ? '#047857' : '#B91C1C' }};">{{ $voucher->is_active ? 'Đang bật' : 'Đã tắt' }}</span></td>
-                <td><button class="btn" style="background:#F1F5F9;color:#475569;padding:4px 10px;" onclick='openVoucherModal(@json($voucher))'>Sửa</button></td>
-            </tr>
-        @empty
-            <tr><td colspan="7" style="text-align:center;color:#94A3B8;padding:30px;">Chưa có voucher nào.</td></tr>
-        @endforelse
-        </tbody>
-    </table>
+    <div class="table-responsive">
+        <table class="table">
+            <thead><tr><th>MÃ</th><th>GIẢM</th><th>ĐƠN TỐI THIỂU</th><th>LƯỢT DÙNG</th><th>HIỆU LỰC</th><th>TRẠNG THÁI</th><th></th></tr></thead>
+            <tbody>
+            @forelse($vouchers as $voucher)
+                <tr>
+                    <td><strong style="color:var(--primary);">{{ $voucher->code }}</strong><div style="font-size:12px;color:#64748B;">{{ $voucher->description }}</div></td>
+                    <td>{{ $voucher->discount_type === 'percent' ? $voucher->discount_value.'%' : number_format($voucher->discount_value, 0, ',', '.').' ₫' }}</td>
+                    <td>{{ number_format($voucher->min_order_value, 0, ',', '.') }} ₫</td>
+                    <td>{{ $voucher->used_count }} / {{ $voucher->usage_limit ?? '∞' }}</td>
+                    <td style="font-size:12px;">{{ $voucher->starts_at?->format('d/m/Y H:i') ?? 'Ngay' }}<br>{{ $voucher->ends_at?->format('d/m/Y H:i') ?? 'Không hạn' }}</td>
+                    <td><span class="badge" style="background:{{ $voucher->is_active ? '#D1FAE5' : '#FEE2E2' }};color:{{ $voucher->is_active ? '#047857' : '#B91C1C' }};">{{ $voucher->is_active ? 'Đang bật' : 'Đã tắt' }}</span></td>
+                    <td><button class="btn" style="background:#F1F5F9;color:#475569;padding:4px 10px;" onclick='openVoucherModal(@json($voucher))'>Sửa</button></td>
+                </tr>
+            @empty
+                <tr><td colspan="7" style="text-align:center;color:#94A3B8;padding:30px;">Chưa có voucher nào.</td></tr>
+            @endforelse
+            </tbody>
+        </table>
+    </div>
     <div style="margin-top:20px;">{{ $vouchers->withQueryString()->links() }}</div>
 </div>
 

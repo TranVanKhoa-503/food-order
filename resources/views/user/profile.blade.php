@@ -23,6 +23,8 @@
         }
         .profile-card button[type="submit"] {
             width: 100% !important;
+            align-self: stretch !important;
+            display: flex !important;
             justify-content: center !important;
             padding: 12px !important;
         }

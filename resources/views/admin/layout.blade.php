@@ -347,6 +347,25 @@
             margin-bottom: 12px;
         }
 
+        .table {
+            width: 100%;
+            min-width: 520px;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .card {
+            background: white;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            padding: 24px;
+            margin-bottom: 24px;
+            max-width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
         @media (max-width: 992px) {
             .admin-menu-toggle {
                 display: inline-flex;
@@ -412,6 +431,33 @@
             .table th, .table td {
                 padding: 10px 12px;
                 font-size: 13px;
+            }
+
+            /* Responsive Modals */
+            #foodModal > div,
+            #categoryModal > div,
+            #voucherModal > div {
+                width: calc(100% - 24px) !important;
+                max-height: 90vh !important;
+                overflow-y: auto !important;
+                padding: 18px 14px !important;
+                margin: 12px !important;
+            }
+
+            /* Responsive Admin Form Grids */
+            #voucherForm > div[style*="grid-template-columns"],
+            #storeSettingForm > div[style*="grid-template-columns"],
+            #deliveryZoneForm {
+                grid-template-columns: 1fr !important;
+            }
+
+            #deliveryZoneForm button[type="submit"] {
+                width: 100%;
+            }
+
+            .card form input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+            .card form select {
+                max-width: 100%;
             }
         }
     </style>

@@ -116,58 +116,60 @@
         <span style="font-size: 13px; color: #64748B;">Căn cứ tính hoa hồng 50%</span>
     </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>MÃ ĐƠN</th>
-                <th>THỜI GIAN HOÀN TẤT</th>
-                <th>KHÁCH HÀNG</th>
-                <th>ĐỊA CHỈ GIAO</th>
-                <th>TỔNG GIÁ ĐƠN</th>
-                <th>PHÍ SHIP</th>
-                <th>HOA HỒNG (50%)</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($orders as $order)
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
                 <tr>
-                    <td>
-                        <a href="{{ route('admin.orders.show', $order) }}" style="font-weight: 800; color: var(--primary);">
-                            {{ $order->order_code }}
-                        </a>
-                    </td>
-                    <td>
-                        <span style="font-size: 13px; color: #1E293B;">
-                            {{ $order->completed_at ? $order->completed_at->format('d/m/Y H:i') : $order->created_at->format('d/m/Y H:i') }}
-                        </span>
-                    </td>
-                    <td>
-                        <div style="font-weight: 700;">{{ $order->customer_name }}</div>
-                        <div style="font-size: 12px; color: #64748B;">{{ $order->customer_phone }}</div>
-                    </td>
-                    <td>
-                        <div style="font-size: 12px; color: #64748B; max-width: 250px;">{{ $order->delivery_address }}</div>
-                    </td>
-                    <td>
-                        <span style="font-weight: 700;">{{ number_format($order->total_price, 0, ',', '.') }} ₫</span>
-                    </td>
-                    <td>
-                        <span style="color: #2563EB; font-weight: 700;">{{ number_format($order->shipping_fee, 0, ',', '.') }} ₫</span>
-                    </td>
-                    <td>
-                        <span style="color: #D97706; font-weight: 800;">
-                            + {{ number_format(round($order->shipping_fee * 0.5), 0, ',', '.') }} ₫
-                        </span>
-                    </td>
+                    <th>MÃ ĐƠN</th>
+                    <th>THỜI GIAN HOÀN TẤT</th>
+                    <th>KHÁCH HÀNG</th>
+                    <th>ĐỊA CHỈ GIAO</th>
+                    <th>TỔNG GIÁ ĐƠN</th>
+                    <th>PHÍ SHIP</th>
+                    <th>HOA HỒNG (50%)</th>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="7" style="text-align: center; color: #94A3B8; padding: 30px;">
-                        Chưa có đơn hàng hoàn tất nào được ghi nhận cho shipper này trong tháng {{ $payroll->month }}/{{ $payroll->year }}.
-                    </td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @forelse($orders as $order)
+                    <tr>
+                        <td>
+                            <a href="{{ route('admin.orders.show', $order) }}" style="font-weight: 800; color: var(--primary);">
+                                {{ $order->order_code }}
+                            </a>
+                        </td>
+                        <td>
+                            <span style="font-size: 13px; color: #1E293B;">
+                                {{ $order->completed_at ? $order->completed_at->format('d/m/Y H:i') : $order->created_at->format('d/m/Y H:i') }}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="font-weight: 700;">{{ $order->customer_name }}</div>
+                            <div style="font-size: 12px; color: #64748B;">{{ $order->customer_phone }}</div>
+                        </td>
+                        <td>
+                            <div style="font-size: 12px; color: #64748B; max-width: 250px;">{{ $order->delivery_address }}</div>
+                        </td>
+                        <td>
+                            <span style="font-weight: 700;">{{ number_format($order->total_price, 0, ',', '.') }} ₫</span>
+                        </td>
+                        <td>
+                            <span style="color: #2563EB; font-weight: 700;">{{ number_format($order->shipping_fee, 0, ',', '.') }} ₫</span>
+                        </td>
+                        <td>
+                            <span style="color: #D97706; font-weight: 800;">
+                                + {{ number_format(round($order->shipping_fee * 0.5), 0, ',', '.') }} ₫
+                            </span>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: #94A3B8; padding: 30px;">
+                            Chưa có đơn hàng hoàn tất nào được ghi nhận cho shipper này trong tháng {{ $payroll->month }}/{{ $payroll->year }}.
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 </div>
 @endsection

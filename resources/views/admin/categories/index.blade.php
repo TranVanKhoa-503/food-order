@@ -24,49 +24,51 @@
         </button>
     </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>TÊN DANH MỤC</th>
-                <th>SLUG</th>
-                <th>ICON</th>
-                <th>SỐ MÓN ĂN</th>
-                <th>HÀNH ĐỘNG</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($categories as $cat)
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
                 <tr>
-                    <td>#{{ $cat->id }}</td>
-                    <td><strong>{{ $cat->name }}</strong></td>
-                    <td style="color: #64748B;">{{ $cat->slug }}</td>
-                    <td><i class="fa-solid {{ $cat->icon ?? 'fa-utensils' }}"></i> {{ $cat->icon }}</td>
-                    <td><span class="badge" style="background: #EFF6FF; color: #2563EB;">{{ $cat->foods_count }} món</span></td>
-                    <td>
-                        <div style="display: flex; gap: 8px;">
-                            <button onclick='openEditCategoryModal(@json($cat))' class="btn" style="padding: 4px 10px; font-size: 12px; background: #F1F5F9; color: #475569;">
-                                Sửa
-                            </button>
-                            @if($cat->foods_count == 0)
-                                <button onclick="deleteCategory({{ $cat->id }})" class="btn" style="padding: 4px 10px; font-size: 12px; background: #FEE2E2; color: #B91C1C;">
-                                    Xóa
+                    <th>ID</th>
+                    <th>TÊN DANH MỤC</th>
+                    <th>SLUG</th>
+                    <th>ICON</th>
+                    <th>SỐ MÓN ĂN</th>
+                    <th>HÀNH ĐỘNG</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($categories as $cat)
+                    <tr>
+                        <td>#{{ $cat->id }}</td>
+                        <td><strong>{{ $cat->name }}</strong></td>
+                        <td style="color: #64748B;">{{ $cat->slug }}</td>
+                        <td><i class="fa-solid {{ $cat->icon ?? 'fa-utensils' }}"></i> {{ $cat->icon }}</td>
+                        <td><span class="badge" style="background: #EFF6FF; color: #2563EB;">{{ $cat->foods_count }} món</span></td>
+                        <td>
+                            <div style="display: flex; gap: 8px;">
+                                <button onclick='openEditCategoryModal(@json($cat))' class="btn" style="padding: 4px 10px; font-size: 12px; background: #F1F5F9; color: #475569;">
+                                    Sửa
                                 </button>
-                            @else
-                                <span title="Không thể xóa danh mục đang có món ăn" style="font-size: 11px; color: #94A3B8; display: inline-flex; align-items: center;">
-                                    <i class="fa-solid fa-lock"></i> Có món
-                                </span>
-                            @endif
-                        </div>
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="6" style="text-align: center; color: #94A3B8; padding: 30px;">Chưa có danh mục nào.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+                                @if($cat->foods_count == 0)
+                                    <button onclick="deleteCategory({{ $cat->id }})" class="btn" style="padding: 4px 10px; font-size: 12px; background: #FEE2E2; color: #B91C1C;">
+                                        Xóa
+                                    </button>
+                                @else
+                                    <span title="Không thể xóa danh mục đang có món ăn" style="font-size: 11px; color: #94A3B8; display: inline-flex; align-items: center;">
+                                        <i class="fa-solid fa-lock"></i> Có món
+                                    </span>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #94A3B8; padding: 30px;">Chưa có danh mục nào.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 
     <div style="margin-top: 20px;">
         {{ $categories->withQueryString()->links() }}

@@ -158,20 +158,22 @@
             <h3 style="font-size:16px;font-weight:800;"><i class="fa-solid fa-fire" style="color:var(--primary);margin-right:6px;"></i> Món bán chạy</h3>
             <span style="font-size:12px;color:#64748B;">Đơn hoàn tất</span>
         </div>
-        <table class="table">
-            <thead><tr><th>MÓN ĂN</th><th>SL</th><th>DOANH THU</th></tr></thead>
-            <tbody>
-                @forelse($topFoods as $food)
-                    <tr>
-                        <td style="font-weight:700;">{{ $food->food_name }}</td>
-                        <td>{{ $food->quantity }}</td>
-                        <td style="color:var(--primary);font-weight:700;">{{ number_format($food->revenue, 0, ',', '.') }} ₫</td>
-                    </tr>
-                @empty
-                    <tr><td colspan="3" style="text-align:center;color:#94A3B8;padding:22px;">Chưa có dữ liệu bán hàng.</td></tr>
-                @endforelse
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table">
+                <thead><tr><th>MÓN ĂN</th><th>SL</th><th>DOANH THU</th></tr></thead>
+                <tbody>
+                    @forelse($topFoods as $food)
+                        <tr>
+                            <td style="font-weight:700;">{{ $food->food_name }}</td>
+                            <td>{{ $food->quantity }}</td>
+                            <td style="color:var(--primary);font-weight:700;">{{ number_format($food->revenue, 0, ',', '.') }} ₫</td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="3" style="text-align:center;color:#94A3B8;padding:22px;">Chưa có dữ liệu bán hàng.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <div class="card" style="margin-bottom:0;">
@@ -179,19 +181,21 @@
             <h3 style="font-size:16px;font-weight:800;"><i class="fa-solid fa-calendar-days" style="color:#2563EB;margin-right:6px;"></i> Doanh thu theo ngày</h3>
             <span style="font-size:12px;color:#64748B;">Tối đa 31 ngày</span>
         </div>
-        <table class="table">
-            <thead><tr><th>NGÀY</th><th>DOANH THU</th></tr></thead>
-            <tbody>
-                @forelse($dailyRevenue as $date => $revenue)
-                    <tr>
-                        <td>{{ \Carbon\Carbon::parse($date)->format('d/m/Y') }}</td>
-                        <td style="color:#059669;font-weight:700;">{{ number_format($revenue, 0, ',', '.') }} ₫</td>
-                    </tr>
-                @empty
-                    <tr><td colspan="2" style="text-align:center;color:#94A3B8;padding:22px;">Chưa có dữ liệu doanh thu.</td></tr>
-                @endforelse
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table">
+                <thead><tr><th>NGÀY</th><th>DOANH THU</th></tr></thead>
+                <tbody>
+                    @forelse($dailyRevenue as $date => $revenue)
+                        <tr>
+                            <td>{{ \Carbon\Carbon::parse($date)->format('d/m/Y') }}</td>
+                            <td style="color:#059669;font-weight:700;">{{ number_format($revenue, 0, ',', '.') }} ₫</td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="2" style="text-align:center;color:#94A3B8;padding:22px;">Chưa có dữ liệu doanh thu.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -201,43 +205,45 @@
         <a href="{{ route('admin.orders.index') }}" style="color: var(--primary); font-size: 13px; font-weight: 700; text-decoration: none;">Xem tất cả &rarr;</a>
     </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>MÃ ĐƠN</th>
-                <th>KHÁCH HÀNG</th>
-                <th>SHIPPER</th>
-                <th>TỔNG TIỀN</th>
-                <th>TRẠNG THÁI</th>
-                <th>THỜI GIAN</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($recentOrders as $order)
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
                 <tr>
-                    <td><strong>{{ $order->order_code }}</strong></td>
-                    <td>{{ $order->customer_name }}</td>
-                    <td>
-                        @if($order->shipper)
-                            <span style="font-weight: 600; color: #2563EB;"><i class="fa-solid fa-motorcycle" style="font-size: 11px;"></i> {{ $order->shipper->name }}</span>
-                        @else
-                            <span style="color: #94A3B8; font-style: italic;">Chưa phân công</span>
-                        @endif
-                    </td>
-                    <td style="font-weight: 700; color: var(--primary);">{{ number_format($order->total_price, 0, ',', '.') }} ₫</td>
-                    <td>
-                        <span class="badge" style="background: #FEF3C7; color: #D97706;">
-                            {{ $order->status->value }}
-                        </span>
-                    </td>
-                    <td style="color: #64748B; font-size: 13px;">{{ $order->created_at->format('d/m/Y H:i') }}</td>
+                    <th>MÃ ĐƠN</th>
+                    <th>KHÁCH HÀNG</th>
+                    <th>SHIPPER</th>
+                    <th>TỔNG TIỀN</th>
+                    <th>TRẠNG THÁI</th>
+                    <th>THỜI GIAN</th>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="6" style="text-align: center; color: #94A3B8; padding: 30px;">Chưa có đơn hàng nào.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @forelse($recentOrders as $order)
+                    <tr>
+                        <td><strong>{{ $order->order_code }}</strong></td>
+                        <td>{{ $order->customer_name }}</td>
+                        <td>
+                            @if($order->shipper)
+                                <span style="font-weight: 600; color: #2563EB;"><i class="fa-solid fa-motorcycle" style="font-size: 11px;"></i> {{ $order->shipper->name }}</span>
+                            @else
+                                <span style="color: #94A3B8; font-style: italic;">Chưa phân công</span>
+                            @endif
+                        </td>
+                        <td style="font-weight: 700; color: var(--primary);">{{ number_format($order->total_price, 0, ',', '.') }} ₫</td>
+                        <td>
+                            <span class="badge" style="background: #FEF3C7; color: #D97706;">
+                                {{ $order->status->value }}
+                            </span>
+                        </td>
+                        <td style="color: #64748B; font-size: 13px;">{{ $order->created_at->format('d/m/Y H:i') }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #94A3B8; padding: 30px;">Chưa có đơn hàng nào.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 </div>
 @endsection

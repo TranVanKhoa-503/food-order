@@ -66,74 +66,76 @@
         </a>
     </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>SHIPPER</th>
-                <th>SỐ ĐIỆN THOẠI</th>
-                <th>TRẠNG THÁI</th>
-                <th>ĐANG GIAO</th>
-                <th>GIAO THÁNG NÀY</th>
-                <th>TỔNG ĐÃ GIAO</th>
-                <th>LƯƠNG DỰ KIẾN (T{{ now()->month }})</th>
-                <th>HÀNH ĐỘNG</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($shippers as $shipper)
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
                 <tr>
-                    <td>
-                        <div style="font-weight: 800; font-size: 14px; color: var(--dark);">{{ $shipper->name }}</div>
-                        <div style="font-size: 12px; color: #94A3B8;">{{ $shipper->email }}</div>
-                    </td>
-                    <td>
-                        <span style="font-weight: 600; color: #334155;">{{ $shipper->phone ?: 'Chưa cập nhật' }}</span>
-                    </td>
-                    <td>
-                        @if($shipper->is_active)
-                            <span class="badge" style="background: #ECFDF5; color: #059669;">Hoạt động</span>
-                        @else
-                            <span class="badge" style="background: #FEF2F2; color: #DC2626;">Đã khóa</span>
-                        @endif
-                    </td>
-                    <td>
-                        @if($shipper->delivering_count > 0)
-                            <span class="badge" style="background: #CFFAFE; color: #0891B2; font-weight: 800;">
-                                {{ $shipper->delivering_count }} đơn
-                            </span>
-                        @else
-                            <span style="color: #94A3B8; font-size: 13px;">0 đơn</span>
-                        @endif
-                    </td>
-                    <td>
-                        <span style="font-weight: 700; color: #1E293B;">{{ $shipper->completed_this_month_count }} đơn</span>
-                    </td>
-                    <td>
-                        <span style="color: #64748B;">{{ $shipper->total_completed_count }} đơn</span>
-                    </td>
-                    <td>
-                        <div style="font-weight: 800; color: #059669;">{{ number_format($shipper->estimated_salary, 0, ',', '.') }} ₫</div>
-                        <div style="font-size: 11px; color: #64748B;">
-                            Cứng: 2M + HH: {{ number_format($shipper->estimated_commission, 0, ',', '.') }} ₫
-                        </div>
-                    </td>
-                    <td>
-                        <div style="display: flex; gap: 8px;">
-                            <a href="{{ route('admin.payrolls.index', ['shipper_id' => $shipper->id]) }}" class="btn" style="background: #F8FAFC; border: 1px solid var(--border-color); color: #2563EB; font-size: 12px; padding: 5px 10px;">
-                                <i class="fa-solid fa-receipt"></i> Bảng lương
-                            </a>
-                            <a href="{{ route('admin.orders.index', ['search' => $shipper->name]) }}" class="btn" style="background: #F8FAFC; border: 1px solid var(--border-color); color: #64748B; font-size: 12px; padding: 5px 10px;">
-                                <i class="fa-solid fa-list-check"></i> Đơn giao
-                            </a>
-                        </div>
-                    </td>
+                    <th>SHIPPER</th>
+                    <th>SỐ ĐIỆN THOẠI</th>
+                    <th>TRẠNG THÁI</th>
+                    <th>ĐANG GIAO</th>
+                    <th>GIAO THÁNG NÀY</th>
+                    <th>TỔNG ĐÃ GIAO</th>
+                    <th>LƯƠNG DỰ KIẾN (T{{ now()->month }})</th>
+                    <th>HÀNH ĐỘNG</th>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="8" style="text-align: center; color: #94A3B8; padding: 30px;">Chưa có tài khoản shipper nào trong hệ thống.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @forelse($shippers as $shipper)
+                    <tr>
+                        <td>
+                            <div style="font-weight: 800; font-size: 14px; color: var(--dark);">{{ $shipper->name }}</div>
+                            <div style="font-size: 12px; color: #94A3B8;">{{ $shipper->email }}</div>
+                        </td>
+                        <td>
+                            <span style="font-weight: 600; color: #334155;">{{ $shipper->phone ?: 'Chưa cập nhật' }}</span>
+                        </td>
+                        <td>
+                            @if($shipper->is_active)
+                                <span class="badge" style="background: #ECFDF5; color: #059669;">Hoạt động</span>
+                            @else
+                                <span class="badge" style="background: #FEF2F2; color: #DC2626;">Đã khóa</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if($shipper->delivering_count > 0)
+                                <span class="badge" style="background: #CFFAFE; color: #0891B2; font-weight: 800;">
+                                    {{ $shipper->delivering_count }} đơn
+                                </span>
+                            @else
+                                <span style="color: #94A3B8; font-size: 13px;">0 đơn</span>
+                            @endif
+                        </td>
+                        <td>
+                            <span style="font-weight: 700; color: #1E293B;">{{ $shipper->completed_this_month_count }} đơn</span>
+                        </td>
+                        <td>
+                            <span style="color: #64748B;">{{ $shipper->total_completed_count }} đơn</span>
+                        </td>
+                        <td>
+                            <div style="font-weight: 800; color: #059669;">{{ number_format($shipper->estimated_salary, 0, ',', '.') }} ₫</div>
+                            <div style="font-size: 11px; color: #64748B;">
+                                Cứng: 2M + HH: {{ number_format($shipper->estimated_commission, 0, ',', '.') }} ₫
+                            </div>
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 8px;">
+                                <a href="{{ route('admin.payrolls.index', ['shipper_id' => $shipper->id]) }}" class="btn" style="background: #F8FAFC; border: 1px solid var(--border-color); color: #2563EB; font-size: 12px; padding: 5px 10px;">
+                                    <i class="fa-solid fa-receipt"></i> Bảng lương
+                                </a>
+                                <a href="{{ route('admin.orders.index', ['search' => $shipper->name]) }}" class="btn" style="background: #F8FAFC; border: 1px solid var(--border-color); color: #64748B; font-size: 12px; padding: 5px 10px;">
+                                    <i class="fa-solid fa-list-check"></i> Đơn giao
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="8" style="text-align: center; color: #94A3B8; padding: 30px;">Chưa có tài khoản shipper nào trong hệ thống.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 </div>
 @endsection

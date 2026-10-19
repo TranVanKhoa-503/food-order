@@ -89,56 +89,58 @@
         </form>
     </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>NGÀY CHI</th>
-                <th>DANH MỤC</th>
-                <th>SỐ TIỀN</th>
-                <th>DIỄN GIẢI</th>
-                <th>NGƯỜI TẠO</th>
-                <th>HÀNH ĐỘNG</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($expenses as $expense)
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
                 <tr>
-                    <td>
-                        <strong style="color: #1E293B;">{{ $expense->expense_date->format('d/m/Y') }}</strong>
-                    </td>
-                    <td>
-                        <span class="badge" style="background: #FDF2F8; color: #BE185D;">
-                            {{ $expense->category_label }}
-                        </span>
-                    </td>
-                    <td>
-                        <span style="font-size: 15px; font-weight: 800; color: #DC2626;">
-                            - {{ number_format($expense->amount, 0, ',', '.') }} ₫
-                        </span>
-                    </td>
-                    <td>
-                        <div style="font-size: 13px; color: #475569;">{{ $expense->description ?: 'Không có diễn giải' }}</div>
-                    </td>
-                    <td>
-                        <span style="font-size: 12px; color: #64748B;">{{ $expense->creator?->name ?? 'Hệ thống' }}</span>
-                    </td>
-                    <td>
-                        <form method="POST" action="{{ route('admin.expenses.destroy', $expense) }}" onsubmit="return confirm('Bạn có chắc muốn xóa khoản chi này?');" style="display: inline;">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn" style="background: #FEF2F2; color: #DC2626; padding: 4px 8px; font-size: 11px;">
-                                <i class="fa-solid fa-trash"></i> Xóa
-                            </button>
-                        </form>
-                    </td>
+                    <th>NGÀY CHI</th>
+                    <th>DANH MỤC</th>
+                    <th>SỐ TIỀN</th>
+                    <th>DIỄN GIẢI</th>
+                    <th>NGƯỜI TẠO</th>
+                    <th>HÀNH ĐỘNG</th>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="6" style="text-align: center; color: #94A3B8; padding: 30px;">Chưa có khoản chi phí nào được ghi nhận.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @forelse($expenses as $expense)
+                    <tr>
+                        <td>
+                            <strong style="color: #1E293B;">{{ $expense->expense_date->format('d/m/Y') }}</strong>
+                        </td>
+                        <td>
+                            <span class="badge" style="background: #FDF2F8; color: #BE185D;">
+                                {{ $expense->category_label }}
+                            </span>
+                        </td>
+                        <td>
+                            <span style="font-size: 15px; font-weight: 800; color: #DC2626;">
+                                - {{ number_format($expense->amount, 0, ',', '.') }} ₫
+                            </span>
+                        </td>
+                        <td>
+                            <div style="font-size: 13px; color: #475569;">{{ $expense->description ?: 'Không có diễn giải' }}</div>
+                        </td>
+                        <td>
+                            <span style="font-size: 12px; color: #64748B;">{{ $expense->creator?->name ?? 'Hệ thống' }}</span>
+                        </td>
+                        <td>
+                            <form method="POST" action="{{ route('admin.expenses.destroy', $expense) }}" onsubmit="return confirm('Bạn có chắc muốn xóa khoản chi này?');" style="display: inline;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn" style="background: #FEF2F2; color: #DC2626; padding: 4px 8px; font-size: 11px;">
+                                    <i class="fa-solid fa-trash"></i> Xóa
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #94A3B8; padding: 30px;">Chưa có khoản chi phí nào được ghi nhận.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 
     <div style="margin-top: 20px;">
         {{ $expenses->links() }}

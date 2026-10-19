@@ -35,56 +35,58 @@
         </button>
     </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>HÌNH ẢNH</th>
-                <th>TÊN MÓN</th>
-                <th>DANH MỤC</th>
-                <th>GIÁ BÁN</th>
-                <th>TRẠNG THÁI</th>
-                <th>HÀNH ĐỘNG</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($foods as $food)
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
                 <tr>
-                    <td style="width: 70px;">
-                        <img src="{{ $food->image }}" alt="{{ $food->name }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-color);" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=150&q=80'">
-                    </td>
-                    <td>
-                        <strong style="font-size: 15px;">{{ $food->name }}</strong>
-                        <div style="font-size: 12px; color: #64748B; max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $food->description }}</div>
-                    </td>
-                    <td>
-                        <span class="badge" style="background: #F1F5F9; color: #475569;">{{ $food->category?->name ?? 'N/A' }}</span>
-                    </td>
-                    <td style="font-weight: 800; color: var(--primary);">{{ number_format($food->price, 0, ',', '.') }} ₫</td>
-                    <td>
-                        @if($food->is_available)
-                            <span class="badge" style="background: #D1FAE5; color: #047857;">Đang bán</span>
-                        @else
-                            <span class="badge" style="background: #FEE2E2; color: #B91C1C;">Tạm hết / Ẩn</span>
-                        @endif
-                    </td>
-                    <td>
-                        <div style="display: flex; gap: 8px;">
-                            <button onclick="toggleFoodAvailability({{ $food->id }}, {{ $food->is_available ? 'false' : 'true' }})" class="btn" style="padding: 4px 10px; font-size: 12px; background: {{ $food->is_available ? '#FEF3C7' : '#D1FAE5' }}; color: {{ $food->is_available ? '#D97706' : '#047857' }};">
-                                {{ $food->is_available ? 'Tạm dừng' : 'Mở bán' }}
-                            </button>
-                            <button onclick='openEditFoodModal(@json($food))' class="btn" style="padding: 4px 10px; font-size: 12px; background: #F1F5F9; color: #475569;">
-                                Sửa
-                            </button>
-                        </div>
-                    </td>
+                    <th>HÌNH ẢNH</th>
+                    <th>TÊN MÓN</th>
+                    <th>DANH MỤC</th>
+                    <th>GIÁ BÁN</th>
+                    <th>TRẠNG THÁI</th>
+                    <th>HÀNH ĐỘNG</th>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="6" style="text-align: center; color: #94A3B8; padding: 30px;">Chưa có món ăn nào trong danh sách.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @forelse($foods as $food)
+                    <tr>
+                        <td style="width: 70px;">
+                            <img src="{{ $food->image }}" alt="{{ $food->name }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-color);" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=150&q=80'">
+                        </td>
+                        <td>
+                            <strong style="font-size: 15px;">{{ $food->name }}</strong>
+                            <div style="font-size: 12px; color: #64748B; max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $food->description }}</div>
+                        </td>
+                        <td>
+                            <span class="badge" style="background: #F1F5F9; color: #475569;">{{ $food->category?->name ?? 'N/A' }}</span>
+                        </td>
+                        <td style="font-weight: 800; color: var(--primary);">{{ number_format($food->price, 0, ',', '.') }} ₫</td>
+                        <td>
+                            @if($food->is_available)
+                                <span class="badge" style="background: #D1FAE5; color: #047857;">Đang bán</span>
+                            @else
+                                <span class="badge" style="background: #FEE2E2; color: #B91C1C;">Tạm hết / Ẩn</span>
+                            @endif
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 8px;">
+                                <button onclick="toggleFoodAvailability({{ $food->id }}, {{ $food->is_available ? 'false' : 'true' }})" class="btn" style="padding: 4px 10px; font-size: 12px; background: {{ $food->is_available ? '#FEF3C7' : '#D1FAE5' }}; color: {{ $food->is_available ? '#D97706' : '#047857' }};">
+                                    {{ $food->is_available ? 'Tạm dừng' : 'Mở bán' }}
+                                </button>
+                                <button onclick='openEditFoodModal(@json($food))' class="btn" style="padding: 4px 10px; font-size: 12px; background: #F1F5F9; color: #475569;">
+                                    Sửa
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #94A3B8; padding: 30px;">Chưa có món ăn nào trong danh sách.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 
     <div style="margin-top: 20px;">
         {{ $foods->withQueryString()->links() }}

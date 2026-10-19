@@ -10,7 +10,7 @@
     </a>
 </div>
 
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 24px;">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 24px; margin-bottom: 24px;">
     {{-- THÔNG TIN SHIPPER & KỲ LƯƠNG --}}
     <div class="card" style="margin-bottom: 0;">
         <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px;">

@@ -3,9 +3,33 @@
 @section('title', 'Dashboard Quản Trị & Tài Chính - FoodOrder')
 @section('header_title', 'Tổng Quan Hoạt Động Cửa Hàng')
 
+@section('styles')
+<style>
+    @media (max-width: 640px) {
+        .dashboard-filter-form {
+            display: flex;
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 10px !important;
+        }
+        .dashboard-filter-form > div {
+            width: 100%;
+        }
+        .dashboard-filter-form input[type="date"] {
+            width: 100% !important;
+        }
+        .dashboard-filter-form .btn {
+            width: 100% !important;
+            justify-content: center !important;
+            margin-left: 0 !important;
+        }
+    }
+</style>
+@endsection
+
 @section('content')
 <div class="card" style="margin-bottom: 24px;">
-    <form method="GET" action="{{ route('admin.dashboard') }}" style="display:flex;align-items:end;gap:12px;flex-wrap:wrap;">
+    <form method="GET" action="{{ route('admin.dashboard') }}" class="dashboard-filter-form" style="display:flex;align-items:end;gap:12px;flex-wrap:wrap;">
         <div>
             <label style="display:block;font-size:12px;color:#64748B;font-weight:700;margin-bottom:6px;">Từ ngày</label>
             <input type="date" name="from" value="{{ $from ?? '' }}" style="padding:9px 10px;border:1px solid var(--border-color);border-radius:var(--radius-md);">
@@ -152,7 +176,7 @@
     </div>
 </div>
 
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px;margin-bottom:24px;">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%, 280px),1fr));gap:24px;margin-bottom:24px;">
     <div class="card" style="margin-bottom:0;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px;">
             <h3 style="font-size:16px;font-weight:800;"><i class="fa-solid fa-fire" style="color:var(--primary);margin-right:6px;"></i> Món bán chạy</h3>

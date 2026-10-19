@@ -455,9 +455,48 @@
                 width: 100%;
             }
 
+            /* Responsive Admin Filters & Action Bars */
+            .card > form[method="GET"] {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 10px !important;
+            }
+
+            .card > form[method="GET"] > * {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+
+            .card > form[method="GET"] input,
+            .card > form[method="GET"] select {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+
+            .card > form[method="GET"] .btn {
+                width: 100% !important;
+                justify-content: center !important;
+                text-align: center;
+                margin-left: 0 !important;
+            }
+
+            .card > div[style*="justify-content: space-between"]:first-child {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 12px !important;
+            }
+
+            .card > div[style*="justify-content: space-between"]:first-child > button,
+            .card > div[style*="justify-content: space-between"]:first-child > a.btn {
+                width: 100% !important;
+                justify-content: center !important;
+            }
+
             .card form input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
-            .card form select {
+            .card form select,
+            .card form textarea {
                 max-width: 100%;
+                font-size: 14px;
             }
         }
     </style>

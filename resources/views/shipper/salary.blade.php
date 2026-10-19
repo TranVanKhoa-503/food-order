@@ -90,6 +90,7 @@
 
     .table {
         width: 100%;
+        min-width: 620px;
         border-collapse: collapse;
         font-size: 14px;
     }
@@ -136,6 +137,13 @@
         }
         .card {
             padding: 16px 14px;
+        }
+        .table {
+            min-width: 580px;
+            font-size: 13px;
+        }
+        .table th, .table td {
+            padding: 10px 8px;
         }
     }
 </style>

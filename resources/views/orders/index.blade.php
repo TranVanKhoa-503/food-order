@@ -8,6 +8,15 @@
         .order-index-container {
             padding: 20px 14px 40px !important;
         }
+        .order-filter-form {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .order-filter-form select {
+            flex: 1;
+        }
         .order-history-card {
             padding: 16px 14px !important;
             border-radius: 14px !important;
@@ -41,7 +50,7 @@
         </a>
     </div>
 
-    <form method="GET" action="{{ route('orders.index') }}" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:20px;">
+    <form method="GET" action="{{ route('orders.index') }}" class="order-filter-form" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:20px;">
         <label style="font-size:13px;font-weight:700;color:#64748B;">Lọc trạng thái</label>
         <select name="status" style="padding:8px 12px;border:1px solid var(--border-color);border-radius:var(--radius-md);font-size:13px;">
             <option value="">Tất cả</option>

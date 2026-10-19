@@ -237,7 +237,7 @@ class FoodSeeder extends Seeder
             [
                 'category_id' => 3,
                 'name' => 'Trà Mãng Cầu Đắk Lắk Tươi Mát',
-                'description' => 'Thịt mãng cầu xiêm tươi dầm chua ngọt tự nhiên hòa cùng trà lài ủ lạnh thơm ngát và thạch dừa giòn sần sật.',
+                'description' => 'Mãng cầu xiêm tươi chín mọng dầm chua ngọt tự nhiên hòa cùng trà lài ủ lạnh thơm ngát và thạch dừa giòn sần sật.',
                 'price' => 35000,
                 'image' => 'https://images.unsplash.com/photo-1556881286-fc6915169721?auto=format&fit=crop&w=600&q=80',
                 'is_available' => true,

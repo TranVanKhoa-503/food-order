@@ -101,16 +101,18 @@
     }
 
     .section-title {
-        font-size: 26px;
+        font-size: 24px;
         font-weight: 800;
         color: var(--dark);
         display: flex;
         align-items: center;
         gap: 10px;
+        flex-wrap: wrap;
     }
 
     .section-title i {
         color: var(--primary);
+        flex-shrink: 0;
     }
 
     /* Category Filter Pills */
@@ -667,6 +669,10 @@
             grid-template-columns: 1fr;
             gap: 18px;
         }
+        .section-title {
+            font-size: 19px;
+            line-height: 1.35;
+        }
     }
 
     @media (max-width: 640px) {
@@ -831,13 +837,15 @@
     <div class="section-header">
         <h2 class="section-title">
             <i class="fa-solid fa-fire-burner"></i>
-            @if($search)
-                Kết quả tìm kiếm cho: "<span style="color: var(--primary);">{{ $search }}</span>"
-            @elseif($categoryId)
-                {{ $categories->firstWhere('id', $categoryId)->name ?? 'Thực đơn' }}
-            @else
-                Món Ngon Nổi Bật Hôm Nay
-            @endif
+            <span>
+                @if($search)
+                    Kết quả tìm kiếm cho: &ldquo;<strong style="color: var(--primary);">{{ $search }}</strong>&rdquo;
+                @elseif($categoryId)
+                    {{ $categories->firstWhere('id', $categoryId)->name ?? 'Thực đơn' }}
+                @else
+                    Món Ngon Nổi Bật Hôm Nay
+                @endif
+            </span>
 
             @if(request('sort') === 'price_asc')
                 <span class="sort-tag-badge">

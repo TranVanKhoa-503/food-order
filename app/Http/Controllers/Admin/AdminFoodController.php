@@ -39,10 +39,7 @@ class AdminFoodController extends Controller
         }
 
         if (! empty($search)) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
-            });
+            $query->where('name', 'like', "%{$search}%");
         }
 
         $foods = $query->latest()->paginate($perPage)->withQueryString();

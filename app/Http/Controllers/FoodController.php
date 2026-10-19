@@ -46,10 +46,7 @@ class FoodController extends Controller
         }
 
         if (! empty($search)) {
-            $foodsQuery->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
-            });
+            $foodsQuery->where('name', 'like', "%{$search}%");
         }
 
         if (! is_null($minPrice) && $minPrice !== '') {

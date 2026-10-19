@@ -2,11 +2,39 @@
 
 @section('title', 'Thông Tin Tài Khoản - FoodOrder')
 
+@section('styles')
+<style>
+    .profile-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+    @media (max-width: 768px) {
+        .profile-container {
+            padding: 20px 14px 40px !important;
+        }
+        .profile-grid {
+            grid-template-columns: 1fr !important;
+            gap: 18px !important;
+        }
+        .profile-card {
+            padding: 20px 16px !important;
+            border-radius: 16px !important;
+        }
+        .profile-card button[type="submit"] {
+            width: 100% !important;
+            justify-content: center !important;
+            padding: 12px !important;
+        }
+    }
+</style>
+@endsection
+
 @section('content')
-<div class="container" style="max-width: 900px; padding: 40px 20px;">
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px;">
+<div class="container profile-container" style="max-width: 900px; padding: 40px 20px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
         <div>
-            <h1 style="font-size: 26px; font-weight: 800; color: var(--dark);">Hồ Sơ Của Tôi</h1>
+            <h1 style="font-size: 24px; font-weight: 800; color: var(--dark);">Hồ Sơ Của Tôi</h1>
             <p style="color: #64748B; font-size: 14px; margin-top: 4px;">Quản lý thông tin cá nhân và bảo mật tài khoản</p>
         </div>
         <div>
@@ -22,9 +50,9 @@
         </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+    <div class="profile-grid">
         <!-- Card 1: Thông tin cá nhân -->
-        <div style="background: white; border-radius: var(--radius-lg); padding: 28px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color);">
+        <div class="profile-card" style="background: white; border-radius: var(--radius-lg); padding: 28px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color);">
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 14px;">
                 <div style="width: 36px; height: 36px; background: var(--primary-light); color: var(--primary); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 16px;">
                     <i class="fa-solid fa-address-card"></i>
@@ -88,7 +116,7 @@
         </div>
 
         <!-- Card 2: Đổi mật khẩu -->
-        <div style="background: white; border-radius: var(--radius-lg); padding: 28px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color);">
+        <div class="profile-card" style="background: white; border-radius: var(--radius-lg); padding: 28px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color);">
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 14px;">
                 <div style="width: 36px; height: 36px; background: #FEF3C7; color: #D97706; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 16px;">
                     <i class="fa-solid fa-lock"></i>

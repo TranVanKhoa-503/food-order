@@ -116,6 +116,28 @@
         font-size: 11px;
         font-weight: 700;
     }
+
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    @media (max-width: 768px) {
+        .shipper-container {
+            padding: 16px 12px 40px;
+        }
+        .shipper-header {
+            padding: 18px 16px;
+            gap: 12px;
+        }
+        .shipper-title-box h1 {
+            font-size: 20px;
+        }
+        .card {
+            padding: 16px 14px;
+        }
+    }
 </style>
 @endsection
 
@@ -202,68 +224,70 @@
             Lịch Sử Bảng Lương Đã Được Chốt
         </h3>
 
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>KỲ LƯƠNG</th>
-                    <th>LƯƠNG CỨNG</th>
-                    <th>SỐ ĐƠN GIAO</th>
-                    <th>TỔNG PHÍ SHIP</th>
-                    <th>HOA HỒNG (50%)</th>
-                    <th>TỔNG THỰC NHẬN</th>
-                    <th>TRẠNG THÁI</th>
-                    <th>NGÀY THANH TOÁN</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($payrollHistory as $record)
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
                     <tr>
-                        <td>
-                            <strong style="color: #1E293B;">Tháng {{ $record->month }}/{{ $record->year }}</strong>
-                        </td>
-                        <td>{{ number_format($record->base_salary, 0, ',', '.') }} ₫</td>
-                        <td><strong>{{ $record->completed_orders_count }}</strong> đơn</td>
-                        <td>{{ number_format($record->total_shipping_fee, 0, ',', '.') }} ₫</td>
-                        <td style="color: #D97706; font-weight: 700;">+ {{ number_format($record->total_commission, 0, ',', '.') }} ₫</td>
-                        <td>
-                            <span style="font-size: 15px; font-weight: 800; color: #059669;">
-                                {{ number_format($record->total_salary, 0, ',', '.') }} ₫
-                            </span>
-                        </td>
-                        <td>
-                            @if($record->status === 'paid')
-                                <span class="badge" style="background: #ECFDF5; color: #059669;">
-                                    <i class="fa-solid fa-circle-check"></i> Đã nhận tiền
-                                </span>
-                            @elseif($record->status === 'finalized')
-                                <span class="badge" style="background: #EFF6FF; color: #2563EB;">
-                                    <i class="fa-solid fa-lock"></i> Đã chốt (Chờ thanh toán)
-                                </span>
-                            @else
-                                <span class="badge" style="background: #FEF3C7; color: #D97706;">
-                                    <i class="fa-solid fa-pencil"></i> Tạm tính (Nháp)
-                                </span>
-                            @endif
-                        </td>
-                        <td>
-                            @if($record->paid_at)
-                                <span style="font-size: 12px; color: #059669; font-weight: 600;">
-                                    {{ $record->paid_at->format('d/m/Y H:i') }}
-                                </span>
-                            @else
-                                <span style="font-size: 12px; color: #94A3B8;">Chưa thanh toán</span>
-                            @endif
-                        </td>
+                        <th>KỲ LƯƠNG</th>
+                        <th>LƯƠNG CỨNG</th>
+                        <th>SỐ ĐƠN GIAO</th>
+                        <th>TỔNG PHÍ SHIP</th>
+                        <th>HOA HỒNG (50%)</th>
+                        <th>TỔNG THỰC NHẬN</th>
+                        <th>TRẠNG THÁI</th>
+                        <th>NGÀY THANH TOÁN</th>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="8" style="text-align: center; color: #94A3B8; padding: 24px;">
-                            Chưa có kỳ lương nào được quản trị viên chốt. Số liệu tháng {{ $currentMonth }} hiện đang được tạm tính tự động ở trên.
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @forelse($payrollHistory as $record)
+                        <tr>
+                            <td>
+                                <strong style="color: #1E293B;">Tháng {{ $record->month }}/{{ $record->year }}</strong>
+                            </td>
+                            <td>{{ number_format($record->base_salary, 0, ',', '.') }} ₫</td>
+                            <td><strong>{{ $record->completed_orders_count }}</strong> đơn</td>
+                            <td>{{ number_format($record->total_shipping_fee, 0, ',', '.') }} ₫</td>
+                            <td style="color: #D97706; font-weight: 700;">+ {{ number_format($record->total_commission, 0, ',', '.') }} ₫</td>
+                            <td>
+                                <span style="font-size: 15px; font-weight: 800; color: #059669;">
+                                    {{ number_format($record->total_salary, 0, ',', '.') }} ₫
+                                </span>
+                            </td>
+                            <td>
+                                @if($record->status === 'paid')
+                                    <span class="badge" style="background: #ECFDF5; color: #059669;">
+                                        <i class="fa-solid fa-circle-check"></i> Đã nhận tiền
+                                    </span>
+                                @elseif($record->status === 'finalized')
+                                    <span class="badge" style="background: #EFF6FF; color: #2563EB;">
+                                        <i class="fa-solid fa-lock"></i> Đã chốt (Chờ thanh toán)
+                                    </span>
+                                @else
+                                    <span class="badge" style="background: #FEF3C7; color: #D97706;">
+                                        <i class="fa-solid fa-pencil"></i> Tạm tính (Nháp)
+                                    </span>
+                                @endif
+                            </td>
+                            <td>
+                                @if($record->paid_at)
+                                    <span style="font-size: 12px; color: #059669; font-weight: 600;">
+                                        {{ $record->paid_at->format('d/m/Y H:i') }}
+                                    </span>
+                                @else
+                                    <span style="font-size: 12px; color: #94A3B8;">Chưa thanh toán</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="8" style="text-align: center; color: #94A3B8; padding: 24px;">
+                                Chưa có kỳ lương nào được quản trị viên chốt. Số liệu tháng {{ $currentMonth }} hiện đang được tạm tính tự động ở trên.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 
     {{-- CÁC ĐƠN HOÀN TẤT THÁNG NÀY --}}
@@ -273,53 +297,55 @@
             Đơn Hàng Giao Thành Công Trong Tháng {{ $currentMonth }}/{{ $currentYear }} (Gần Nhất)
         </h3>
 
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>MÃ ĐƠN</th>
-                    <th>THỜI GIAN HOÀN TẤT</th>
-                    <th>KHÁCH HÀNG</th>
-                    <th>ĐỊA CHỈ</th>
-                    <th>PHÍ SHIP</th>
-                    <th>HOA HỒNG NHẬN ĐƯỢC (50%)</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($recentCompletedOrders as $order)
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
                     <tr>
-                        <td>
-                            <strong style="color: var(--primary);">{{ $order->order_code }}</strong>
-                        </td>
-                        <td>
-                            <span style="font-size: 13px; color: #64748B;">
-                                {{ $order->completed_at ? $order->completed_at->format('d/m/Y H:i') : $order->created_at->format('d/m/Y H:i') }}
-                            </span>
-                        </td>
-                        <td>
-                            <div style="font-weight: 700;">{{ $order->customer_name }}</div>
-                            <div style="font-size: 12px; color: #64748B;">{{ $order->customer_phone }}</div>
-                        </td>
-                        <td>
-                            <div style="font-size: 12px; color: #64748B; max-width: 260px;">{{ $order->delivery_address }}</div>
-                        </td>
-                        <td>
-                            <span style="font-weight: 700; color: #2563EB;">{{ number_format($order->shipping_fee, 0, ',', '.') }} ₫</span>
-                        </td>
-                        <td>
-                            <span style="font-weight: 800; color: #059669;">
-                                + {{ number_format(round($order->shipping_fee * 0.5), 0, ',', '.') }} ₫
-                            </span>
-                        </td>
+                        <th>MÃ ĐƠN</th>
+                        <th>THỜI GIAN HOÀN TẤT</th>
+                        <th>KHÁCH HÀNG</th>
+                        <th>ĐỊA CHỈ</th>
+                        <th>PHÍ SHIP</th>
+                        <th>HOA HỒNG NHẬN ĐƯỢC (50%)</th>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" style="text-align: center; color: #94A3B8; padding: 24px;">
-                            Bạn chưa hoàn thành đơn hàng nào trong tháng này.
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @forelse($recentCompletedOrders as $order)
+                        <tr>
+                            <td>
+                                <strong style="color: var(--primary);">{{ $order->order_code }}</strong>
+                            </td>
+                            <td>
+                                <span style="font-size: 13px; color: #64748B;">
+                                    {{ $order->completed_at ? $order->completed_at->format('d/m/Y H:i') : $order->created_at->format('d/m/Y H:i') }}
+                                </span>
+                            </td>
+                            <td>
+                                <div style="font-weight: 700;">{{ $order->customer_name }}</div>
+                                <div style="font-size: 12px; color: #64748B;">{{ $order->customer_phone }}</div>
+                            </td>
+                            <td>
+                                <div style="font-size: 12px; color: #64748B; max-width: 260px;">{{ $order->delivery_address }}</div>
+                            </td>
+                            <td>
+                                <span style="font-weight: 700; color: #2563EB;">{{ number_format($order->shipping_fee, 0, ',', '.') }} ₫</span>
+                            </td>
+                            <td>
+                                <span style="font-weight: 800; color: #059669;">
+                                    + {{ number_format(round($order->shipping_fee * 0.5), 0, ',', '.') }} ₫
+                                </span>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: #94A3B8; padding: 24px;">
+                                Bạn chưa hoàn thành đơn hàng nào trong tháng này.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 @endsection

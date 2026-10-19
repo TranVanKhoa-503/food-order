@@ -278,15 +278,158 @@
             font-weight: 700;
             color: var(--dark);
         }
+
+        /* Mobile Responsive Utilities */
+        .admin-menu-toggle {
+            display: none;
+            background: #F8FAFC;
+            border: 1px solid var(--border-color);
+            color: var(--dark);
+            font-size: 16px;
+            width: 38px;
+            height: 38px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .admin-menu-toggle:hover {
+            background: #F1F5F9;
+            color: var(--primary);
+        }
+
+        .sidebar-close-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            color: #94A3B8;
+            font-size: 18px;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .sidebar-close-btn:hover {
+            color: white;
+            background: #1E293B;
+        }
+
+        .admin-sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 1040;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .admin-sidebar-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 12px;
+        }
+
+        @media (max-width: 992px) {
+            .admin-menu-toggle {
+                display: inline-flex;
+            }
+
+            .sidebar-close-btn {
+                display: inline-flex;
+            }
+
+            .admin-sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                height: 100vh;
+                z-index: 1050;
+                transform: translateX(-100%);
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: 6px 0 24px rgba(0,0,0,0.3);
+                overflow-y: auto;
+            }
+
+            .admin-sidebar.open {
+                transform: translateX(0);
+            }
+
+            .admin-topbar {
+                padding: 14px 20px;
+            }
+
+            .admin-content {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .admin-topbar {
+                padding: 12px 14px;
+            }
+
+            .topbar-title {
+                font-size: 14px !important;
+                max-width: 170px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .topbar-user span {
+                display: none;
+            }
+
+            .admin-content {
+                padding: 14px 10px;
+            }
+
+            .card {
+                padding: 16px 12px;
+                margin-bottom: 16px;
+                border-radius: var(--radius-md);
+            }
+
+            .table th, .table td {
+                padding: 10px 12px;
+                font-size: 13px;
+            }
+        }
     </style>
     @yield('styles')
 </head>
 <body>
-    <aside class="admin-sidebar">
-        <a href="{{ route('admin.dashboard') }}" class="sidebar-brand">
-            <i class="fa-solid fa-utensils" style="color: var(--primary);"></i>
-            <div>Food<span>Order</span> <span style="font-size: 11px; background: #334155; color: #94A3B8; padding: 2px 6px; border-radius: 4px; font-weight: 700; margin-left: 4px;">ADMIN</span></div>
-        </a>
+    <div class="admin-sidebar-overlay" id="adminSidebarOverlay"></div>
+
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="sidebar-brand" style="display: flex; align-items: center; justify-content: space-between;">
+            <a href="{{ route('admin.dashboard') }}" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: white; font-weight: 800; font-size: 18px;">
+                <i class="fa-solid fa-utensils" style="color: var(--primary);"></i>
+                <div>Food<span>Order</span> <span style="font-size: 11px; background: #334155; color: #94A3B8; padding: 2px 6px; border-radius: 4px; font-weight: 700; margin-left: 4px;">ADMIN</span></div>
+            </a>
+            <button type="button" id="adminSidebarCloseBtn" class="sidebar-close-btn" aria-label="Đóng menu">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
 
         <div class="sidebar-menu">
             <a href="{{ route('admin.dashboard') }}" class="menu-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
@@ -333,8 +476,13 @@
 
     <div class="admin-main">
         <header class="admin-topbar">
-            <div style="font-weight: 700; font-size: 16px; color: var(--dark-muted);">
-                @yield('header_title', 'Bảng Điều Khiển Quản Trị')
+            <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+                <button type="button" id="adminSidebarToggle" class="admin-menu-toggle" aria-label="Mở menu điều hướng">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="topbar-title" style="font-weight: 700; font-size: 16px; color: var(--dark-muted);">
+                    @yield('header_title', 'Bảng Điều Khiển Quản Trị')
+                </div>
             </div>
 
             <div class="topbar-user">
@@ -377,6 +525,30 @@
     </div>
 
     @include('partials.submit-guard')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const sidebar = document.getElementById('adminSidebar');
+            const overlay = document.getElementById('adminSidebarOverlay');
+            const toggleBtn = document.getElementById('adminSidebarToggle');
+            const closeBtn = document.getElementById('adminSidebarCloseBtn');
+
+            function openSidebar() {
+                sidebar?.classList.add('open');
+                overlay?.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeSidebar() {
+                sidebar?.classList.remove('open');
+                overlay?.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+
+            toggleBtn?.addEventListener('click', openSidebar);
+            closeBtn?.addEventListener('click', closeSidebar);
+            overlay?.addEventListener('click', closeSidebar);
+        });
+    </script>
     @yield('scripts')
 </body>
 </html>

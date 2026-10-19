@@ -411,29 +411,60 @@
     }
 
     @media (max-width: 860px) {
+        .food-detail-wrapper {
+            padding: 16px 14px 40px;
+        }
+
         .food-detail-card {
             grid-template-columns: 1fr;
-            gap: 28px;
-            padding: 20px;
+            gap: 20px;
+            padding: 18px 16px;
+            border-radius: 18px;
         }
 
         .food-media-container, .food-media-img {
-            min-height: 280px;
-            height: 280px;
+            min-height: 240px;
+            height: 240px;
+            border-radius: 14px;
+        }
+
+        .food-name-title {
+            font-size: 22px;
+            margin-bottom: 8px;
+        }
+
+        .food-price-number {
+            font-size: 22px;
         }
 
         .action-row-controls {
             flex-direction: column;
+            gap: 10px;
         }
 
         .qty-stepper-box {
             width: 100%;
+            height: 44px;
             justify-content: space-between;
+        }
+
+        .btn-detail-add-cart {
+            width: 100%;
+            min-height: 48px;
+            padding: 12px 18px;
+            font-size: 14px;
+        }
+
+        .btn-detail-buy-now {
+            width: 100%;
+            min-height: 46px;
+            font-size: 14px;
+            margin-top: 10px;
         }
 
         .food-perks-grid {
             grid-template-columns: 1fr;
-            gap: 10px;
+            gap: 8px;
         }
     }
 </style>

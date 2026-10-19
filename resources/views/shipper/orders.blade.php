@@ -247,9 +247,50 @@
         animation: modalIn 0.2s ease-out;
     }
 
-    @keyframes modalIn {
-        from { opacity: 0; transform: scale(0.95); }
-        to { opacity: 1; transform: scale(1); }
+    @media (max-width: 768px) {
+        .shipper-container {
+            padding: 16px 12px 40px;
+        }
+        .shipper-header {
+            padding: 18px 16px;
+            gap: 12px;
+        }
+        .shipper-title-box h1 {
+            font-size: 20px;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .order-card {
+            padding: 16px 14px;
+        }
+        .order-card-header {
+            flex-direction: column;
+            gap: 8px;
+        }
+        .order-card-header > div:last-child {
+            text-align: left !important;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .shipper-actions-group {
+            flex-direction: column !important;
+            gap: 10px !important;
+            width: 100% !important;
+        }
+        .btn-action-complete, .btn-action-fail {
+            width: 100% !important;
+            justify-content: center !important;
+            padding: 12px !important;
+            font-size: 14px !important;
+        }
+        .shipper-actions-group form {
+            width: 100% !important;
+        }
+        .modal-card {
+            padding: 18px 16px;
+        }
     }
 </style>
 @endsection
@@ -466,7 +507,7 @@
 
                     <!-- Action Buttons for Delivering Orders -->
                     @if(($order->status->value ?? $order->status) === 'delivering')
-                        <div style="display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; padding-top: 10px; border-top: 1px solid var(--border-color);">
+                        <div class="shipper-actions-group" style="display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; padding-top: 10px; border-top: 1px solid var(--border-color);">
                             <!-- Nút báo thất bại -->
                             <button type="button" onclick="openFailModal(this)" data-order-code="{{ $order->order_code }}" data-status-url="{{ route('shipper.orders.status', $order) }}" class="btn-action-fail">
                                 <i class="fa-solid fa-xmark"></i> Báo giao thất bại

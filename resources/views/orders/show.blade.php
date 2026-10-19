@@ -2,6 +2,30 @@
 
 @section('title', 'Chi Tiết Đơn Hàng - FoodOrder')
 
+@section('styles')
+<style>
+    .order-show-grid {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr;
+        gap: 20px;
+    }
+    @media (max-width: 860px) {
+        .order-show-container {
+            padding: 20px 14px 40px !important;
+        }
+        .order-show-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        .order-card-box {
+            padding: 16px !important;
+            border-radius: 14px !important;
+            margin-bottom: 16px !important;
+        }
+    }
+</style>
+@endsection
+
 @section('content')
 @php
     $labels = [
@@ -14,19 +38,19 @@
     $currentStatus = $order->status->value;
     $backRoute = Auth::user()->isAdmin() ? 'admin.orders.index' : (Auth::user()->isShipper() ? 'shipper.orders.index' : 'orders.index');
 @endphp
-<div class="container" style="max-width:1000px;padding:40px 20px;">
+<div class="container order-show-container" style="max-width:1000px;padding:40px 20px;">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:24px;">
         <div>
             <a href="{{ route($backRoute) }}" style="color:#64748B;text-decoration:none;font-size:13px;"><i class="fa-solid fa-arrow-left"></i> Quay lại danh sách đơn</a>
-            <h1 style="font-size:28px;font-weight:800;margin-top:10px;">Đơn hàng {{ $order->order_code }}</h1>
+            <h1 style="font-size:24px;font-weight:800;margin-top:10px;">Đơn hàng {{ $order->order_code }}</h1>
             <p style="color:#64748B;font-size:13px;">Đặt lúc {{ $order->created_at?->format('d/m/Y H:i') }}</p>
         </div>
         <span style="background:#FFF7ED;color:#C2410C;padding:8px 16px;border-radius:50px;font-weight:800;">{{ $labels[$currentStatus] ?? $currentStatus }}</span>
     </div>
 
-    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:20px;">
+    <div class="order-show-grid">
         <div>
-            <div style="background:white;border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:24px;margin-bottom:20px;">
+            <div class="order-card-box" style="background:white;border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:24px;margin-bottom:20px;">
                 <h2 style="font-size:17px;font-weight:800;margin-bottom:16px;"><i class="fa-solid fa-basket-shopping" style="color:var(--primary);"></i> Món đã đặt</h2>
                 @foreach($order->items as $item)
                     <div style="display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px dashed var(--border-color);">

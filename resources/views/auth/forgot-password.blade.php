@@ -2,8 +2,22 @@
 
 @section('title', 'Quên Mật Khẩu - FoodOrder')
 
+@section('styles')
+<style>
+    @media (max-width: 600px) {
+        .auth-container {
+            padding: 24px 14px 40px !important;
+        }
+        .auth-card {
+            padding: 24px 18px !important;
+            border-radius: 16px !important;
+        }
+    }
+</style>
+@endsection
+
 @section('content')
-<div class="container" style="max-width: 480px; padding: 40px 20px;">
+<div class="container auth-container" style="max-width: 480px; padding: 40px 20px;">
     <div class="auth-card" style="background: white; border-radius: var(--radius-lg); padding: 36px 32px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color);">
         <div style="text-align: center; margin-bottom: 28px;">
             <div style="width: 56px; height: 56px; background: var(--primary-light); color: var(--primary); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px;">

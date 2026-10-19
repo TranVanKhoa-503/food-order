@@ -41,6 +41,12 @@
             box-sizing: border-box;
         }
 
+        html, body {
+            overflow-x: hidden;
+            max-width: 100vw;
+            width: 100%;
+        }
+
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--light-bg);
@@ -54,6 +60,7 @@
         /* Container */
         .container {
             max-width: 1240px;
+            width: 100%;
             margin: 0 auto;
             padding: 0 20px;
         }
@@ -818,9 +825,253 @@
             font-size: 13px;
         }
 
+        /* Global mobile improvements */
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Mobile Search Bar */
+        .mobile-search-bar {
+            display: none;
+            background: white;
+            border-bottom: 1px solid var(--border-color);
+            padding: 10px 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .mobile-search-bar.active {
+            display: block;
+            animation: mobileSlideDown 0.2s ease-out;
+        }
+
+        @keyframes mobileSlideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .mobile-search-form {
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .mobile-search-form input {
+            width: 100%;
+            padding: 10px 44px 10px 16px;
+            border-radius: 50px;
+            border: 1px solid var(--border-color);
+            background: #F1F5F9;
+            font-size: 14px;
+            outline: none;
+            font-family: inherit;
+            transition: var(--transition);
+        }
+
+        .mobile-search-form input:focus {
+            background: white;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.12);
+        }
+
+        .mobile-search-form button {
+            position: absolute;
+            right: 6px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        /* Mobile Nav Drawer */
+        .mobile-drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1090;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .mobile-drawer-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .mobile-nav-drawer {
+            position: fixed;
+            top: 0;
+            right: -320px;
+            width: min(320px, 86vw);
+            height: 100%;
+            background: white;
+            z-index: 1100;
+            display: flex;
+            flex-direction: column;
+            box-shadow: -5px 0 30px rgba(0, 0, 0, 0.15);
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+        }
+
+        .mobile-nav-drawer.active {
+            right: 0;
+        }
+
+        .mobile-drawer-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #F8FAFC;
+        }
+
+        .mobile-drawer-user {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(135deg, #FFF7ED, #FFFFFF);
+        }
+
+        .mobile-user-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .mobile-user-avatar {
+            width: 46px;
+            height: 46px;
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .mobile-user-info {
+            overflow: hidden;
+        }
+
+        .mobile-user-name {
+            font-weight: 800;
+            font-size: 15px;
+            color: var(--dark);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .mobile-user-role {
+            font-size: 12px;
+            color: #64748B;
+            margin-top: 2px;
+        }
+
+        .mobile-drawer-links {
+            padding: 16px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+        }
+
+        .mobile-drawer-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: var(--radius-md);
+            color: var(--dark);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .mobile-drawer-item:hover, .mobile-drawer-item:active {
+            background: #F1F5F9;
+            color: var(--primary);
+        }
+
+        .mobile-drawer-item i {
+            width: 22px;
+            text-align: center;
+            font-size: 16px;
+            color: var(--primary);
+        }
+
+        .mobile-drawer-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 10px 0;
+        }
+
+        .mobile-drawer-footer {
+            padding: 18px 20px;
+            border-top: 1px solid var(--border-color);
+            background: #F8FAFC;
+        }
+
+        /* Nav actions split */
+        .desktop-nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .mobile-nav-actions {
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mobile-icon-btn {
+            background: white;
+            border: 1px solid var(--border-color);
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--dark);
+            font-size: 15px;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            text-decoration: none;
+        }
+
+        .mobile-icon-btn:hover, .mobile-icon-btn.active {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+
         @media (max-width: 992px) {
             .nav-search {
                 display: none;
+            }
+            .desktop-nav-actions {
+                display: none;
+            }
+            .mobile-nav-actions {
+                display: flex;
             }
             .footer-grid {
                 grid-template-columns: 1fr 1fr;
@@ -828,22 +1079,99 @@
         }
 
         @media (max-width: 600px) {
-            .footer-grid {
-                grid-template-columns: 1fr;
+            html, body {
+                overflow-x: hidden;
+            }
+            .container {
+                padding: 0 14px;
             }
             .nav-wrapper {
-                height: 64px;
+                height: 60px;
+                gap: 8px;
             }
-            .hotline-btn span {
-                display: none;
+            .logo {
+                font-size: 20px;
+                gap: 8px;
+            }
+            .logo-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
+                border-radius: var(--radius-sm);
+            }
+            .mobile-icon-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 14px;
+            }
+            .cart-drawer {
+                width: 100%;
+                max-width: 100vw;
+                right: -100vw;
+            }
+            .cart-drawer.active {
+                right: 0;
+            }
+            .cart-header {
+                padding: 16px 14px;
+            }
+            .cart-body {
+                padding: 14px 12px;
+                gap: 10px;
+            }
+            .cart-item {
+                padding: 10px 8px;
+                gap: 10px;
+            }
+            .cart-item img {
+                width: 48px;
+                height: 48px;
+            }
+            .cart-item-title {
+                font-size: 13px;
+            }
+            .cart-item-price {
+                font-size: 13px;
+            }
+            .cart-footer {
+                padding: 14px 12px;
+            }
+            .checkout-btn {
+                padding: 12px 14px;
+                font-size: 14px;
+            }
+            .toast {
+                left: 14px;
+                right: 14px;
+                bottom: 16px;
+                max-width: calc(100vw - 28px);
+                justify-content: center;
+                font-size: 13px;
+                padding: 12px 14px;
             }
             .food-assistant-trigger {
-                right: 16px;
-                bottom: 16px;
+                right: 14px;
+                bottom: 14px;
+                width: 48px;
+                height: 48px;
+                font-size: 18px;
             }
             .food-assistant-panel {
-                right: 16px;
-                bottom: 86px;
+                right: 12px;
+                left: 12px;
+                bottom: 74px;
+                width: calc(100vw - 24px);
+                max-height: calc(100vh - 90px);
+            }
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+            .footer-bottom {
+                flex-direction: column;
+                text-align: center;
+                gap: 8px;
+                padding-top: 18px;
             }
         }
     </style>
@@ -862,6 +1190,7 @@
                     Food<span>Order</span>
                 </a>
 
+                <!-- Desktop Search -->
                 <div class="nav-search">
                     <form action="{{ route('home') }}" method="GET">
                         <i class="fa-solid fa-magnifying-glass"></i>
@@ -881,7 +1210,8 @@
                     </form>
                 </div>
 
-                <div class="nav-actions">
+                <!-- Desktop Actions -->
+                <div class="desktop-nav-actions">
                     <button class="cart-trigger" id="cartTriggerBtn">
                         <i class="fa-solid fa-bag-shopping" style="color: var(--primary); font-size: 16px;"></i>
                         <span>Giỏ hàng</span>
@@ -947,9 +1277,160 @@
                         <span>1900 8888</span>
                     </a>
                 </div>
+
+                <!-- Mobile Actions (Compact) -->
+                <div class="mobile-nav-actions">
+                    <button type="button" class="mobile-icon-btn" id="mobileSearchToggleBtn" aria-label="Tìm kiếm">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                    <button type="button" class="mobile-icon-btn" id="mobileCartTriggerBtn" aria-label="Giỏ hàng">
+                        <i class="fa-solid fa-bag-shopping" style="color: var(--primary);"></i>
+                        <div class="cart-badge" id="mobileCartBadge" style="position: absolute; top: -4px; right: -4px; width: 20px; height: 20px; font-size: 11px;">0</div>
+                    </button>
+                    @auth
+                        <a href="{{ route('orders.index') }}" class="mobile-icon-btn" title="Đơn mua" aria-label="Đơn mua">
+                            <i class="fa-solid fa-receipt" style="color: var(--primary);"></i>
+                        </a>
+                    @endauth
+                    <button type="button" class="mobile-icon-btn" id="mobileMenuToggle" aria-label="Menu" aria-expanded="false">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </header>
+
+    <!-- Mobile Search Bar (Collapsible) -->
+    <div class="mobile-search-bar" id="mobileSearchBar">
+        <form action="{{ route('home') }}" method="GET" class="mobile-search-form">
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Tìm kiếm món ngon (Phở bò, Cơm tấm...)">
+            @if(request('category'))
+                <input type="hidden" name="category" value="{{ request('category') }}">
+            @endif
+            @if(request('sort'))
+                <input type="hidden" name="sort" value="{{ request('sort') }}">
+            @endif
+            @if(request('min_price'))
+                <input type="hidden" name="min_price" value="{{ request('min_price') }}">
+            @endif
+            @if(request('max_price'))
+                <input type="hidden" name="max_price" value="{{ request('max_price') }}">
+            @endif
+            <button type="submit" aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </form>
+    </div>
+
+    <!-- Mobile Drawer Overlay & Drawer -->
+    <div class="mobile-drawer-overlay" id="mobileNavOverlay"></div>
+    <aside class="mobile-nav-drawer" id="mobileNavDrawer" aria-label="Menu điều hướng di động">
+        <div class="mobile-drawer-header">
+            <div class="logo" style="font-size: 18px;">
+                <div class="logo-icon" style="width: 32px; height: 32px; font-size: 14px;">
+                    <i class="fa-solid fa-utensils"></i>
+                </div>
+                Food<span>Order</span>
+            </div>
+            <button type="button" id="closeMobileNavBtn" style="background: none; border: none; font-size: 20px; color: #64748B; cursor: pointer; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        @guest
+            <div class="mobile-drawer-user">
+                <p style="font-size: 13px; color: #64748B; margin-bottom: 12px; line-height: 1.5;">Đăng nhập để đặt món nhanh và lưu thông tin nhận hàng!</p>
+                <div style="display: flex; gap: 8px;">
+                    <a href="{{ route('login') }}" style="flex: 1; text-align: center; text-decoration: none; background: var(--primary); color: white; padding: 10px; border-radius: var(--radius-md); font-weight: 700; font-size: 13px;">
+                        Đăng nhập
+                    </a>
+                    <a href="{{ route('register') }}" style="flex: 1; text-align: center; text-decoration: none; background: var(--primary-light); color: var(--primary); padding: 10px; border-radius: var(--radius-md); font-weight: 700; font-size: 13px;">
+                        Đăng ký
+                    </a>
+                </div>
+            </div>
+        @else
+            <div class="mobile-drawer-user">
+                <div class="mobile-user-card">
+                    <div class="mobile-user-avatar">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div class="mobile-user-info">
+                        <div class="mobile-user-name">{{ Auth::user()->name }}</div>
+                        <div class="mobile-user-role">
+                            @if(Auth::user()->isAdmin())
+                                <span style="background: #EDE9FE; color: #6D28D9; padding: 2px 8px; border-radius: 50px; font-weight: 800; font-size: 11px;">Quản trị viên</span>
+                            @elseif(Auth::user()->isShipper())
+                                <span style="background: #E0F2FE; color: #0284C7; padding: 2px 8px; border-radius: 50px; font-weight: 800; font-size: 11px;">Shipper</span>
+                            @else
+                                <span style="background: #F1F5F9; color: #475569; padding: 2px 8px; border-radius: 50px; font-weight: 700; font-size: 11px;">Thành viên</span>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endguest
+
+        <div class="mobile-drawer-links">
+            <a href="{{ route('home') }}" class="mobile-drawer-item">
+                <i class="fa-solid fa-house"></i>
+                <span>Trang chủ thực đơn</span>
+            </a>
+
+            @auth
+                @if(Auth::user()->isAdmin())
+                    <a href="{{ route('admin.dashboard') }}" class="mobile-drawer-item" style="color: #6D28D9;">
+                        <i class="fa-solid fa-chart-pie" style="color: #6D28D9;"></i>
+                        <span>Quản trị hệ thống (Admin)</span>
+                    </a>
+                @endif
+
+                @if(Auth::user()->isShipper())
+                    <a href="{{ route('shipper.orders.index') }}" class="mobile-drawer-item" style="color: #0284C7;">
+                        <i class="fa-solid fa-motorcycle" style="color: #0284C7;"></i>
+                        <span>Cổng giao hàng (Shipper)</span>
+                    </a>
+                @endif
+
+                <a href="{{ route('orders.index') }}" class="mobile-drawer-item">
+                    <i class="fa-solid fa-receipt"></i>
+                    <span>Lịch sử đơn mua</span>
+                </a>
+
+                <a href="{{ route('profile') }}" class="mobile-drawer-item">
+                    <i class="fa-solid fa-user-gear"></i>
+                    <span>Hồ sơ & Đổi mật khẩu</span>
+                </a>
+            @endauth
+
+            <div class="mobile-drawer-divider"></div>
+
+            <a href="tel:19008888" class="mobile-drawer-item" style="color: var(--primary);">
+                <i class="fa-solid fa-phone"></i>
+                <span>Hotline: 1900 8888</span>
+            </a>
+
+            <button type="button" onclick="toggleFoodAssistant(true); closeMobileNav();" class="mobile-drawer-item" style="background: none; border: none; width: 100%; text-align: left; cursor: pointer; font-family: inherit;">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>Trợ lý gợi ý món ăn</span>
+            </button>
+
+            @auth
+                <div class="mobile-drawer-divider"></div>
+                <form action="{{ route('logout') }}" method="POST" data-prevent-double-submit style="margin: 0; padding: 0;">
+                    @csrf
+                    <button type="submit" class="mobile-drawer-item" style="background: #FEF2F2; color: #DC2626; border: none; width: 100%; text-align: left; cursor: pointer; font-family: inherit;">
+                        <i class="fa-solid fa-right-from-bracket" style="color: #DC2626;"></i>
+                        <span>Đăng xuất tài khoản</span>
+                    </button>
+                </form>
+            @endauth
+        </div>
+
+        <div class="mobile-drawer-footer">
+            <div style="font-size: 12px; color: #94A3B8; text-align: center;">
+                FoodOrder &copy; {{ date('Y') }} · Giao tận nơi 15-30 phút
+            </div>
+        </div>
+    </aside>
 
     <!-- Main Content -->
     <main>
@@ -1253,7 +1734,9 @@
             const discountEl = document.getElementById('cartDiscount');
 
             const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-            badge.innerText = totalCount;
+            if (badge) badge.innerText = totalCount;
+            const mobileBadge = document.getElementById('mobileCartBadge');
+            if (mobileBadge) mobileBadge.innerText = totalCount;
 
             if (cart.length === 0) {
                 body.replaceChildren();
@@ -1509,15 +1992,54 @@
             if (show) {
                 overlay.classList.add('active');
                 drawer.classList.add('active');
+                document.body.style.overflow = 'hidden';
             } else {
                 overlay.classList.remove('active');
                 drawer.classList.remove('active');
+                document.body.style.overflow = '';
             }
         }
 
         document.getElementById('cartTriggerBtn').addEventListener('click', () => toggleCart(true));
+        document.getElementById('mobileCartTriggerBtn')?.addEventListener('click', () => toggleCart(true));
         document.getElementById('closeCartBtn').addEventListener('click', () => toggleCart(false));
         document.getElementById('cartOverlay').addEventListener('click', () => toggleCart(false));
+
+        // Mobile drawer handlers
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const mobileNavDrawer = document.getElementById('mobileNavDrawer');
+        const mobileNavOverlay = document.getElementById('mobileNavOverlay');
+        const closeMobileNavBtn = document.getElementById('closeMobileNavBtn');
+        const mobileSearchToggleBtn = document.getElementById('mobileSearchToggleBtn');
+        const mobileSearchBar = document.getElementById('mobileSearchBar');
+
+        function openMobileNav() {
+            mobileNavDrawer?.classList.add('active');
+            mobileNavOverlay?.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            mobileMenuToggle?.setAttribute('aria-expanded', 'true');
+        }
+
+        function closeMobileNav() {
+            mobileNavDrawer?.classList.remove('active');
+            mobileNavOverlay?.classList.remove('active');
+            document.body.style.overflow = '';
+            mobileMenuToggle?.setAttribute('aria-expanded', 'false');
+        }
+
+        mobileMenuToggle?.addEventListener('click', openMobileNav);
+        closeMobileNavBtn?.addEventListener('click', closeMobileNav);
+        mobileNavOverlay?.addEventListener('click', closeMobileNav);
+
+        mobileSearchToggleBtn?.addEventListener('click', () => {
+            if (mobileSearchBar) {
+                const isActive = mobileSearchBar.classList.toggle('active');
+                if (isActive) {
+                    mobileSearchBar.querySelector('input')?.focus();
+                }
+            }
+        });
+
         document.getElementById('checkoutVoucher')?.addEventListener('input', (event) => {
             if (appliedVoucher && event.target.value.trim().toUpperCase() !== appliedVoucher.code) {
                 appliedVoucher = null;

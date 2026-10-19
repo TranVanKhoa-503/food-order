@@ -348,6 +348,21 @@
     }
 
     @media (max-width: 768px) {
+        .filter-sort-wrapper {
+            padding: 14px 12px;
+            margin: 14px 0 20px;
+        }
+        .filter-sort-form {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+        }
+        .filter-section {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+            width: 100%;
+        }
         .filter-vertical-divider {
             display: none;
         }
@@ -355,13 +370,41 @@
             margin-left: 0;
             width: 100%;
             justify-content: center;
+            padding: 9px;
         }
         .price-input-group {
             width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         .filter-price-input {
             flex: 1;
             width: auto;
+            min-width: 0;
+            padding: 9px 10px;
+        }
+        .filter-submit-btn {
+            width: 100%;
+            justify-content: center;
+            padding: 10px;
+        }
+        .sort-pills-group {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            -webkit-overflow-scrolling: touch;
+        }
+        .sort-pill-btn {
+            flex: 1;
+            text-align: center;
+            justify-content: center;
+            padding: 8px 10px;
+            font-size: 12px;
+            white-space: nowrap;
         }
     }
 
@@ -592,10 +635,64 @@
 
     @media (max-width: 768px) {
         .hero-section {
-            padding: 30px 20px;
+            padding: 24px 18px;
+            margin: 16px 0 24px;
+            border-radius: 16px;
         }
         .hero-title {
-            font-size: 28px;
+            font-size: 24px;
+            line-height: 1.25;
+            margin-bottom: 12px;
+        }
+        .hero-desc {
+            font-size: 14px;
+            margin-bottom: 18px;
+            line-height: 1.5;
+        }
+        .hero-badges {
+            gap: 12px;
+        }
+        .hero-badge-item {
+            font-size: 12px;
+        }
+        .category-pill {
+            padding: 9px 16px;
+            font-size: 13px;
+        }
+        .features-section {
+            padding: 24px 16px;
+            margin-bottom: 30px;
+        }
+        .features-grid {
+            grid-template-columns: 1fr;
+            gap: 18px;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .food-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+        .food-card {
+            border-radius: 16px;
+        }
+        .food-img-wrapper {
+            height: 180px;
+        }
+        .food-content {
+            padding: 16px;
+        }
+        .food-name {
+            font-size: 16px;
+        }
+        .food-price {
+            font-size: 18px;
+        }
+        .add-to-cart-btn {
+            padding: 8px 14px;
+            font-size: 13px;
         }
     }
 </style>

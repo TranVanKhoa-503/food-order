@@ -49,10 +49,6 @@
             </div>
         @endif
 
-        @if(\App\Http\Controllers\Auth\GoogleSignInController::configured())
-            @include('auth.partials.google-button', ['label' => 'Đăng nhập với Google'])
-        @endif
-
         <form action="{{ route('login') }}" method="POST" style="display: flex; flex-direction: column; gap: 18px;">
             @csrf
 
@@ -94,6 +90,12 @@
                 Đăng Nhập
             </button>
         </form>
+
+        @include('auth.partials.google-button', [
+            'label' => 'Đăng nhập với Google',
+            'afterForm' => true,
+            'enabled' => \App\Http\Controllers\Auth\GoogleSignInController::configured(),
+        ])
 
         <div style="text-align: center; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 14px; color: #64748B;">
             Chưa có tài khoản? 

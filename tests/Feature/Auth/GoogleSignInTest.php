@@ -33,13 +33,24 @@ class GoogleSignInTest extends TestCase
         ]);
     }
 
-    public function test_google_entry_points_appear_only_when_configured(): void
+    public function test_login_shows_google_below_the_form_and_requires_configuration_to_use_it(): void
     {
-        $this->get(route('login'))->assertOk()->assertSee('Đăng nhập với Google');
+        $this->get(route('login'))
+            ->assertOk()
+            ->assertSeeInOrder([
+                'type="submit"', 'Đăng Nhập', '</form>', 'class="auth-google auth-google-after-form"',
+                'href="'.route('auth.google.redirect').'"', 'Đăng nhập với Google', 'Chưa có tài khoản?',
+            ], false);
         $this->get(route('register'))->assertOk()->assertSee('Đăng ký với Google');
 
         config(['services.google.client_secret' => null]);
-        $this->get(route('login'))->assertOk()->assertDontSee('Đăng nhập với Google');
+        $this->get(route('login'))
+            ->assertOk()
+            ->assertSeeInOrder([
+                'type="submit"', 'Đăng Nhập', '</form>', 'class="auth-google auth-google-after-form"',
+                'type="button" disabled', 'Đăng nhập với Google', 'Đăng nhập Google chưa được cấu hình.',
+            ], false)
+            ->assertDontSee('href="'.route('auth.google.redirect').'"', false);
         $this->get(route('register'))->assertOk()->assertDontSee('Đăng ký với Google');
         $this->get(route('auth.google.redirect'))->assertRedirect(route('login'))->assertSessionHasErrors('google');
     }

@@ -11,7 +11,7 @@ Hệ thống đã hoàn thành trọn vẹn từ Sprint 0 đến Sprint 7 theo �
 ### 1. Khách Hàng (Customer)
 * **Khám phá thực đơn:** Xem danh sách món ăn từ database, phân loại theo danh mục, tìm kiếm theo tên/mô tả, lọc theo khoảng giá.
 * **Trợ lý chọn món:** Chọn nhóm món, ngân sách và yêu cầu ăn uống để nhận đề xuất các món đang còn bán; khách tự quyết định có đặt hay không.
-* **Xác thực an toàn:** Đăng ký tài khoản (`role = user`), Đăng nhập session, Đăng xuất (invalidate session + token CSRF), Quên/Đặt lại mật khẩu.
+* **Xác thực an toàn:** Đăng ký bằng email hoặc đăng nhập/đăng ký với Google, đăng nhập session, đăng xuất, quên/đặt lại mật khẩu cho tài khoản thường.
 * **Quản lý tài khoản:** Xem hồ sơ cá nhân, cập nhật tên/số điện thoại/địa chỉ giao hàng, đổi mật khẩu.
 * **Giỏ hàng & Checkout:**
   * Giỏ hàng lưu trữ ở trình duyệt (`localStorage`).
@@ -91,6 +91,14 @@ npm ci
 Copy-Item .env.example .env
 php artisan key:generate
 ```
+
+### Đăng nhập với Google (tùy chọn)
+
+1. Tạo OAuth client loại **Web application** theo [hướng dẫn Google](https://developers.google.com/identity/protocols/oauth2/web-server#creatingcred), rồi thêm `http://localhost:8000/auth/google/callback` vào **Authorized redirect URIs**. Khi deploy, thêm callback HTTPS theo đúng tên miền. Nếu ứng dụng đang ở chế độ Testing, thêm tài khoản demo vào danh sách test users.
+2. Cấp ba biến môi trường cho tiến trình chạy app hoặc trong cấu hình hosting: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`. Giá trị callback phải khớp chính xác với URL đã đăng ký, kể cả tên host và port. Không lưu Client Secret vào file `.env` đang được Git theo dõi.
+3. Chạy `composer install`, `php artisan migrate` và `php artisan config:clear` nếu đã cache cấu hình, sau đó khởi động lại app. Nếu thiếu cấu hình, nút Google sẽ ẩn và đăng nhập email vẫn hoạt động.
+
+Lần đăng nhập Google đầu tiên tạo tài khoản khách hàng bằng email đã xác minh. Email đó không thể đăng ký thường, kể cả khi nhập khác chữ hoa/chữ thường. Nếu đã có tài khoản thường từ trước, tiếp tục dùng email và mật khẩu; hệ thống không tự liên kết theo email.
 
 ### 3. Khởi tạo Cơ Sở Dữ Liệu
 Khởi động MySQL (qua Laragon/XAMPP), tạo database `food_order`, sau đó chạy:

@@ -24,9 +24,10 @@ class ForgotPasswordController extends Controller
      */
     public function sendResetLinkEmail(ForgotPasswordRequest $request): JsonResponse|RedirectResponse
     {
-        Password::sendResetLink(
-            $request->only('email')
-        );
+        Password::sendResetLink([
+            fn ($query) => $query->withEmail($request->validated('email')),
+            'google_id' => null,
+        ]);
 
         $message = 'Nếu email tồn tại trong hệ thống, bạn sẽ nhận được liên kết đặt lại mật khẩu.';
 

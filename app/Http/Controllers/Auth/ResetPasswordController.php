@@ -32,7 +32,11 @@ class ResetPasswordController extends Controller
      */
     public function reset(ResetPasswordRequest $request): JsonResponse|RedirectResponse
     {
-        $credentials = $request->only('email', 'password', 'password_confirmation', 'token');
+        $credentials = [
+            ...$request->only('password', 'password_confirmation', 'token'),
+            fn ($query) => $query->withEmail($request->validated('email')),
+            'google_id' => null,
+        ];
 
         $status = Password::reset(
             $credentials,

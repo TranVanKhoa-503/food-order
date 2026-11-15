@@ -4,9 +4,10 @@
 
 @section('styles')
 <style>
+    @include('auth.partials.google-button-styles')
     .auth-grid-2col {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 14px;
     }
     @media (max-width: 600px) {
@@ -48,6 +49,10 @@
                     @endforeach
                 </ul>
             </div>
+        @endif
+
+        @if(\App\Http\Controllers\Auth\GoogleSignInController::configured())
+            @include('auth.partials.google-button', ['label' => 'Đăng ký với Google'])
         @endif
 
         <form action="{{ route('register') }}" method="POST" style="display: flex; flex-direction: column; gap: 16px;">

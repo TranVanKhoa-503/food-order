@@ -32,7 +32,11 @@ class LoginController extends Controller
         $validated = $request->validated();
         $remember = (bool) ($validated['remember'] ?? false);
 
-        if (! Auth::attempt(['email' => $validated['email'], 'password' => $validated['password']], $remember)) {
+        if (! Auth::attempt([
+            fn ($query) => $query->withEmail($validated['email']),
+            'password' => $validated['password'],
+            'google_id' => null,
+        ], $remember)) {
             if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json([
                     'message' => 'Email hoặc mật khẩu không chính xác.',

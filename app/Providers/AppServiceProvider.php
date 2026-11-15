@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -38,7 +39,8 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('auth-login', function (Request $request) {
-            $email = (string) $request->input('email');
+            $email = $request->input('email');
+            $email = is_string($email) ? Str::lower(trim($email)) : '';
 
             return Limit::perMinute(10)->by($email.'|'.$request->ip());
         });
@@ -48,7 +50,8 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('auth-forgot-password', function (Request $request) {
-            $email = (string) $request->input('email');
+            $email = $request->input('email');
+            $email = is_string($email) ? Str::lower(trim($email)) : '';
 
             return Limit::perMinute(5)->by($email.'|'.$request->ip());
         });

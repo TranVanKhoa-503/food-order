@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use App\Rules\PhoneNumber;
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RegisterRequest extends FormRequest
@@ -24,7 +26,11 @@ class RegisterRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'email' => ['bail', 'required', 'string', 'email', 'max:255', function (string $attribute, string $value, Closure $fail): void {
+                if (User::query()->withEmail($value)->exists()) {
+                    $fail('Email này đã được sử dụng.');
+                }
+            }],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'phone' => ['nullable', 'string', new PhoneNumber],
             'address' => ['nullable', 'string', 'max:1000'],
@@ -43,7 +49,6 @@ class RegisterRequest extends FormRequest
             'name.max' => 'Họ và tên không được vượt quá 255 ký tự.',
             'email.required' => 'Vui lòng nhập địa chỉ email.',
             'email.email' => 'Địa chỉ email không đúng định dạng.',
-            'email.unique' => 'Email này đã được sử dụng.',
             'password.required' => 'Vui lòng nhập mật khẩu.',
             'password.min' => 'Mật khẩu phải có ít nhất 8 ký tự.',
             'password.confirmed' => 'Mật khẩu xác nhận không khớp.',

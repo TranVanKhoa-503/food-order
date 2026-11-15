@@ -4,6 +4,7 @@
 
 @section('styles')
 <style>
+    @include('auth.partials.google-button-styles')
     @media (max-width: 600px) {
         .auth-container {
             padding: 24px 14px 40px !important;
@@ -46,6 +47,10 @@
                     @endforeach
                 </ul>
             </div>
+        @endif
+
+        @if(\App\Http\Controllers\Auth\GoogleSignInController::configured())
+            @include('auth.partials.google-button', ['label' => 'Đăng nhập với Google'])
         @endif
 
         <form action="{{ route('login') }}" method="POST" style="display: flex; flex-direction: column; gap: 18px;">

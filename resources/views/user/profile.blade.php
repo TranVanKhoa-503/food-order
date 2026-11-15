@@ -123,9 +123,12 @@
                 <div style="width: 36px; height: 36px; background: #FEF3C7; color: #D97706; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 16px;">
                     <i class="fa-solid fa-lock"></i>
                 </div>
-                <h2 style="font-size: 18px; font-weight: 700; color: var(--dark);">Đổi Mật Khẩu</h2>
+                <h2 style="font-size: 18px; font-weight: 700; color: var(--dark);">{{ $user->google_id ? 'Đăng nhập với Google' : 'Đổi Mật Khẩu' }}</h2>
             </div>
 
+            @if($user->google_id)
+                <p style="font-size: 14px; color: #475569; line-height: 1.6;">Tài khoản này dùng Google để đăng nhập và không có mật khẩu riêng trên FoodOrder.</p>
+            @else
             @if(session('password_status'))
                 <div style="background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
                     <i class="fa-solid fa-circle-check"></i>
@@ -176,6 +179,7 @@
                     Cập Nhật Mật Khẩu
                 </button>
             </form>
+            @endif
         </div>
     </div>
 </div>
